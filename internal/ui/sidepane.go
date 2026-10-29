@@ -25,10 +25,17 @@ type sidePane struct {
 	list     *widget.List
 	tipDelay time.Duration
 	onTip    func() // test hook, called after a hover text is shown
+
+	// missing caches which bookmark directories are gone (FR-047). It is
+	// filled off the UI thread: a stat on a hung network mount must not
+	// freeze the window (NFR-002).
+	missing    map[string]bool
+	missingSeq int
+	onChecked  func() // test hook, called after a missing check is applied
 }
 
 func newSidePane(m *mainWindow) *sidePane {
-	sp := &sidePane{m: m, tipDelay: tooltipDelay}
+	sp := &sidePane{m: m, tipDelay: tooltipDelay, missing: map[string]bool{}}
 	sp.list = widget.NewList(
 		func() int { return len(m.marks.Items()) },
 		func() fyne.CanvasObject { return newMarkItem(sp) },
@@ -42,10 +49,37 @@ func (sp *sidePane) update(id int, mi *markItem) {
 	if id < 0 || id >= len(items) {
 		return
 	}
-	mi.set(items[id], sp.m.cfg.ContrastMin, sp.m.cfg.IndentPx)
+	mi.set(items[id], sp.missing[items[id].Path], sp.m.cfg.ContrastMin, sp.m.cfg.IndentPx)
 }
 
-func (sp *sidePane) refresh() { sp.list.Refresh() }
+// refresh redraws the list and re-checks in the background which
+// bookmark directories are missing.
+func (sp *sidePane) refresh() {
+	sp.list.Refresh()
+	sp.checkMissing()
+}
+
+func (sp *sidePane) checkMissing() {
+	sp.missingSeq++
+	seq := sp.missingSeq
+	items := sp.m.marks.Items()
+	background(func() {
+		missing := map[string]bool{}
+		for _, it := range items {
+			missing[it.Path] = it.Missing()
+		}
+		fyne.Do(func() {
+			if seq != sp.missingSeq {
+				return
+			}
+			sp.missing = missing
+			sp.list.Refresh()
+			if sp.onChecked != nil {
+				sp.onChecked()
+			}
+		})
+	})
+}
 
 // menuFor builds the right-click menu of a bookmark (FR-042, FR-045, FR-046).
 func (sp *sidePane) menuFor(it bookmarks.Item) *fyne.Menu {
@@ -133,9 +167,9 @@ func newMarkItem(sp *sidePane) *markItem {
 }
 
 // set shows it with the colours from bookmarks.Item.Style (FR-044–FR-047, FR-076).
-func (mi *markItem) set(it bookmarks.Item, minContrast float64, indentPx int) {
+func (mi *markItem) set(it bookmarks.Item, missing bool, minContrast float64, indentPx int) {
 	mi.item = it
-	st := it.Style(minContrast, it.Missing())
+	st := it.Style(minContrast, missing)
 	mi.bg.FillColor = st.Background
 	mi.text.Text = st.Label
 	mi.text.Color = st.Foreground

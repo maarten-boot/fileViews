@@ -167,3 +167,13 @@ All core packages are now done: the planned point for the first Spec ↔ Plan �
 **Assistant:** Grid lines: lighter `#E8E8E8` in the table only (theme override around the table), View → Show grid lines toggle, saved as `hideGridLines` (new FR-031). Q-4 documented in FR-020. Committed both before starting the left pane.
 
 **Assistant (milestone 8 result):** Left pane done (`internal/ui/sidepane.go`, `colours.go`): bookmark items with indent, own colours and missing marker; click opens; hover text pop-up after 0.6 s; right-click menu (Open, Set colours…, Reset colours, Edit hover text…, Add current directory, Remove bookmark); colour dialog with live preview, ratio, Save only at or above the minimum and a "Use black/white text" button; right-clicking a directory row in the right pane offers "Add to bookmarks". 8 new tests; all pass, also with `-race` (3 runs). Finding: the race detector caught a data race on the hover counter under Fyne's test driver (which runs `fyne.Do` on the calling goroutine); made it atomic. The colour dialog moved from M9 into M8, since the right-click menu needs it. Spec v0.13: FR-042, FR-045, FR-046 describe the menus, dialog and hover delay.
+
+### 18. Crosscheck #2 (after milestone 8)
+**User:** yes, do the crosscheck now
+
+**Assistant:** Scripted ID/test-name checks plus a read-through of spec vs code; result in the `Plan.md` crosscheck log. Main findings and fixes:
+- **bug:** column resizing by dragging header borders could not work — the clickable header cells received the mouse press instead of the table; header cells now forward presses to the table (TC-020d)
+- **responsiveness risk:** bookmarks ran `stat` on the UI thread on every redraw; on this NFS-hosted setup a hung mount could freeze the window; now checked in the background and cached (TC-047d, NFR-002 updated)
+- the race detector then flagged the test setup (Fyne's test driver runs `fyne.Do` on the calling goroutine); background work now goes through one helper that runs inline in tests
+- bookkeeping: 7 test comments fixed, a nonexistent case ID removed; spec sketch, FR-002 (F5 needs the path field unfocused), FR-047, NFR-002 and README Usage updated
+- known gap (planned): nothing is saved yet, so "last directory" at startup only works after M10

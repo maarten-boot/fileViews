@@ -220,6 +220,7 @@ func TestColumnLayoutNormalises(t *testing.T) {
 	}
 }
 
+// TC-024d
 func TestParseColumn(t *testing.T) {
 	for _, c := range DefaultColumns {
 		got, ok := ParseColumn(c.String())

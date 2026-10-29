@@ -10,6 +10,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
@@ -59,7 +60,11 @@ func newFileTable(m *mainWindow) *fileTable {
 		ft.updateCell,
 	)
 	ft.table.ShowHeaderRow = true
-	ft.table.CreateHeader = func() fyne.CanvasObject { return newHeaderCell(ft.sortBy) }
+	ft.table.CreateHeader = func() fyne.CanvasObject {
+		h := newHeaderCell(ft.sortBy)
+		h.target = ft.table
+		return h
+	}
 	ft.table.UpdateHeader = ft.updateHeader
 	ft.table.HideSeparators = m.cfg.HideGrid
 	ft.setColumnWidths()
@@ -247,10 +252,11 @@ func (c *fileCell) TappedSecondary(ev *fyne.PointEvent) {
 // headerCell is a clickable column header with a sort direction icon.
 type headerCell struct {
 	widget.BaseWidget
-	label *widget.Label
-	icon  *widget.Icon
-	col   int
-	onTap func(col int)
+	label  *widget.Label
+	icon   *widget.Icon
+	target desktop.Mouseable // the table; receives forwarded mouse presses
+	col    int
+	onTap  func(col int)
 }
 
 func newHeaderCell(onTap func(int)) *headerCell {
@@ -282,4 +288,31 @@ func (h *headerCell) Tapped(*fyne.PointEvent) {
 	if h.col >= 0 {
 		h.onTap(h.col)
 	}
+}
+
+// A mouse press goes to the innermost widget that handles clicks, which is
+// this header cell, so the table would never see it and could not start
+// resizing a column when its border is dragged (FR-020). Pass presses on,
+// in the table's coordinates.
+
+func (h *headerCell) MouseDown(ev *desktop.MouseEvent) {
+	if fwd := h.forward(ev); fwd != nil {
+		h.target.MouseDown(fwd)
+	}
+}
+
+func (h *headerCell) MouseUp(ev *desktop.MouseEvent) {
+	if fwd := h.forward(ev); fwd != nil {
+		h.target.MouseUp(fwd)
+	}
+}
+
+func (h *headerCell) forward(ev *desktop.MouseEvent) *desktop.MouseEvent {
+	obj, ok := h.target.(fyne.CanvasObject)
+	if !ok {
+		return nil
+	}
+	fwd := *ev
+	fwd.Position = ev.AbsolutePosition.Subtract(fyne.CurrentApp().Driver().AbsolutePositionForObject(obj))
+	return &fwd
 }

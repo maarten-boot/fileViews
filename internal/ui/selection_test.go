@@ -61,6 +61,7 @@ func TestSelectionClicks(t *testing.T) {
 	}
 }
 
+// TC-020c
 func TestSelectionShiftWithoutAnchor(t *testing.T) {
 	shown := entries("a", "b", "c")
 	var s selection
@@ -70,6 +71,7 @@ func TestSelectionShiftWithoutAnchor(t *testing.T) {
 	}
 }
 
+// TC-020c
 func TestSelectionPrune(t *testing.T) {
 	var s selection
 	s.click(entries("a", "b", "c"), 0, 0)

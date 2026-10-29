@@ -16,6 +16,11 @@ import (
 
 const appTitle = "fileViews"
 
+// background runs slow work (file system reads) off the UI goroutine; the
+// work hands its result back with fyne.Do. Tests run it inline, because
+// Fyne's test driver runs fyne.Do on the calling goroutine.
+var background = func(work func()) { go work() }
+
 // mainWindow is the single application window (§4 of the spec).
 type mainWindow struct {
 	app   fyne.App
@@ -179,11 +184,11 @@ func (m *mainWindow) load(dir string) {
 	m.updateButtons()
 	m.loadSeq++
 	seq := m.loadSeq
-	go func() {
+	background(func() {
 		entries, err := listing.Read(dir)
 		free, ferr := listing.FreeSpace(dir)
 		fyne.Do(func() { m.applyLoad(seq, entries, err, free, ferr == nil) })
-	}()
+	})
 }
 
 // applyLoad shows the result of load number seq, unless a newer load has
@@ -199,6 +204,7 @@ func (m *mainWindow) applyLoad(seq int, entries []listing.Entry, err error, free
 	m.all = entries
 	m.free, m.freeOK = free, freeOK
 	m.applyView()
+	m.side.checkMissing()
 	if m.onLoaded != nil {
 		m.onLoaded()
 	}

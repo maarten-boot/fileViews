@@ -60,6 +60,12 @@ Fedora:
 If the build stops with `cannot find -lXxxx`, the development package for library `Xxxx` is missing.
 For example, `-lXxf86vm` needs `libxxf86vm-dev` (Ubuntu/Debian) or `libXxf86vm-devel` (Fedora).
 
+## Usage
+
+    fileviews [directory]
+
+Without a directory, fileViews opens the last directory you viewed, or your home directory.
+
 ## Building
 
     make build   # produces ./fileviews

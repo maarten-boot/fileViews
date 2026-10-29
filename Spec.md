@@ -1,6 +1,6 @@
 # Specification — fileViews
 
-_Status: draft v0.13 · Last updated: 2026-10-29_
+_Status: draft v0.14 · Last updated: 2026-10-29_
 
 ## 1. Purpose
 A simple hierarchical file and directory viewer with a graphical interface, laid out similar to Thunar.
@@ -29,7 +29,7 @@ A simple hierarchical file and directory viewer with a graphical interface, laid
 |     projects      | -rwxr-xr-x  1 mboot mboot  1.2M 2026-10-28 run*  |
 |  (left pane)      |  (right pane)                              |
 +-------------------+-------------------------------------------+
-| 3 dirs · 12 files (2 hidden) · 14.3M · selected: 1.2M · free: 120G |
+| 3 directories · 12 files · 2 hidden · 14.3M total · 1 selected (1.2M) · 120G free |
 +---------------------------------------------------------------+
 ```
 The split between left and right pane is user-resizable.
@@ -43,7 +43,7 @@ The split between left and right pane is user-resizable.
   - Go: Back, Forward, Up, Home
   - Settings: Columns…, Side pane indent…, Size format (human-readable / exact bytes), Contrast minimum…
   - Help: About
-- **FR-002** Keyboard shortcuts: Ctrl+H show hidden files, Alt+Left back, Alt+Right forward, Alt+Up up, Alt+Home home, F5 refresh, Ctrl+Q quit.
+- **FR-002** Keyboard shortcuts: Ctrl+H show hidden files, Alt+Left back, Alt+Right forward, Alt+Up up, Alt+Home home, F5 refresh, Ctrl+Q quit. F5 works when the path field does not have keyboard focus (it is not a modifier shortcut, so the focused text field receives it).
 
 ### 5.2 Path bar and history
 - **FR-010** The path bar shows the absolute path of the current directory.
@@ -88,7 +88,7 @@ The split between left and right pane is user-resizable.
 - **FR-044** Each item is indented by `depth × indent`, where depth is the number of path components from `/` (`/` = 0, `/home/mboot` = 2). The indent is configurable in Settings; default 12 px.
 - **FR-045** Each item can have a custom background and foreground colour, set via right-click → "Set colours…" (background and text fields as `#RRGGBB`, empty = default, each with a colour picker; live preview), with a "Reset colours" option. Colours are kept across sessions. The combination must meet the contrast minimum (FR-073–FR-075).
 - **FR-046** Each item has a hover text (tooltip), shown in a small pop-up after the mouse rests on the item for about 0.6 s and hidden when it leaves. The default is the full path. The user can change it via right-click → "Edit hover text…"; an empty text goes back to the default. Hover texts are kept across sessions.
-- **FR-047** A bookmark whose target no longer exists is still shown, in italics with the suffix ` (missing)`; clicking it shows an error. On a pure white or pure black background (default or chosen) its text is also gray (FR-071). On any other background it keeps its own text colour (no gray). The text marker is always shown, so the state never depends on colour alone.
+- **FR-047** A bookmark whose target no longer exists is still shown, in italics with the suffix ` (missing)`; clicking it shows an error. On a pure white or pure black background (default or chosen) its text is also gray (FR-071). On any other background it keeps its own text colour (no gray). The text marker is always shown, so the state never depends on colour alone. Whether a bookmark is missing is checked in the background (NFR-002) when bookmarks change and after every navigation or refresh, so the marker can lag a moment behind the file system.
 
 ### 5.5 Status bar (bottom line)
 - **FR-050** The status bar shows, for the current directory:
@@ -126,7 +126,7 @@ The split between left and right pane is user-resizable.
 
 ## 6. Non-functional requirements
 - **NFR-001** A directory with 10,000 entries lists in under 1 second on a typical desktop.
-- **NFR-002** The UI stays responsive while reading a directory: directories are read off the UI thread.
+- **NFR-002** The UI stays responsive while reading the file system: directories are read, and bookmark directories checked, off the UI thread (a hung network mount must not freeze the window).
 - **NFR-003** Core logic (listing, formatting, history, config, bookmarks, colour contrast) is in packages without GUI dependencies, so it can be unit-tested headless.
 - **NFR-004** Builds with `go build` (`make build`); Go 1.26+, Fyne v2.8+.
 

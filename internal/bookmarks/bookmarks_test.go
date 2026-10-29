@@ -161,7 +161,7 @@ func TestSetColours(t *testing.T) {
 	}
 }
 
-// TC-070a, TC-076: drawing colours.
+// TC-070a, TC-072, TC-076: drawing colours.
 func TestStyleColours(t *testing.T) {
 	st := (Item{Path: "/a"}).Style(contrast.DefaultMin, false)
 	if st.Background != contrast.White || st.Foreground != contrast.Black || st.Italic || st.Label != "a" {

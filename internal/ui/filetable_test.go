@@ -10,6 +10,8 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -44,7 +46,7 @@ func stubOpen(t *testing.T) *[]string {
 	return &opened
 }
 
-// TC-022c, TC-023f: cells show the ls -lF columns in the default order.
+// TC-022c: cells show the ls -lF columns in the default order.
 func TestTableCells(t *testing.T) {
 	root := fixture(t)
 	os.Chmod(filepath.Join(root, "a.txt"), 0o640)
@@ -285,5 +287,45 @@ func TestTableGridLines(t *testing.T) {
 	m2 := newMainWindow(test.NewTempApp(t), cfg, t.TempDir())
 	if !m2.files.table.HideSeparators || m2.gridItem.Checked {
 		t.Error("setting not applied to a new window")
+	}
+}
+
+// fakeMouse records forwarded mouse events.
+type fakeMouse struct {
+	widget.BaseWidget
+	down, up []fyne.Position
+}
+
+func (f *fakeMouse) MouseDown(ev *desktop.MouseEvent) { f.down = append(f.down, ev.Position) }
+func (f *fakeMouse) MouseUp(ev *desktop.MouseEvent)   { f.up = append(f.up, ev.Position) }
+func (f *fakeMouse) CreateRenderer() fyne.WidgetRenderer {
+	return widget.NewSimpleRenderer(container.NewWithoutLayout())
+}
+
+// TC-020d: header cells pass mouse presses on to the table, in table
+// coordinates, so dragging a header border can resize a column.
+func TestHeaderForwardsMouse(t *testing.T) {
+	test.NewTempApp(t)
+	target := &fakeMouse{}
+	target.ExtendBaseWidget(target)
+	h := newHeaderCell(func(int) {})
+	h.target = target
+	w := test.NewWindow(container.NewWithoutLayout(target))
+	defer w.Close()
+	target.Move(fyne.NewPos(30, 40))
+	target.Resize(fyne.NewSize(200, 100))
+
+	abs := fyne.CurrentApp().Driver().AbsolutePositionForObject(target)
+	ev := &desktop.MouseEvent{PointEvent: fyne.PointEvent{AbsolutePosition: abs.Add(fyne.NewPos(100, 5))}}
+	h.MouseDown(ev)
+	h.MouseUp(ev)
+	want := []fyne.Position{fyne.NewPos(100, 5)}
+	if !slices.Equal(target.down, want) || !slices.Equal(target.up, want) {
+		t.Errorf("forwarded down %v up %v, want %v", target.down, target.up, want)
+	}
+	// The real table is wired as the target.
+	m := newTestWindow(t, t.TempDir())
+	if hc := m.files.table.CreateHeader().(*headerCell); hc.target != m.files.table {
+		t.Error("header target is not the table")
 	}
 }

@@ -17,6 +17,7 @@ A ✔ with a test name means the automated test exists and passes.
 | TC-020 | FR-020 | List directory | Temp dir with `a.txt`, `sub/` | Both entries listed | Auto ✔ `TestReadListsFilesAndDirs`, `TestNavigateShowsDirectory` |
 | TC-020b | FR-020 | Whole-row selection | Click a cell of `a.txt`; sort by name descending; show hidden; refresh; go to `sub` | Whole row highlighted; selection kept through sort, filter and refresh; cleared on navigation | Auto ✔ `TestTableSelection` + Manual |
 | TC-020c | FR-020 | Multi-select | Click b; Ctrl+click d; Ctrl+click b; Shift+click a; Shift+click e; click c; anchor gone | `b`; `b,d`; `d`; `a,b`; `b..e`; `c`; Shift acts as plain click | Auto ✔ `TestSelectionClicks`, `TestSelectionShiftWithoutAnchor`, `TestSelectionPrune`, `TestTableMultiSelect` + Manual |
+| TC-020d | FR-020 | Column resize reaches the table | Mouse press on a header cell | Forwarded to the table in table coordinates (drag itself: manual) | Auto ✔ `TestHeaderForwardsMouse` + Manual |
 | TC-021a | FR-021 | Hidden filtered by default | Dir with `.x`, `y` | Only `y` listed | Auto ✔ `TestFilterHidden` |
 | TC-021b | FR-021 | Show hidden | Same dir, show-hidden on | `.x` and `y` listed | Auto ✔ `TestFilterHidden`, `TestToggleHidden` |
 | TC-022 | FR-022 | Permission string | File with mode 0754; also dir, link, pipe, socket, devices, setuid/setgid/sticky | `-rwxr-xr--` etc. | Auto ✔ `TestPermString`, `TestReadPermissions` |
@@ -128,7 +129,7 @@ A ✔ with a test name means the automated test exists and passes.
 |----|-----|-------------|---------------|-----------------|------|
 | TC-N01 | NFR-001 | Large directory | 10,000 files: read + sort + format | < 1 s (measured ≈ 17 ms) | Bench ✔ `BenchmarkListLargeDir` |
 | TC-N03 | NFR-003 | Core has no GUI dependency | `go list -deps` of listing, history, bookmarks, config, contrast | No `fyne.io/…` or `internal/ui` | Auto ✔ `TestCoreHasNoGUIDeps` |
-| TC-N02 | NFR-002 | Responsive UI | Open a large directory | Window stays responsive | Auto ✔ `TestStaleLoadDropped` + Manual |
+| TC-N02 | NFR-002 | Responsive UI | Open a large directory | Window stays responsive | Auto ✔ `TestStaleLoadDropped`, `TestBookmarkMissingCheckedInBackground` + Manual |
 
 ## Build / smoke
 | ID | Req | Description | Steps / input | Expected result | Type |
@@ -145,6 +146,7 @@ A ✔ with a test name means the automated test exists and passes.
 | TC-071a | FR-071 | Gray on pure white / black | Min 4.5 | `#767676` on white, `#757575` on black; each passes the minimum | Auto ✔ `TestGray` |
 | TC-071b | FR-071 | No gray on other backgrounds | `#FEFEFE`, `#808080`, `#FFFFE0` | Gray refused | Auto ✔ `TestGray` |
 | TC-071c | FR-071 | No gray-on-gray in the GUI | Inspect missing bookmark, disabled buttons, status bar | No gray text on gray background | Auto ✔ `TestThemeContrast` (theme) + Manual |
+| TC-047d | FR-047, NFR-002 | Missing check off the UI thread | Stale cache; check; remove dir; check; late check | Drawn from cache; updated by background check; newest check wins | Auto ✔ `TestBookmarkMissingCheckedInBackground` |
 | TC-072 | FR-072 | Colours only affect their item | Colour one bookmark | Other items and panes stay white/black | Auto ✔ `TestStyleColours`, `TestBookmarkStyle` + Manual |
 | TC-073a | FR-073 | Contrast ratio | black/white, yellow/white, light green/white, `#767676`/white | 21, 1.07, 1.42, 4.54 | Auto ✔ `TestRatio` |
 | TC-074a | FR-074 | Default minimum 4.5 | Yellow, light green, `#777777` on white | Rejected; `#767676` and black accepted | Auto ✔ `TestMeetsDefault` |

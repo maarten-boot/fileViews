@@ -89,6 +89,7 @@ func TestBookmarkStyle(t *testing.T) {
 	m.marks.Add(gone)
 	os.Remove(gone)
 	m.marks.SetColours(root, "#000080", "#FFFFFF", contrast.DefaultMin)
+	checkMissing(t, m)
 
 	home := markAt(m, slices.IndexFunc(m.marks.Items(), func(it bookmarks.Item) bool { return it.Path == root }))
 	if home.bg.FillColor != (contrastRGBA("#000080")) || home.text.Color != contrast.White || home.text.TextStyle.Italic {
@@ -107,6 +108,54 @@ func TestBookmarkStyle(t *testing.T) {
 	test.Tap(missing)
 	if m.nav.Current() != root {
 		t.Errorf("current = %q", m.nav.Current())
+	}
+}
+
+// checkMissing runs the background missing-directory check and waits for it.
+func checkMissing(t *testing.T, m *mainWindow) {
+	t.Helper()
+	done := make(chan struct{}, 1)
+	m.side.onChecked = func() { done <- struct{}{} }
+	m.side.checkMissing()
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		t.Fatal("missing check did not finish")
+	}
+	m.side.onChecked = nil
+}
+
+// TC-047d, TC-N02: drawing uses the cached result, never a stat on the UI
+// thread; the cache is refreshed in the background.
+func TestBookmarkMissingCheckedInBackground(t *testing.T) {
+	root := fixture(t)
+	sub := filepath.Join(root, "sub")
+	m := newTestWindow(t, root)
+	m.marks.Add(sub)
+	idx := slices.IndexFunc(m.marks.Items(), func(it bookmarks.Item) bool { return it.Path == sub })
+
+	m.side.missing[sub] = true // stale cache: drawn as missing although it exists
+	if !strings.HasSuffix(markAt(m, idx).text.Text, "(missing)") {
+		t.Error("draw did not use the cache")
+	}
+	checkMissing(t, m)
+	if strings.HasSuffix(markAt(m, idx).text.Text, "(missing)") {
+		t.Error("cache not updated by the check")
+	}
+	os.Remove(sub)
+	checkMissing(t, m)
+	if !strings.HasSuffix(markAt(m, idx).text.Text, "(missing)") {
+		t.Error("removed directory not detected")
+	}
+	// A check that finishes after a newer one started is dropped.
+	m.side.missingSeq = 100
+	m.side.missing = map[string]bool{}
+	done := make(chan struct{}, 1)
+	m.side.onChecked = func() { done <- struct{}{} }
+	m.side.checkMissing() // seq 101
+	<-done
+	if !m.side.missing[sub] {
+		t.Error("latest check not applied")
 	}
 }
 
@@ -149,7 +198,7 @@ func TestBookmarkTooltip(t *testing.T) {
 	}
 }
 
-// A hover that ends before the delay shows nothing.
+// TC-046d: a hover that ends before the delay shows nothing.
 func TestBookmarkTooltipCancelled(t *testing.T) {
 	m := newTestWindow(t, t.TempDir())
 	m.side.tipDelay = 50 * time.Millisecond

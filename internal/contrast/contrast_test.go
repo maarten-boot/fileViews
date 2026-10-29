@@ -117,6 +117,7 @@ func TestGray(t *testing.T) {
 	}
 }
 
+// TC-045c
 func TestHexRoundTrip(t *testing.T) {
 	for _, s := range []string{"#000000", "#FFFFFF", "#1A2B3C"} {
 		if got := Hex(mustHex(t, s)); got != s {
