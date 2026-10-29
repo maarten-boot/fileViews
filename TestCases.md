@@ -164,6 +164,7 @@ A ✔ with a test name means the automated test exists and passes. The manual ch
 ## Build / smoke
 | ID | Req | Description | Steps / input | Expected result | Type |
 |----|-----|-------------|---------------|-----------------|------|
+| TC-N05 | NFR-005 | No reachable vulnerabilities | `make vulncheck` | "No vulnerabilities found." | Auto (tool) ✔ 2026-10-29 |
 | TC-N04a | NFR-004 | Build | `make build` | `fileviews` binary, no errors | Auto |
 | TC-N04b | NFR-004 | Main window created (headless) | Build window with test app | Title `fileViews`, content set | Auto ✔ `TestNewMainWindow` |
 | TC-N04c | NFR-004 | Window opens on desktop | `make run` | Window "fileViews" appears, 1000×650 | Manual ✔ (user, 2026-10-29) |

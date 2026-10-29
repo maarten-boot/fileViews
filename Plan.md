@@ -1,6 +1,6 @@
 # Plan — fileViews
 
-_Status: draft v0.19 · Last updated: 2026-10-29_
+_Status: draft v0.20 · Last updated: 2026-10-29_
 
 ## Approach
 Build the non-GUI core first, with unit tests (NFR-003), then add the Fyne GUI on top of it, one area at a time.
@@ -43,6 +43,7 @@ internal/arch/            architecture test: core packages have no GUI dependenc
 - Owner/group lookup and link count use `syscall.Stat_t` (Unix only); keep that in a file with a build tag.
 - Free disk space uses `statfs` (Unix only); same approach. Both live in `internal/listing/stat_unix.go`, with a stub in `stat_other.go`.
 - Fyne follows the desktop dark mode by default; FR-070 needs a custom theme that forces the light variant. **Done in M6** (`internal/ui/theme.go`); Fyne's own light theme failed FR-071/FR-077 (gray `#565656` text, `#E3E3E3` disabled text, `#888` placeholder on `#F3F3F3`, white on light green/orange/red).
+- Dependencies: Dependabot alerts (x/image, x/net) fixed by upgrading; `govulncheck` (`make vulncheck`) also found reachable issues in the Go 1.26.8 standard library, fixed by pinning the Go 1.26.10 toolchain in `go.mod` (downloaded automatically). Re-run `make vulncheck` after dependency or toolchain changes.
 - Fyne has no drag and drop between widgets: bookmark rows and table cells implement `fyne.Draggable` and report the mouse; the drop slot is computed from the bookmark rows Fyne has actually laid out (`sidePane.rendered`), skipping the list's measuring templates (they never get a row).
 - **Found in the manual test pass (scrolling):** Fyne turns a vertical wheel movement into a sideways scroll when only the columns overflow, and its Table does not re-lay-out its scroller when the row count changes (a big directory opened after a small one could not scroll). Fixes: a wheel-catching layer filters wheel events (FR-032), the Name column fills the width, and the scroller is refreshed after row changes. Fyne v2.8 has no public access to the Table's scroller or column widths, so `internal/ui/fyneinternals.go` reads them via reflection/unsafe; `TestFyneInternals` fails if a Fyne upgrade changes them. Worth re-checking (or reporting upstream) on each Fyne upgrade.
 - Fyne gives a mouse press to the innermost widget that handles clicks. Found at crosscheck 2: clickable header cells therefore kept the table from starting a column resize; header cells now forward mouse presses to the table.

@@ -2,6 +2,8 @@ module github.com/maarten-boot/fileViews
 
 go 1.26.8
 
+toolchain go1.26.10
+
 require fyne.io/fyne/v2 v2.8.2
 
 require (

@@ -1,6 +1,6 @@
 # Specification — fileViews
 
-_Status: draft v0.20 · Last updated: 2026-10-29_
+_Status: draft v0.21 · Last updated: 2026-10-29_
 
 ## 1. Purpose
 A simple hierarchical file and directory viewer with a graphical interface, laid out similar to Thunar.
@@ -135,7 +135,8 @@ The split between left and right pane is user-resizable.
 - **NFR-001** A directory with 10,000 entries lists in under 1 second on a typical desktop.
 - **NFR-002** The UI stays responsive while using the file system: directory listings, navigation targets, double-clicked entries, bookmark directories and config saves after a change are all checked or written off the UI thread (a hung network mount must not freeze the window). Exceptions: loading the config and choosing the startup directory happen before the window appears, and the final save on quit is synchronous so no settings are lost.
 - **NFR-003** Core logic (listing, formatting, history, config, bookmarks, colour contrast) is in packages without GUI dependencies, so it can be unit-tested headless.
-- **NFR-004** Builds with `go build` (`make build`); Go 1.26+, Fyne v2.8+.
+- **NFR-004** Builds with `go build` (`make build`); Go 1.26+, built with the Go 1.26.10 toolchain (`toolchain` line in `go.mod`, downloaded automatically), Fyne v2.8+.
+- **NFR-005** No known vulnerabilities reachable from the code: `make vulncheck` (govulncheck) reports none, covering modules and the Go standard library; Dependabot alerts are handled by upgrading the affected modules.
 
 ## 7. Open questions
 _None._ (Q-1 → FR-017, Q-2 → FR-015, Q-3 → FR-074, Q-4 → FR-020; all resolved 2026-10-29.)

@@ -42,7 +42,7 @@ so `ldd fileviews` does not list them all. A missing one shows up as an error at
 
 Building needs everything under [To run](#to-run), plus:
 
-- **Go 1.26 or newer.** Distribution packages are often older; if so, install Go from <https://go.dev/dl/>.
+- **Go 1.26 or newer.** `go.mod` asks for the Go 1.26.10 toolchain (it contains security fixes); with Go's default settings (`GOTOOLCHAIN=auto`) the `go` command downloads and uses it automatically on the first build. Distribution packages may be older than 1.26; if so, install Go from <https://go.dev/dl/>.
 - **A C compiler and the development headers** for the libraries above:
 
 Ubuntu / Debian:
@@ -68,6 +68,7 @@ Without a directory, fileViews opens the last directory you viewed, or your home
 
 ## Building
 
-    make build   # produces ./fileviews
+    make build      # produces ./fileviews
     make run
     make test
+    make vulncheck  # known vulnerabilities in dependencies and the Go standard library
