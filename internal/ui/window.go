@@ -263,7 +263,6 @@ func (m *mainWindow) clickRow(row int, mod fyne.KeyModifier) {
 	m.updateStatus()
 }
 
-
 func (m *mainWindow) updateButtons() {
 	setEnabled(m.back, m.nav.CanBack())
 	setEnabled(m.forward, m.nav.CanForward())
