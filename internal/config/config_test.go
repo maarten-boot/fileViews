@@ -127,6 +127,7 @@ func TestRoundTrip(t *testing.T) {
 	want.SetSortSpec(listing.SortSpec{Column: listing.ColSize, Descending: true})
 	want.IndentPx = 20
 	want.ShowHidden = true
+	want.HideGrid = true
 	want.ExactSizes = true
 	want.ContrastMin = 7
 	want.Recent = []string{"/a", "/b"}

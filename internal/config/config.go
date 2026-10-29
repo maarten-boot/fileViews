@@ -26,6 +26,7 @@ type Config struct {
 	Sort        Sort       `json:"sort"`
 	IndentPx    int        `json:"indentPx"`
 	ShowHidden  bool       `json:"showHidden"`
+	HideGrid    bool       `json:"hideGridLines"`
 	ExactSizes  bool       `json:"exactSizes"`
 	ContrastMin float64    `json:"contrastMin"`
 	Recent      []string   `json:"recent,omitempty"`

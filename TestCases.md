@@ -16,6 +16,7 @@ A ✔ with a test name means the automated test exists and passes.
 |----|-----|-------------|---------------|-----------------|------|
 | TC-020 | FR-020 | List directory | Temp dir with `a.txt`, `sub/` | Both entries listed | Auto ✔ `TestReadListsFilesAndDirs`, `TestNavigateShowsDirectory` |
 | TC-020b | FR-020 | Whole-row selection | Click a cell of `a.txt`; sort by name descending; show hidden; refresh; go to `sub` | Whole row highlighted; selection kept through sort, filter and refresh; cleared on navigation | Auto ✔ `TestTableSelection` + Manual |
+| TC-020c | FR-020 | Multi-select | Click b; Ctrl+click d; Ctrl+click b; Shift+click a; Shift+click e; click c; anchor gone | `b`; `b,d`; `d`; `a,b`; `b..e`; `c`; Shift acts as plain click | Auto ✔ `TestSelectionClicks`, `TestSelectionShiftWithoutAnchor`, `TestSelectionPrune`, `TestTableMultiSelect` + Manual |
 | TC-021a | FR-021 | Hidden filtered by default | Dir with `.x`, `y` | Only `y` listed | Auto ✔ `TestFilterHidden` |
 | TC-021b | FR-021 | Show hidden | Same dir, show-hidden on | `.x` and `y` listed | Auto ✔ `TestFilterHidden`, `TestToggleHidden` |
 | TC-022 | FR-022 | Permission string | File with mode 0754; also dir, link, pipe, socket, devices, setuid/setgid/sticky | `-rwxr-xr--` etc. | Auto ✔ `TestPermString`, `TestReadPermissions` |
@@ -44,6 +45,7 @@ A ✔ with a test name means the automated test exists and passes.
 | TC-029a | FR-029 | Broken symlink | `l -> missing` | Listed; rest of listing unaffected | Auto ✔ `TestBrokenSymlink` |
 | TC-029b | FR-029 | Unreadable subdir | `chmod 000 sub` | `sub/` listed | Auto ✔ `TestUnreadableSubdir` |
 | TC-029c | FR-029 | Unreadable metadata | Entry with stat error | Fields `?`, name shown | Auto ✔ `TestUnreadableFieldsShowQuestionMark` |
+| TC-031 | FR-031 | Grid lines | Default; View → Show grid lines; new window with saved setting | Light gray `#E8E8E8` only in the table; hidden after toggle; setting applied | Auto ✔ `TestTableGridLines` + Manual |
 | TC-030 | FR-030 | Read-only | Browse around | No file is modified | Manual |
 
 ## Path bar / history (`internal/history`)
@@ -98,6 +100,7 @@ A ✔ with a test name means the automated test exists and passes.
 | TC-050b | FR-050 | Total size | Files of 100 + 200 bytes | 300 | Auto ✔ `TestComputeStats` |
 | TC-050c | FR-050 | Selection size | Select a 100-byte file and a dir | selected 100 | Auto ✔ `TestSelectionSize`, `TestStatusSelectionAndExactSizes` |
 | TC-050e | FR-050 | Status bar text | Counts with singular/plural, sizes, selection, free space, exact mode | `1 directory · 1 file · 2 hidden · 4.2K total · 5.0G free` etc. | Auto ✔ `TestStatusText` |
+| TC-050f | FR-050 | Status for multi-select | Select `a.txt` (100) and `b.txt` (200), then a range with `sub/` | `2 selected (300)`, `3 selected (300)` | Auto ✔ `TestTableMultiSelect` |
 | TC-050d | FR-050 | Free space | Temp dir; missing path | Value; error | Auto ✔ `TestFreeSpace` |
 | TC-051 | FR-051 | Updates on toggle hidden | Ctrl+H | Counts/size update | Auto ✔ `TestToggleHidden` + Manual |
 

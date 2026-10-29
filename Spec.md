@@ -1,6 +1,6 @@
 # Specification — fileViews
 
-_Status: draft v0.11 · Last updated: 2026-10-29_
+_Status: draft v0.12 · Last updated: 2026-10-29_
 
 ## 1. Purpose
 A simple hierarchical file and directory viewer with a graphical interface, laid out similar to Thunar.
@@ -39,7 +39,7 @@ The split between left and right pane is user-resizable.
 ### 5.1 Menu bar
 - **FR-001** The menu bar has these menus:
   - File: Quit
-  - View: Show hidden files (toggle), Refresh
+  - View: Show hidden files (toggle), Show grid lines (toggle), Refresh
   - Go: Back, Forward, Up, Home
   - Settings: Columns…, Side pane indent…, Size format (human-readable / exact bytes), Contrast minimum…
   - Help: About
@@ -56,7 +56,7 @@ The split between left and right pane is user-resizable.
 - **FR-017** Startup directory: a directory given on the command line (`fileviews /some/dir`; a relative path is taken from the working directory, `~` means `$HOME`; more than one argument prints a usage message) if it can be read; otherwise the last directory (FR-061) if it can still be read; otherwise `$HOME`; otherwise `/`. If the command-line directory cannot be read, the user gets an error and the next choice is used.
 
 ### 5.3 Right pane (directory listing)
-- **FR-020** The right pane lists the entries of the current directory: files and directories, as a table with one row per entry. Clicking a row selects the whole row (one row at a time). The selection stays on the same entry when sorting, filtering or refreshing, and is cleared when going to another directory. Columns start at fixed widths and can be resized by dragging the header borders; Size and Links are right-aligned.
+- **FR-020** The right pane lists the entries of the current directory: files and directories, as a table with one row per entry. Clicking a row selects the whole row; Ctrl+click adds or removes a row, Shift+click selects the range from the last clicked row. The selection stays on the same entries when sorting, filtering or refreshing (entries no longer shown drop out of it), and is cleared when going to another directory. Columns start at fixed widths and can be resized by dragging the header borders; Size and Links are right-aligned.
 - **FR-021** Hidden entries (names starting with `.`) are hidden by default. View → Show hidden files (Ctrl+H) toggles them; the setting is kept across sessions.
 - **FR-022** Columns, comparable to `ls -lF`:
   | Column | Content |
@@ -76,6 +76,7 @@ The split between left and right pane is user-resizable.
 - **FR-028** Double-clicking a regular file (or a symlink to one) opens it with the system default application (`xdg-open` on Linux). Other entries (pipes, sockets, devices, broken links, entries removed since the listing) show an error instead.
 - **FR-029** Entries that cannot be read (permission denied, broken symlink) are still listed with the information that is available; they must not stop the listing. Fields that cannot be read are shown as `?`. A broken symlink is listed with its target, and is not treated as a directory.
 - **FR-030** The viewer is read-only: it does not change files or directories.
+- **FR-031** The lines between table cells are light gray (`#E8E8E8`), lighter than separators elsewhere. View → Show grid lines turns them off and on (default on); the setting is kept across sessions.
 
 ### 5.4 Left pane (side pane / bookmarks)
 - **FR-040** The left pane shows a list of bookmarked directories (not an expandable tree). Items are sorted by path, component by component (`/home/mboot/projects` directly after `/home/mboot`, before `/home/mboot-old`), so together with the indent (FR-044) the list reads like a tree. User bookmarks are labelled with their base name. Bookmarks cannot be reordered by hand.
@@ -101,7 +102,7 @@ The split between left and right pane is user-resizable.
 
 ### 5.6 Persistence
 - **FR-060** All settings and state are saved in `$XDG_CONFIG_HOME/fileViews/config.json` (default `~/.config/fileViews/config.json`).
-- **FR-061** Saved: bookmarks (with colours and hover texts), column order and visibility, sort column and direction, indent size, show-hidden setting, size format, contrast minimum, recent directories, last directory, window size and pane split. The file has a format `version` field (currently 1).
+- **FR-061** Saved: bookmarks (with colours and hover texts), column order and visibility, sort column and direction, indent size, show-hidden setting, grid lines setting, size format, contrast minimum, recent directories, last directory, window size and pane split. The file has a format `version` field (currently 1).
 - **FR-062** Loading the config file:
   - missing file: defaults, no warning
   - invalid JSON: the file is renamed to `config.json.bak` (replacing an older `.bak`), defaults are used, and the user gets a warning
@@ -130,4 +131,4 @@ The split between left and right pane is user-resizable.
 - **NFR-004** Builds with `go build` (`make build`); Go 1.26+, Fyne v2.8+.
 
 ## 7. Open questions
-- **Q-4** FR-050 speaks of "the selected entries" (plural), but only one row can be selected now. *Proposal: add multi-select with Ctrl+click (toggle a row) and Shift+click (select a range); the status bar then shows the count and total size of the selection.*
+_None._ (Q-1 → FR-017, Q-2 → FR-015, Q-3 → FR-074, Q-4 → FR-020; all resolved 2026-10-29.)

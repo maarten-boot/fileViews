@@ -1,6 +1,6 @@
 # Plan — fileViews
 
-_Status: draft v0.10 · Last updated: 2026-10-29_
+_Status: draft v0.11 · Last updated: 2026-10-29_
 
 ## Approach
 Build the non-GUI core first, with unit tests (NFR-003), then add the Fyne GUI on top of it, one area at a time.
@@ -27,7 +27,7 @@ internal/arch/            architecture test: core packages have no GUI dependenc
 | 4 | Core: config load/save, normalisation | FR-060–064 | done |
 | 5 | Core: bookmarks (defaults, order, depth, colours with contrast check, hover text, missing style) | FR-040–047, FR-075–076 | done |
 | 6 | GUI: main window layout — light theme passing the contrast minimum, menu bar, shortcuts, path bar, split panes, status bar, startup directory | FR-001, FR-002, FR-010–017, FR-070–071, FR-077, §4 | done — panes are plain lists until M7/M8; Settings dialogs disabled until M9; settings not saved until M10 |
-| 7 | GUI: right pane table — columns, sorting, double-click, hidden toggle | FR-020–028 | done — single selection only (Q-4) |
+| 7 | GUI: right pane table — columns, sorting, double-click, hidden toggle | FR-020–028 | done — multi-select (Q-4) and light/toggleable grid lines (FR-031) added afterwards |
 | 8 | GUI: left pane — indent, colours, tooltips, context menu | FR-040–047 | todo |
 | 9 | GUI: Settings dialogs — column order/visibility, indent, size format, contrast minimum; bookmark colour dialog with live ratio | FR-024, FR-026, FR-044, FR-074, FR-075 | todo |
 | 10 | Persistence wiring (save on change/quit), window state, error handling, performance check | FR-061, NFR-001, NFR-002 | todo |

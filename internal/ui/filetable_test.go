@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"syscall"
 	"testing"
 
@@ -13,6 +14,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
+	"github.com/maarten-boot/fileViews/internal/contrast"
 	"github.com/maarten-boot/fileViews/internal/listing"
 )
 
@@ -138,11 +140,11 @@ func TestTableSelection(t *testing.T) {
 	wait(t, m, func() { m.goPath(root) })
 
 	var tapped []int
-	c := newFileCell(func(r int) { tapped = append(tapped, r); m.files.selectRow(r) }, func(int) {})
+	c := newFileCell(func(r int) { tapped = append(tapped, r); m.clickRow(r, 0) }, func(int) {})
 	m.files.updateCell(widget.TableCellID{Row: 1, Col: 3}, c)
 	test.Tap(c)
-	if !slices.Equal(tapped, []int{1}) || m.selectedName != "a.txt" {
-		t.Fatalf("tapped %v selected %q", tapped, m.selectedName)
+	if !slices.Equal(tapped, []int{1}) || !m.sel.has("a.txt") {
+		t.Fatalf("tapped %v selection %v", tapped, m.sel.names)
 	}
 	// Every cell of the selected row is highlighted, other rows are not.
 	for col := range m.files.cols {
@@ -158,21 +160,45 @@ func TestTableSelection(t *testing.T) {
 
 	// Selection follows the entry when sorting and filtering.
 	m.files.sortBy(int(listing.ColName)) // name descending
-	if m.selected < 0 || m.shown[m.selected].Name != "a.txt" {
-		t.Errorf("after sort: selected %d", m.selected)
+	if names := entryNames(m.sel.entries(m.shown)); !slices.Equal(names, []string{"a.txt"}) {
+		t.Errorf("after sort: %v", names)
 	}
 	m.toggleHidden()
-	if m.shown[m.selected].Name != "a.txt" {
+	if !m.sel.has("a.txt") {
 		t.Error("lost selection when showing hidden files")
 	}
 	// Refresh keeps it; going elsewhere clears it.
 	wait(t, m, m.refresh)
-	if m.selectedName != "a.txt" {
+	if !m.sel.has("a.txt") {
 		t.Error("refresh cleared the selection")
 	}
 	wait(t, m, func() { m.goPath(filepath.Join(root, "sub")) })
-	if m.selectedName != "" || m.selected != -1 {
-		t.Errorf("navigation kept selection %q", m.selectedName)
+	if len(m.sel.names) != 0 {
+		t.Errorf("navigation kept selection %v", m.sel.names)
+	}
+}
+
+// TC-020c, TC-050f: Ctrl/Shift+click in the window; status shows count and size.
+func TestTableMultiSelect(t *testing.T) {
+	root := fixture(t)
+	os.WriteFile(filepath.Join(root, "b.txt"), make([]byte, 200), 0o644)
+	m := newTestWindow(t, root)
+	wait(t, m, func() { m.goPath(root) }) // sub/, a.txt, b.txt
+	m.clickRow(1, 0)
+	m.clickRow(2, fyne.KeyModifierControl)
+	if !strings.Contains(m.status.Text, "2 selected (300)") {
+		t.Errorf("status = %q", m.status.Text)
+	}
+	m.clickRow(0, fyne.KeyModifierShift) // range from b.txt up to sub/
+	if !strings.Contains(m.status.Text, "3 selected (300)") {
+		t.Errorf("status = %q", m.status.Text)
+	}
+	// Hiding a selected hidden entry drops it from the selection.
+	m.toggleHidden()
+	m.clickRow(slices.Index(entryNames(m.shown), ".hidden"), fyne.KeyModifierControl)
+	m.toggleHidden()
+	if m.sel.has(".hidden") || !strings.Contains(m.status.Text, "3 selected") {
+		t.Errorf("hidden entry still selected: %v, %q", m.sel.names, m.status.Text)
 	}
 }
 
@@ -232,5 +258,32 @@ func TestTableOpenFile(t *testing.T) {
 	m.files.openRow(slices.Index(shownNames(m), "b"))
 	// Out-of-range rows are ignored.
 	m.files.openRow(99)
-	m.files.selectRow(-1)
+	m.clickRow(-1, 0)
+}
+
+// TC-031: grid lines are light gray, only in the table, and can be hidden.
+func TestTableGridLines(t *testing.T) {
+	m := newTestWindow(t, t.TempDir())
+	m.app.Settings().SetTheme(newLightTheme(4.5))
+	if got := (tableTheme{}).Color(theme.ColorNameSeparator, theme.VariantLight); got != gridColor {
+		t.Errorf("table separator = %v", got)
+	}
+	if got := theme.Color(theme.ColorNameSeparator); got == gridColor {
+		t.Error("app-wide separator changed too")
+	}
+	if got := (tableTheme{}).Color(theme.ColorNameForeground, theme.VariantLight); got != contrast.Black {
+		t.Errorf("other colours not from the app theme: %v", got)
+	}
+	if m.files.table.HideSeparators || !m.gridItem.Checked {
+		t.Fatal("grid lines hidden by default")
+	}
+	m.toggleGrid()
+	if !m.files.table.HideSeparators || m.gridItem.Checked || !m.cfg.HideGrid {
+		t.Error("toggle did not hide grid lines")
+	}
+	cfg := m.cfg
+	m2 := newMainWindow(test.NewTempApp(t), cfg, t.TempDir())
+	if !m2.files.table.HideSeparators || m2.gridItem.Checked {
+		t.Error("setting not applied to a new window")
+	}
 }

@@ -31,16 +31,16 @@ type mainWindow struct {
 	split                              *container.Split
 	status                             *widget.Label
 	showHiddenItem, exactSizesItem     *fyne.MenuItem
+	gridItem                           *fyne.MenuItem
 	mainMenu                           *fyne.MainMenu
 
 	// State of the current directory; only touched on the UI goroutine.
-	all          []listing.Entry
-	shown        []listing.Entry
-	selected     int    // index into shown, or -1
-	selectedName string // name of the selected entry; kept across sorting and filtering
-	free         uint64
-	freeOK       bool
-	loadSeq      int
+	all     []listing.Entry
+	shown   []listing.Entry
+	sel     selection
+	free    uint64
+	freeOK  bool
+	loadSeq int
 
 	// onLoaded is called after a directory listing is shown; used by tests.
 	onLoaded func()
@@ -48,12 +48,11 @@ type mainWindow struct {
 
 func newMainWindow(a fyne.App, cfg config.Config, home string) *mainWindow {
 	m := &mainWindow{
-		app:      a,
-		win:      a.NewWindow(appTitle),
-		cfg:      cfg,
-		nav:      history.NewNavigator(history.NewRecent(history.DefaultRecentMax, cfg.Recent), home),
-		marks:    bookmarks.New(home, cfg.Bookmarks),
-		selected: -1,
+		app:   a,
+		win:   a.NewWindow(appTitle),
+		cfg:   cfg,
+		nav:   history.NewNavigator(history.NewRecent(history.DefaultRecentMax, cfg.Recent), home),
+		marks: bookmarks.New(home, cfg.Bookmarks),
 	}
 	m.win.SetMainMenu(m.buildMenu())
 	m.win.SetContent(container.NewBorder(m.buildPathBar(), m.buildStatusBar(), nil, nil, m.buildPanes()))
@@ -80,6 +79,8 @@ func (m *mainWindow) buildMenu() *fyne.MainMenu {
 	quit.IsQuit = true
 	m.showHiddenItem = item("Show hidden files", m.toggleHidden, fyne.KeyH, fyne.KeyModifierControl)
 	m.showHiddenItem.Checked = m.cfg.ShowHidden
+	m.gridItem = item("Show grid lines", m.toggleGrid, "", 0)
+	m.gridItem.Checked = !m.cfg.HideGrid
 	m.exactSizesItem = item("Exact sizes (bytes)", m.toggleExactSizes, "", 0)
 	m.exactSizesItem.Checked = m.cfg.ExactSizes
 	refresh := item("Refresh", m.refresh, "", 0)
@@ -96,7 +97,7 @@ func (m *mainWindow) buildMenu() *fyne.MainMenu {
 
 	m.mainMenu = fyne.NewMainMenu(
 		fyne.NewMenu("File", quit),
-		fyne.NewMenu("View", m.showHiddenItem, refresh),
+		fyne.NewMenu("View", m.showHiddenItem, m.gridItem, refresh),
 		fyne.NewMenu("Go",
 			item("Back", m.goBack, fyne.KeyLeft, fyne.KeyModifierAlt),
 			item("Forward", m.goForward, fyne.KeyRight, fyne.KeyModifierAlt),
@@ -144,7 +145,7 @@ func (m *mainWindow) buildPanes() fyne.CanvasObject {
 
 	m.files = newFileTable(m)
 
-	m.split = container.NewHSplit(m.left, m.files.table)
+	m.split = container.NewHSplit(m.left, m.files.view)
 	m.split.Offset = m.cfg.Window.Split
 	return m.split
 }
@@ -172,7 +173,7 @@ func (m *mainWindow) navigate(move func() (string, error)) {
 		return
 	}
 	if dir != prev {
-		m.selectedName = ""
+		m.sel.clear()
 	}
 	m.load(dir)
 }
@@ -220,28 +221,26 @@ func (m *mainWindow) applyLoad(seq int, entries []listing.Entry, err error, free
 }
 
 // applyView filters and sorts the current listing and redraws it. The
-// selection follows the selected entry's name, if it is still shown.
+// selection keeps the selected entries that are still shown.
 func (m *mainWindow) applyView() {
 	m.shown = listing.Filter(m.all, m.cfg.ShowHidden)
 	listing.Sort(m.shown, m.cfg.SortSpec())
-	m.selected = -1
-	for i, e := range m.shown {
-		if e.Name == m.selectedName {
-			m.selected = i
-			break
-		}
-	}
-	if m.selected < 0 {
-		m.selectedName = ""
-	}
+	m.sel.prune(m.shown)
 	m.files.refresh()
 	m.updateStatus()
 }
 
-// setSelection selects the entry with the given name; "" clears the selection.
-func (m *mainWindow) setSelection(name string) {
-	m.selectedName = name
-	m.applyView()
+// clickRow applies a click with the given modifiers to a row (FR-020).
+func (m *mainWindow) clickRow(row int, mod fyne.KeyModifier) {
+	m.sel.click(m.shown, row, mod)
+	m.files.refresh()
+	m.updateStatus()
+}
+
+func (m *mainWindow) clearSelection() {
+	m.sel.clear()
+	m.files.refresh()
+	m.updateStatus()
 }
 
 func (m *mainWindow) updateButtons() {
@@ -265,9 +264,9 @@ func (m *mainWindow) updateStatus() {
 		FreeKnown: m.freeOK,
 		Exact:     m.cfg.ExactSizes,
 	}
-	if m.selected >= 0 && m.selected < len(m.shown) {
-		info.Selected = 1
-		info.SelSize = listing.TotalSize(m.shown[m.selected : m.selected+1])
+	if sel := m.sel.entries(m.shown); len(sel) > 0 {
+		info.Selected = len(sel)
+		info.SelSize = listing.TotalSize(sel)
 	}
 	m.status.SetText(info.String())
 }
@@ -290,6 +289,13 @@ func (m *mainWindow) toggleHidden() {
 	m.showHiddenItem.Checked = m.cfg.ShowHidden
 	m.mainMenu.Refresh()
 	m.applyView()
+}
+
+func (m *mainWindow) toggleGrid() {
+	m.cfg.HideGrid = !m.cfg.HideGrid
+	m.gridItem.Checked = !m.cfg.HideGrid
+	m.mainMenu.Refresh()
+	m.files.setGridLines(!m.cfg.HideGrid)
 }
 
 func (m *mainWindow) toggleExactSizes() {

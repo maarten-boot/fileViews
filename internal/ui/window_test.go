@@ -69,7 +69,7 @@ func TestMenus(t *testing.T) {
 	m := newTestWindow(t, t.TempDir())
 	want := map[string][]string{
 		"File":     {"Quit"},
-		"View":     {"Show hidden files", "Refresh (F5)"},
+		"View":     {"Show hidden files", "Show grid lines", "Refresh (F5)"},
 		"Go":       {"Back", "Forward", "Up", "Home"},
 		"Settings": {"Columns…", "Side pane indent…", "Exact sizes (bytes)", "Contrast minimum…"},
 		"Help":     {"About"},
@@ -188,7 +188,7 @@ func TestStatusSelectionAndExactSizes(t *testing.T) {
 	os.WriteFile(filepath.Join(root, "big"), make([]byte, 4300), 0o644)
 	m := newTestWindow(t, root)
 	wait(t, m, func() { m.goPath(root) })
-	m.files.selectRow(2) // sub/, a.txt, big
+	m.clickRow(2, 0) // sub/, a.txt, big
 	if !strings.Contains(m.status.Text, "1 selected (4.2K)") {
 		t.Errorf("status = %q", m.status.Text)
 	}
@@ -196,7 +196,7 @@ func TestStatusSelectionAndExactSizes(t *testing.T) {
 	if !strings.Contains(m.status.Text, "1 selected (4300)") || !strings.Contains(m.status.Text, "4400 total") {
 		t.Errorf("exact status = %q", m.status.Text)
 	}
-	m.setSelection("")
+	m.clearSelection()
 	if strings.Contains(m.status.Text, "selected") {
 		t.Errorf("selection still shown: %q", m.status.Text)
 	}

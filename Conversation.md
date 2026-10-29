@@ -153,3 +153,15 @@ All core packages are now done: the planned point for the first Spec ↔ Plan �
 - my sort test assumed the name tie-break stays ascending when sorting descending; the code reverses the whole order (as most file managers do); kept that and made FR-025 say so
 - spec v0.11: FR-020 (selection, column widths, alignment), FR-028 (only regular files are opened)
 - new open question Q-4: multi-select (Ctrl/Shift+click), since FR-050 speaks of "selected entries"
+
+### 17. Q-4, milestone 8, table lines (in progress — paused)
+**User:** go with your proposal for Q-4, start milestone 8; note the lines between items on the right pane could be a lighter gray or optionally completely removed
+
+**Assistant (paused at user's request to restart the terminal):**
+- Q-4 multi-select implemented, not yet committed: `internal/ui/selection.go` (plain / Ctrl / Shift+click, kept across sort/filter/refresh, pruned when entries disappear), window and table switched to it, tests in `selection_test.go` and `filetable_test.go`; `go test ./internal/ui` passes. Spec/TestCases/Plan not yet updated for Q-4.
+- Milestone 8 (left pane) not started yet.
+- Table lines: to be confirmed with the user first (proposal: lighter gray by default plus a View option to hide them).
+
+**User:** go with your proposal for the table lines, continue milestone 8
+
+**Assistant:** Grid lines: lighter `#E8E8E8` in the table only (theme override around the table), View → Show grid lines toggle, saved as `hideGridLines` (new FR-031). Q-4 documented in FR-020. Committed both before starting the left pane.

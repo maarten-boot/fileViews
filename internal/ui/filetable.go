@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"image/color"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -42,6 +43,7 @@ var openFile = func(path string) error {
 type fileTable struct {
 	m     *mainWindow
 	table *widget.Table
+	view  fyne.CanvasObject // the table inside its theme override
 	cols  []listing.Column
 }
 
@@ -49,15 +51,44 @@ func newFileTable(m *mainWindow) *fileTable {
 	ft := &fileTable{m: m, cols: m.cfg.ColumnLayout().Visible()}
 	ft.table = widget.NewTable(
 		func() (int, int) { return len(m.shown), len(ft.cols) },
-		func() fyne.CanvasObject { return newFileCell(ft.selectRow, ft.openRow) },
+		func() fyne.CanvasObject {
+			return newFileCell(func(row int) { m.clickRow(row, currentModifiers()) }, ft.openRow)
+		},
 		ft.updateCell,
 	)
 	ft.table.ShowHeaderRow = true
 	ft.table.CreateHeader = func() fyne.CanvasObject { return newHeaderCell(ft.sortBy) }
 	ft.table.UpdateHeader = ft.updateHeader
+	ft.table.HideSeparators = m.cfg.HideGrid
 	ft.setColumnWidths()
+	ft.view = container.NewThemeOverride(ft.table, tableTheme{})
 	return ft
 }
+
+// setGridLines shows or hides the lines between cells.
+func (ft *fileTable) setGridLines(show bool) {
+	ft.table.HideSeparators = !show
+	ft.table.Refresh()
+}
+
+// gridColor is the colour of the lines between table cells: lighter than
+// the separators elsewhere in the app.
+var gridColor = color.RGBA{0xe8, 0xe8, 0xe8, 0xff}
+
+// tableTheme is the app theme with lighter grid lines, used only for the table.
+type tableTheme struct{}
+
+func (tableTheme) current() fyne.Theme { return fyne.CurrentApp().Settings().Theme() }
+
+func (t tableTheme) Color(n fyne.ThemeColorName, v fyne.ThemeVariant) color.Color {
+	if n == theme.ColorNameSeparator {
+		return gridColor
+	}
+	return t.current().Color(n, v)
+}
+func (t tableTheme) Font(s fyne.TextStyle) fyne.Resource     { return t.current().Font(s) }
+func (t tableTheme) Icon(n fyne.ThemeIconName) fyne.Resource { return t.current().Icon(n) }
+func (t tableTheme) Size(n fyne.ThemeSizeName) float32       { return t.current().Size(n) }
 
 // setColumns changes the visible columns, e.g. after the Columns settings.
 func (ft *fileTable) setColumns(cols []listing.Column) {
@@ -84,7 +115,7 @@ func (ft *fileTable) updateCell(id widget.TableCellID, o fyne.CanvasObject) {
 	if col == listing.ColSize || col == listing.ColLinks {
 		align = fyne.TextAlignTrailing
 	}
-	cell.set(id.Row, text, align, id.Row == ft.m.selected)
+	cell.set(id.Row, text, align, ft.m.sel.has(ft.m.shown[id.Row].Name))
 }
 
 func (ft *fileTable) updateHeader(id widget.TableCellID, o fyne.CanvasObject) {
@@ -116,13 +147,6 @@ func (ft *fileTable) sortBy(col int) {
 	}
 	ft.m.cfg.SetSortSpec(s)
 	ft.m.applyView()
-}
-
-func (ft *fileTable) selectRow(row int) {
-	if row < 0 || row >= len(ft.m.shown) {
-		return
-	}
-	ft.m.setSelection(ft.m.shown[row].Name)
 }
 
 // openRow handles a double click: directories (and links to them) are
