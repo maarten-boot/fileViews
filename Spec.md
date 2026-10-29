@@ -1,6 +1,6 @@
 # Specification — fileViews
 
-_Status: draft v0.1 · Last updated: 2026-10-29_
+_Status: draft v0.2 · Last updated: 2026-10-29_
 
 ## 1. Purpose
 A simple hierarchical file and directory viewer with a graphical interface, laid out similar to Thunar.
@@ -68,7 +68,7 @@ The split between left and right pane is user-resizable.
   | Name | name plus type marker |
 - **FR-023** Type markers in the Name column: `/` directory, `*` executable regular file, `@` symlink, `|` named pipe (FIFO), `=` socket. For symlinks the target is shown as `name@ -> target`.
 - **FR-024** Settings → Columns lets the user change the column order and show/hide columns. The Name column cannot be hidden. The configuration is kept across sessions.
-- **FR-025** Clicking a column header sorts by that column; clicking again reverses the order. Default sort: directories first, then by name, ascending.
+- **FR-025** Clicking a column header sorts by that column; clicking again reverses the order. Directories (and symlinks to directories) always come before other entries, whatever the sort column or direction. Names compare case-insensitively; ties are broken by name. Default sort: by name, ascending.
 - **FR-026** Sizes are shown human-readable by default (e.g. `4.2K`); a setting switches to exact bytes.
 - **FR-027** Double-clicking a directory (or a symlink to a directory) navigates into it.
 - **FR-028** Double-clicking a file opens it with the system default application (`xdg-open` on Linux).
@@ -85,7 +85,7 @@ The split between left and right pane is user-resizable.
 - **FR-044** Each item is indented by `depth × indent`, where depth is the number of path components from `/` (`/` = 0, `/home/mboot` = 2). The indent is configurable in Settings; default 12 px.
 - **FR-045** Each item can have a custom background and foreground colour, set via right-click → "Set colours…", with a "Reset" option. Colours are kept across sessions.
 - **FR-046** Each item has a hover text (tooltip). The default is the full path. The user can change it via right-click → "Edit hover text…"; an empty text goes back to the default. Hover texts are kept across sessions.
-- **FR-047** A bookmark whose target no longer exists is still shown, visually marked (e.g. greyed out); clicking it shows an error.
+- **FR-047** A bookmark whose target no longer exists is still shown, in italics with the suffix ` (missing)` (normal black text, no gray — see FR-071); clicking it shows an error.
 
 ### 5.5 Status bar (bottom line)
 - **FR-050** The status bar shows, for the current directory:
@@ -102,6 +102,11 @@ The split between left and right pane is user-resizable.
 - **FR-061** Saved: bookmarks (with colours and hover texts), column order and visibility, sort column and direction, indent size, show-hidden setting, size format, recent directories, last directory, window size and pane split.
 - **FR-062** A missing config file means defaults are used. A broken (unreadable) config file is renamed to `config.json.bak`, defaults are used, and the user gets a warning.
 - **FR-063** The config is written atomically (write a temporary file, then rename it).
+
+### 5.7 Appearance
+- **FR-070** Default colours: white background, black text, in all panes and bars. The app uses a light theme regardless of the desktop's dark-mode setting.
+- **FR-071** State is never shown as gray text on a gray background. Use text markers, italics, bold or icons instead (see FR-047).
+- **FR-072** User-chosen bookmark colours (FR-045) override the defaults only for that item.
 
 ## 6. Non-functional requirements
 - **NFR-001** A directory with 10,000 entries lists in under 1 second on a typical desktop.

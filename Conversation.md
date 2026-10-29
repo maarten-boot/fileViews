@@ -58,3 +58,13 @@ Wrote `Spec.md` v0.1 (FR-001…FR-063, NFR-001…004), `Plan.md` v0.1 (11 milest
 **User:** `make run` on the laptop fails: `/usr/bin/ld: cannot find -lXxf86vm: No such file or directory`.
 
 **Assistant:** The laptop is missing X11 development libraries that Fyne links against (here `libXxf86vm`). Fix: install the Fyne prerequisites (Debian/Ubuntu: `sudo apt install gcc libgl1-mesa-dev xorg-dev`; Fedora: `libXxf86vm-devel` and friends). Added a "Building" section with these prerequisites to `README.md`.
+
+### 7. Window works; colour rule; milestone 2
+**User:** Window shows; commit and start milestone 2. FYI: default background white and default text black, never suggest gray text on gray background.
+
+**Assistant:** Committed milestone 1 (`e18a674`). Applied the colour rule to the spec:
+- new §5.7 Appearance: FR-070 (white background, black text, light theme even when the desktop uses dark mode), FR-071 (never gray-on-gray), FR-072 (bookmark colours override per item)
+- FR-047 changed: a missing bookmark is now shown in italics with ` (missing)`, instead of "greyed out"
+- FR-025 clarified: directories always first in every sort order; names compare case-insensitively; ties broken by name
+
+Milestone 2 done in `internal/listing`: `Read`, `Filter`, `Sort`, `ColumnLayout.Visible`, `FormatRow`/`FormatField`, `DisplayName`, `PermString`, `HumanSize`, `ComputeStats`, `TotalSize`, `FreeSpace`. 25 unit tests pass; benchmark: 10,000 entries read + sorted + formatted in ≈ 17 ms (NFR-001: < 1 s).
