@@ -1,6 +1,6 @@
 # Plan — fileViews
 
-_Status: draft v0.4 · Last updated: 2026-10-29_
+_Status: draft v0.5 · Last updated: 2026-10-29_
 
 ## Approach
 Build the non-GUI core first, with unit tests (NFR-003), then add the Fyne GUI on top of it, one area at a time.
@@ -22,7 +22,7 @@ internal/ui/              Fyne windows and widgets
 | 0 | Gather scenario, draft Spec | — | done |
 | 1 | Project scaffolding: `go mod init`, layout, Fyne dependency, empty window, Makefile / `go test ./...` | NFR-004 | done (Fyne v2.8.2) |
 | 2 | Core: directory listing, `ls -lF` formatting, type markers, sorting, hidden filter, stats, free space | FR-020–026, FR-029, FR-050 | done |
-| 3 | Core: navigation history and recent directories | FR-012–016 | todo |
+| 3 | Core: navigation history, recent directories, path resolution and checks | FR-011–016 | done |
 | 4 | Core: config load/save | FR-060–063 | todo |
 | 5 | Core: bookmarks (defaults, depth, colours with contrast check, hover text) | FR-040–047, FR-076 | todo — contrast core (`internal/contrast`) done early |
 | 6 | GUI: main window layout — light theme passing the contrast minimum, menu bar, path bar, split panes, status bar | FR-001, FR-010–015, FR-070–071, FR-077, §4 | todo |

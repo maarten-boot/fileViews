@@ -35,17 +35,24 @@ A ✔ with a test name means the automated test exists and passes.
 | TC-029c | FR-029 | Unreadable metadata | Entry with stat error | Fields `?`, name shown | Auto ✔ `TestUnreadableFieldsShowQuestionMark` |
 | TC-030 | FR-030 | Read-only | Browse around | No file is modified | Manual |
 
-## Path bar / history
+## Path bar / history (`internal/history`)
 | ID | Req | Description | Steps / input | Expected result | Type |
 |----|-----|-------------|---------------|-----------------|------|
 | TC-011a | FR-011 | Type valid path | Enter `/tmp` | Navigates to `/tmp` | Manual |
-| TC-011b | FR-011 | Type invalid path | Enter `/nonexistent` | Error; directory unchanged | Auto (core ✔ `TestReadMissingDir`) + Manual |
-| TC-012a | FR-012 | Back/forward | Visit A, B, C; Back; Back; Forward | Current = B | Auto |
-| TC-012b | FR-012 | New visit clears forward | Visit A, B; Back; visit C | Forward is empty | Auto |
-| TC-013 | FR-013 | Up at root | At `/` | Up disabled / no-op | Auto |
-| TC-015a | FR-015 | Recent: no duplicates | Visit A, B, A | Recent = `[A, B]` | Auto |
-| TC-015b | FR-015 | Recent: max size | Visit 25 dirs | 20 most recent kept | Auto |
-| TC-016 | FR-016 | Recent kept across sessions | Visit A, restart | A in dropdown | Auto (config) + Manual |
+| TC-011b | FR-011 | Type invalid path | Missing path, a file, empty input | Error; directory and recent list unchanged | Auto ✔ `TestGoInvalidKeepsCurrent`, `TestReadMissingDir` + Manual |
+| TC-011c | FR-011 | Unreadable directory | `chmod 000 a`, go to `a` | Permission error; directory unchanged | Auto ✔ `TestGoUnreadableDir` |
+| TC-011d | FR-011 | Path resolution | `a`, `b/..`, `~`, `~/a/b`, spaces around path | Resolved, cleaned absolute paths | Auto ✔ `TestGoResolvesPaths` |
+| TC-011e | FR-011 | Relative path with no current dir | `a` at startup | Error | Auto ✔ `TestRelativeWithoutCurrent` |
+| TC-012a | FR-012 | Back/forward | Visit A, B, C; Back; Back; Forward | Current = B | Auto ✔ `TestBackForward`, `TestNavigatorBackForward` |
+| TC-012b | FR-012 | New visit clears forward | Visit A, B; Back; visit C | Forward is empty | Auto ✔ `TestVisitClearsForward` |
+| TC-012c | FR-012 | Revisit current adds nothing | Visit A, A | No Back entry | Auto ✔ `TestHistoryEdges` |
+| TC-012d | FR-012 | Back to removed dir | Visit B, root; remove B; Back | Error; still at root, Back still possible | Auto ✔ `TestBackToRemovedDir` |
+| TC-013 | FR-013 | Up, and Up at root | `/x/a/b` → Up; at `/` | `/x/a`; at `/` Up disabled, error, no move | Auto ✔ `TestParent`, `TestUpAndHome` |
+| TC-014 | FR-014 | Home | Home | `$HOME` | Auto ✔ `TestUpAndHome` |
+| TC-015a | FR-015 | Recent: no duplicates | Visit A, B, A | Recent = `[A, B]` | Auto ✔ `TestRecentNoDuplicates` |
+| TC-015b | FR-015 | Recent: max size | Visit 25 dirs | 20 most recent kept | Auto ✔ `TestRecentMax` |
+| TC-015c | FR-015 | Recent updated by Back | A, B, C; Back | Recent starts with B | Auto ✔ `TestNavigatorBackForward` |
+| TC-016 | FR-016 | Recent kept across sessions | Visit A, restart | A in dropdown | Auto (load cleanup ✔ `TestRecentFromConfig`; save in M4) + Manual |
 
 ## Left pane / bookmarks
 | ID | Req | Description | Steps / input | Expected result | Type |

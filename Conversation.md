@@ -78,3 +78,13 @@ Milestone 2 done in `internal/listing`: `Read`, `Filter`, `Sort`, `ColumnLayout.
 **User:** yes, go with 4.5 and your proposals
 
 **Assistant:** Spec v0.3: FR-071 rewritten (gray only on pure white/black and only if it passes), new FR-073–FR-077 (WCAG ratio, default minimum 4.5:1 with floor 3:1, colour dialog refuses failing combinations and offers black/white, saved colours re-checked, theme colours must pass); FR-045 and FR-047 updated. Built `internal/contrast` early (pure logic, used by M5, M6, M9) with tests. My first expected values for light green (1.42, not 1.38) and `#757575` on black (4.56, not 4.61) were wrong in the test and are corrected; the test also caught a real bug in picking the gray for black backgrounds, now fixed.
+
+### 10. Milestone 3
+**User:** yes, start milestone 3
+
+**Assistant:** Milestone 3 done in `internal/history`: `History` (back/forward), `Recent` (most recent first, no duplicates, max 20, cleans up a list loaded from config), and `Navigator`, which checks every target before moving and updates the recent list. 14 tests pass. Decisions recorded in Spec v0.4 (FR-011, FR-012, FR-015):
+- typed paths: relative to the current directory, `~` = `$HOME`, spaces trimmed, cleaned; symlinks kept as typed
+- revisiting the current directory adds no history entry
+- Back/Forward to a removed or unreadable directory: error, position unchanged
+- Back/Forward history is per session; only the recent list is saved
+- every successful navigation moves the directory to the top of the recent list

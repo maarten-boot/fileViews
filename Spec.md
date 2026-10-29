@@ -1,6 +1,6 @@
 # Specification — fileViews
 
-_Status: draft v0.3 · Last updated: 2026-10-29_
+_Status: draft v0.4 · Last updated: 2026-10-29_
 
 ## 1. Purpose
 A simple hierarchical file and directory viewer with a graphical interface, laid out similar to Thunar.
@@ -46,11 +46,11 @@ The split between left and right pane is user-resizable.
 
 ### 5.2 Path bar and history
 - **FR-010** The path bar shows the absolute path of the current directory.
-- **FR-011** The path field is editable; Enter navigates to the typed path. An invalid or unreadable path shows an error and leaves the current directory unchanged.
-- **FR-012** Back and Forward buttons move through the navigation history, like a browser: navigating somewhere new after going Back clears the Forward entries.
+- **FR-011** The path field is editable; Enter navigates to the typed path. A relative path is resolved against the current directory, a leading `~` means `$HOME`, surrounding spaces are ignored, and the path is cleaned (`a/b/..` → `a`). Symlinks in the path are kept as typed (not resolved). A path that does not exist, is not a directory or cannot be read shows an error and leaves the current directory unchanged.
+- **FR-012** Back and Forward buttons move through the navigation history, like a browser: navigating somewhere new after going Back clears the Forward entries. Opening the current directory again adds no entry. If the Back/Forward target no longer exists or cannot be read, an error is shown and the position stays unchanged. The Back/Forward history lasts for the session only.
 - **FR-013** An Up button goes to the parent directory; it is disabled at `/`.
 - **FR-014** A Home button goes to `$HOME`.
-- **FR-015** A dropdown on the path bar lists recently visited directories (most recent first, no duplicates, max 20 by default). Selecting one navigates there.
+- **FR-015** A dropdown on the path bar lists recently visited directories (most recent first, no duplicates, max 20 by default). Every successful navigation (typed path, Back, Forward, Up, Home, bookmark, double-click) moves that directory to the top. Selecting one navigates there.
 - **FR-016** The recent-directories list is kept across sessions.
 
 ### 5.3 Right pane (directory listing)
