@@ -82,6 +82,13 @@ A ✔ with a test name means the automated test exists and passes.
 | TC-042b | FR-042 | Saved data cleaned up | Relative, empty, duplicate paths, bad colour | Ignored / first wins / colour cleared | Auto ✔ `TestNewFromSavedCleansUp` |
 | TC-040 | FR-040 | Tree-like order | `/home/mboot-old`, `/home/mboot/projects`, `/etc`, `/home` | `/`, `/etc`, `/home`, `/home/mboot`, `/home/mboot/projects`, `/home/mboot-old` | Auto ✔ `TestOrder` |
 | TC-043 | FR-043 | Click opens directory | Click `mboot` | Right pane shows `$HOME` | Auto ✔ `TestBookmarkClickNavigates` + Manual |
+| TC-041d | FR-041 | Default items in menu | Right-click `/` | Remove bookmark and Reset colours disabled | Auto ✔ `TestBookmarkMenu` + Manual |
+| TC-042c | FR-042 | Bookmark menu actions | Add current directory (twice), reset colours, open, remove | Added once (duplicate: error); reset; opened; removed | Auto ✔ `TestBookmarkMenu` + Manual |
+| TC-042d | FR-042 | Bookmark from right pane | Right-click `sub/`; right-click a file | `sub` selected, "Add to bookmarks" adds it; no menu for files | Auto ✔ `TestRowMenuAddBookmark` + Manual |
+| TC-044c | FR-044 | Indent drawn | Home at depth d, indent 12 and 20 | Spacer width 12·d, 20·d; `/` none | Auto ✔ `TestBookmarkIndent` + Manual |
+| TC-045d | FR-045 | Colours drawn | White on navy for home | Home drawn white on navy; `/` stays black on white | Auto ✔ `TestBookmarkStyle` + Manual |
+| TC-046d | FR-046 | Hover text pop-up | Hover home; leave; custom text; leave before delay | Full path shown; hidden; "work" shown; nothing shown | Auto ✔ `TestBookmarkTooltip`, `TestBookmarkTooltipCancelled` + Manual |
+| TC-047c | FR-047 | Missing bookmark drawn and clicked | Bookmark removed dir | `gone (missing)`, italic, `#767676`; click: error, directory unchanged | Auto ✔ `TestBookmarkStyle` + Manual |
 | TC-044a | FR-044 | Depth | `/`, `/home`, `/home/mboot`, `/a/b/c/` | 0, 1, 2, 3 | Auto ✔ `TestDepthAndIndent` |
 | TC-044b | FR-044 | Indent | Depth 2, indent 12 | 24 px | Auto ✔ `TestDepthAndIndent` |
 | TC-045a | FR-045 | Set and reset colours | Navy on white; reset | Stored as `#RRGGBB`; reset to defaults | Auto ✔ `TestSetColours` |
@@ -138,11 +145,12 @@ A ✔ with a test name means the automated test exists and passes.
 | TC-071a | FR-071 | Gray on pure white / black | Min 4.5 | `#767676` on white, `#757575` on black; each passes the minimum | Auto ✔ `TestGray` |
 | TC-071b | FR-071 | No gray on other backgrounds | `#FEFEFE`, `#808080`, `#FFFFE0` | Gray refused | Auto ✔ `TestGray` |
 | TC-071c | FR-071 | No gray-on-gray in the GUI | Inspect missing bookmark, disabled buttons, status bar | No gray text on gray background | Auto ✔ `TestThemeContrast` (theme) + Manual |
-| TC-072 | FR-072 | Colours only affect their item | Colour one bookmark | Other items and panes stay white/black | Auto (core ✔ `TestStyleColours`) + Manual |
+| TC-072 | FR-072 | Colours only affect their item | Colour one bookmark | Other items and panes stay white/black | Auto ✔ `TestStyleColours`, `TestBookmarkStyle` + Manual |
 | TC-073a | FR-073 | Contrast ratio | black/white, yellow/white, light green/white, `#767676`/white | 21, 1.07, 1.42, 4.54 | Auto ✔ `TestRatio` |
 | TC-074a | FR-074 | Default minimum 4.5 | Yellow, light green, `#777777` on white | Rejected; `#767676` and black accepted | Auto ✔ `TestMeetsDefault` |
 | TC-074b | FR-074 | Minimum limits | Set 1, 7.5, 30 | Clamped to 3, 7, 7 | Auto ✔ `TestClampMin` |
 | TC-075a | FR-075 | Fallback text colour | Background white, yellow, black, dark blue | black, black, white, white | Auto ✔ `TestBestText` |
-| TC-075b | FR-075 | Dialog refuses failing colours | Pick yellow text on white; black text on navy | Refused with ratio; black resp. white suggested; nothing stored | Auto (core ✔ `TestSetColours`) + Manual (dialog, M9) |
+| TC-075b | FR-075 | Dialog refuses failing colours | Pick yellow text on white; black text on navy | Refused with ratio; black resp. white suggested; nothing stored | Auto ✔ `TestSetColours` + Manual |
+| TC-075c | FR-075 | Colour dialog live check | Defaults; yellow text; black on navy → "Use white text"; invalid `#12345`; save | 21.00:1 OK; below minimum, Save disabled, "Use black text"; white suggested and applied; invalid message; colours stored | Auto ✔ `TestColourDialog` + Manual |
 | TC-076 | FR-076 | Saved colours re-checked | Yellow on white; `#767676` at min 4.5 and 7; invalid colour | Drawn in black where failing; saved colours unchanged | Auto ✔ `TestEffective`, `TestStyleColours` |
 | TC-077 | FR-077 | Theme colours pass | Every theme text/background pair | All ≥ minimum | Auto ✔ `TestThemeContrast`, `TestThemeGrayFollowsMinimum` |

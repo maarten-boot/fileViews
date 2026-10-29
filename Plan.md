@@ -1,6 +1,6 @@
 # Plan — fileViews
 
-_Status: draft v0.11 · Last updated: 2026-10-29_
+_Status: draft v0.12 · Last updated: 2026-10-29_
 
 ## Approach
 Build the non-GUI core first, with unit tests (NFR-003), then add the Fyne GUI on top of it, one area at a time.
@@ -28,8 +28,8 @@ internal/arch/            architecture test: core packages have no GUI dependenc
 | 5 | Core: bookmarks (defaults, order, depth, colours with contrast check, hover text, missing style) | FR-040–047, FR-075–076 | done |
 | 6 | GUI: main window layout — light theme passing the contrast minimum, menu bar, shortcuts, path bar, split panes, status bar, startup directory | FR-001, FR-002, FR-010–017, FR-070–071, FR-077, §4 | done — panes are plain lists until M7/M8; Settings dialogs disabled until M9; settings not saved until M10 |
 | 7 | GUI: right pane table — columns, sorting, double-click, hidden toggle | FR-020–028 | done — multi-select (Q-4) and light/toggleable grid lines (FR-031) added afterwards |
-| 8 | GUI: left pane — indent, colours, tooltips, context menu | FR-040–047 | todo |
-| 9 | GUI: Settings dialogs — column order/visibility, indent, size format, contrast minimum; bookmark colour dialog with live ratio | FR-024, FR-026, FR-044, FR-074, FR-075 | todo |
+| 8 | GUI: left pane — indent, colours, tooltips, context menu, colour dialog with live ratio | FR-040–047, FR-072, FR-075 | done |
+| 9 | GUI: Settings dialogs — column order/visibility, indent, contrast minimum (size format is already a menu toggle; colour dialog done in M8) | FR-024, FR-044, FR-074 | todo |
 | 10 | Persistence wiring (save on change/quit), window state, error handling, performance check | FR-061, NFR-001, NFR-002 | todo |
 | 11 | Final crosscheck Spec ↔ Plan ↔ code, manual test pass | all | todo |
 
@@ -37,7 +37,7 @@ internal/arch/            architecture test: core packages have no GUI dependenc
 
 ## Risks / notes
 - Fyne's standard widgets do not support per-item background colours; a custom list item widget is needed (milestone 8).
-- **Confirmed at crosscheck 1:** Fyne v2.8.2 has no tooltip support at all. Hover texts (FR-046) need a custom widget that shows a small pop-up on mouse hover (`desktop.Hoverable`), in milestone 8.
+- **Confirmed at crosscheck 1:** Fyne v2.8.2 has no tooltip support at all. **Done in M8:** bookmark items show a pop-up after 0.6 s of hovering (`desktop.Hoverable`); an atomic counter cancels pending pop-ups when the mouse leaves.
 - No display in the assistant's shell: GUI code is verified with Fyne's headless `test` driver; visual checks are done manually by the user.
 - Owner/group lookup and link count use `syscall.Stat_t` (Unix only); keep that in a file with a build tag.
 - Free disk space uses `statfs` (Unix only); same approach. Both live in `internal/listing/stat_unix.go`, with a stub in `stat_other.go`.

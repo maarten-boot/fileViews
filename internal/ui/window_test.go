@@ -202,17 +202,6 @@ func TestStatusSelectionAndExactSizes(t *testing.T) {
 	}
 }
 
-// TC-043: clicking a bookmark opens it.
-func TestBookmarkClickNavigates(t *testing.T) {
-	root := fixture(t)
-	m := newTestWindow(t, root)
-	wait(t, m, func() { m.goPath(filepath.Join(root, "sub")) })
-	wait(t, m, func() { m.left.Select(1) }) // "/", home
-	if m.nav.Current() != root {
-		t.Errorf("current = %q", m.nav.Current())
-	}
-}
-
 // TC-015a: the recent list follows navigation.
 func TestRecentFollowsNavigation(t *testing.T) {
 	root := fixture(t)

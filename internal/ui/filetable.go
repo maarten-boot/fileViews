@@ -52,7 +52,9 @@ func newFileTable(m *mainWindow) *fileTable {
 	ft.table = widget.NewTable(
 		func() (int, int) { return len(m.shown), len(ft.cols) },
 		func() fyne.CanvasObject {
-			return newFileCell(func(row int) { m.clickRow(row, currentModifiers()) }, ft.openRow)
+			c := newFileCell(func(row int) { m.clickRow(row, currentModifiers()) }, ft.openRow)
+			c.onSecondary = ft.showRowMenu
+			return c
 		},
 		ft.updateCell,
 	)
@@ -173,16 +175,36 @@ func (ft *fileTable) openRow(row int) {
 
 func (ft *fileTable) refresh() { ft.table.Refresh() }
 
+// rowMenu is the right-click menu of a row: directories can be bookmarked
+// (FR-042). It returns nil when there is nothing to offer.
+func (ft *fileTable) rowMenu(row int) *fyne.Menu {
+	if row < 0 || row >= len(ft.m.shown) || !ft.m.shown[row].IsDirLike() {
+		return nil
+	}
+	path := filepath.Join(ft.m.nav.Current(), ft.m.shown[row].Name)
+	return fyne.NewMenu("", fyne.NewMenuItem("Add to bookmarks", func() { ft.m.side.addBookmark(path) }))
+}
+
+func (ft *fileTable) showRowMenu(row int, pos fyne.Position) {
+	if !ft.m.sel.has(ft.m.shown[row].Name) {
+		ft.m.clickRow(row, 0)
+	}
+	if menu := ft.rowMenu(row); menu != nil {
+		widget.ShowPopUpMenuAtPosition(menu, ft.m.win.Canvas(), pos)
+	}
+}
+
 // fileCell is one table cell. It handles taps itself because the window
 // sends a click to a single object: if cells only handled double taps,
 // single taps would never reach the table.
 type fileCell struct {
 	widget.BaseWidget
-	bg       *canvas.Rectangle
-	label    *widget.Label
-	row      int
-	onTap    func(row int)
-	onDouble func(row int)
+	bg          *canvas.Rectangle
+	label       *widget.Label
+	row         int
+	onTap       func(row int)
+	onDouble    func(row int)
+	onSecondary func(row int, pos fyne.Position)
 }
 
 func newFileCell(onTap, onDouble func(int)) *fileCell {
@@ -215,6 +237,12 @@ func (c *fileCell) CreateRenderer() fyne.WidgetRenderer {
 
 func (c *fileCell) Tapped(*fyne.PointEvent)       { c.onTap(c.row) }
 func (c *fileCell) DoubleTapped(*fyne.PointEvent) { c.onDouble(c.row) }
+
+func (c *fileCell) TappedSecondary(ev *fyne.PointEvent) {
+	if c.onSecondary != nil {
+		c.onSecondary(c.row, ev.AbsolutePosition)
+	}
+}
 
 // headerCell is a clickable column header with a sort direction icon.
 type headerCell struct {

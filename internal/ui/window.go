@@ -26,7 +26,7 @@ type mainWindow struct {
 
 	back, forward, up, home, recentBtn *widget.Button
 	path                               *widget.Entry
-	left                               *widget.List
+	side                               *sidePane
 	files                              *fileTable
 	split                              *container.Split
 	status                             *widget.Label
@@ -124,28 +124,12 @@ func (m *mainWindow) buildPathBar() fyne.CanvasObject {
 	return container.NewBorder(nil, nil, buttons, m.recentBtn, m.path)
 }
 
-// buildPanes creates the left (bookmarks) and right (listing) panes. The
-// left pane is a plain list for now; milestone 8 replaces it.
+// buildPanes creates the left (bookmarks) and right (listing) panes.
 func (m *mainWindow) buildPanes() fyne.CanvasObject {
-	m.left = widget.NewList(
-		func() int { return len(m.marks.Items()) },
-		func() fyne.CanvasObject { return widget.NewLabel("") },
-		func(id widget.ListItemID, o fyne.CanvasObject) {
-			if items := m.marks.Items(); id < len(items) {
-				o.(*widget.Label).SetText(items[id].Label())
-			}
-		},
-	)
-	m.left.OnSelected = func(id widget.ListItemID) {
-		m.left.UnselectAll()
-		if items := m.marks.Items(); id < len(items) {
-			m.goPath(items[id].Path)
-		}
-	}
-
+	m.side = newSidePane(m)
 	m.files = newFileTable(m)
 
-	m.split = container.NewHSplit(m.left, m.files.view)
+	m.split = container.NewHSplit(m.side.list, m.files.view)
 	m.split.Offset = m.cfg.Window.Split
 	return m.split
 }

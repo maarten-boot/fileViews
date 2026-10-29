@@ -1,6 +1,6 @@
 # Specification — fileViews
 
-_Status: draft v0.12 · Last updated: 2026-10-29_
+_Status: draft v0.13 · Last updated: 2026-10-29_
 
 ## 1. Purpose
 A simple hierarchical file and directory viewer with a graphical interface, laid out similar to Thunar.
@@ -83,11 +83,11 @@ The split between left and right pane is user-resizable.
 - **FR-041** Two default items are always present and cannot be removed:
   - `/` — label `/`
   - `$HOME` — label is the basename of `$HOME` (e.g. `mboot`), target is the full path. If `$HOME` is `/`, there is only one default item.
-- **FR-042** The user can add the current directory (or a selected directory in the right pane) as a bookmark, and remove user-added bookmarks, via a right-click menu. Adding a path that is already bookmarked is refused. Saved bookmarks with an empty or relative path, or a duplicate path, are ignored when loading (the first one wins); invalid saved colours are cleared.
+- **FR-042** The user can add the current directory (or a selected directory in the right pane) as a bookmark, and remove user-added bookmarks, via a right-click menu. Bookmark right-click menu: Open, Set colours…, Reset colours (only when colours are set), Edit hover text…, Add current directory, Remove bookmark (not for default items). Right-clicking a directory row in the right pane selects it and offers "Add to bookmarks". Adding a path that is already bookmarked is refused. Saved bookmarks with an empty or relative path, or a duplicate path, are ignored when loading (the first one wins); invalid saved colours are cleared.
 - **FR-043** Single-clicking an item opens its directory in the right pane.
 - **FR-044** Each item is indented by `depth × indent`, where depth is the number of path components from `/` (`/` = 0, `/home/mboot` = 2). The indent is configurable in Settings; default 12 px.
-- **FR-045** Each item can have a custom background and foreground colour, set via right-click → "Set colours…", with a "Reset" option. Colours are kept across sessions. The combination must meet the contrast minimum (FR-073–FR-075).
-- **FR-046** Each item has a hover text (tooltip). The default is the full path. The user can change it via right-click → "Edit hover text…"; an empty text goes back to the default. Hover texts are kept across sessions.
+- **FR-045** Each item can have a custom background and foreground colour, set via right-click → "Set colours…" (background and text fields as `#RRGGBB`, empty = default, each with a colour picker; live preview), with a "Reset colours" option. Colours are kept across sessions. The combination must meet the contrast minimum (FR-073–FR-075).
+- **FR-046** Each item has a hover text (tooltip), shown in a small pop-up after the mouse rests on the item for about 0.6 s and hidden when it leaves. The default is the full path. The user can change it via right-click → "Edit hover text…"; an empty text goes back to the default. Hover texts are kept across sessions.
 - **FR-047** A bookmark whose target no longer exists is still shown, in italics with the suffix ` (missing)`; clicking it shows an error. On a pure white or pure black background (default or chosen) its text is also gray (FR-071). On any other background it keeps its own text colour (no gray). The text marker is always shown, so the state never depends on colour alone.
 
 ### 5.5 Status bar (bottom line)
