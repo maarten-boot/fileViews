@@ -101,10 +101,11 @@ func (d *columnsDialog) apply() {
 	d.m.changed()
 }
 
-// indentDialog sets the side pane indent per directory level (FR-044):
-// a slider and a number field that follow each other.
-type indentDialog struct {
-	m      *mainWindow
+// pxDialog asks for a whole number of pixels in [lo, hi] with a slider and
+// a number field that follow each other; anything else disables Apply.
+// Used for the side pane indent (FR-044) and the compact row spacing (FR-033).
+type pxDialog struct {
+	lo, hi int
 	slider *widget.Slider
 	entry  *widget.Entry
 	note   *widget.Label
@@ -113,13 +114,13 @@ type indentDialog struct {
 	value  int
 }
 
-func newIndentDialog(m *mainWindow) *indentDialog {
-	d := &indentDialog{m: m, value: m.cfg.IndentPx, note: widget.NewLabel("")}
-	d.slider = widget.NewSlider(1, config.MaxIndentPx)
+func newPxDialog(m *mainWindow, title, prompt string, lo, hi, value int, onApply func(int)) *pxDialog {
+	d := &pxDialog{lo: lo, hi: hi, value: value, note: widget.NewLabel("")}
+	d.slider = widget.NewSlider(float64(lo), float64(hi))
 	d.slider.Step = 1
-	d.slider.SetValue(float64(d.value))
+	d.slider.SetValue(float64(value))
 	d.entry = widget.NewEntry()
-	d.entry.SetText(strconv.Itoa(d.value))
+	d.entry.SetText(strconv.Itoa(value))
 	d.slider.OnChanged = func(v float64) {
 		if int(v) != d.value || d.entry.Text != strconv.Itoa(int(v)) {
 			d.value = int(v)
@@ -127,24 +128,22 @@ func newIndentDialog(m *mainWindow) *indentDialog {
 		}
 	}
 	d.entry.OnChanged = d.typed
-	d.apply = widget.NewButton("Apply", func() { m.setIndent(d.value); d.dlg.Hide() })
+	d.apply = widget.NewButton("Apply", func() { onApply(d.value); d.dlg.Hide() })
 	d.apply.Importance = widget.HighImportance
 	field := container.NewBorder(nil, nil, nil, widget.NewLabel("px"), d.entry)
 	row := container.NewBorder(nil, nil, nil, container.NewGridWrap(fyne.NewSize(90, d.entry.MinSize().Height), field), d.slider)
 	buttons := container.NewHBox(widget.NewButton("Cancel", func() { d.dlg.Hide() }), d.apply)
-	content := container.NewVBox(widget.NewLabel(fmt.Sprintf("Indent per directory level (1–%d px)", config.MaxIndentPx)), row, d.note, buttons)
-	d.dlg = dialog.NewCustomWithoutButtons("Side pane indent", content, m.win)
+	content := container.NewVBox(widget.NewLabel(fmt.Sprintf("%s (%d–%d px)", prompt, lo, hi)), row, d.note, buttons)
+	d.dlg = dialog.NewCustomWithoutButtons(title, content, m.win)
 	return d
 }
 
-func (d *indentDialog) show() { d.dlg.Show() }
+func (d *pxDialog) show() { d.dlg.Show() }
 
-// typed handles the number field: a whole number from 1 to MaxIndentPx
-// moves the slider; anything else disables Apply.
-func (d *indentDialog) typed(text string) {
+func (d *pxDialog) typed(text string) {
 	n, err := strconv.Atoi(strings.TrimSpace(text))
-	if err != nil || n < 1 || n > config.MaxIndentPx {
-		d.note.SetText(fmt.Sprintf("Enter a whole number from 1 to %d.", config.MaxIndentPx))
+	if err != nil || n < d.lo || n > d.hi {
+		d.note.SetText(fmt.Sprintf("Enter a whole number from %d to %d.", d.lo, d.hi))
 		d.apply.Disable()
 		return
 	}
@@ -156,7 +155,26 @@ func (d *indentDialog) typed(text string) {
 	}
 }
 
+func newIndentDialog(m *mainWindow) *pxDialog {
+	return newPxDialog(m, "Side pane indent", "Indent per directory level", 1, config.MaxIndentPx, m.cfg.IndentPx, m.setIndent)
+}
+
 func (m *mainWindow) showIndentDialog() { newIndentDialog(m).show() }
+
+func newCompactGapDialog(m *mainWindow) *pxDialog {
+	return newPxDialog(m, "Compact row spacing", "Space between rows in the compact view",
+		config.MinCompactGapPx, config.MaxCompactGapPx, m.cfg.CompactGapPx, m.setCompactGap)
+}
+
+func (m *mainWindow) showCompactGapDialog() { newCompactGapDialog(m).show() }
+
+// setCompactGap sets the row spacing of the compact view (FR-033).
+func (m *mainWindow) setCompactGap(px int) {
+	m.cfg.CompactGapPx = px
+	m.cfg.Normalize()
+	m.files.applyCompact()
+	m.changed()
+}
 
 func (m *mainWindow) setIndent(px int) {
 	m.cfg.IndentPx = px

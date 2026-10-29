@@ -83,6 +83,7 @@ func newFileTable(m *mainWindow) *fileTable {
 		func() (int, int) { return len(m.shown), len(ft.cols) },
 		func() fyne.CanvasObject {
 			c := newFileCell(func(row int) { m.clickRow(row, currentModifiers()) }, ft.openRow)
+			c.compactH = ft.compactRowHeight
 			c.onSecondary = ft.showRowMenu
 			c.onDrag = ft.dragRow
 			c.onDragEnd = m.endDrag
@@ -94,13 +95,15 @@ func newFileTable(m *mainWindow) *fileTable {
 	ft.table.CreateHeader = func() fyne.CanvasObject {
 		h := newHeaderCell(ft.sortBy)
 		h.target = ft.table
+		h.compactH = ft.compactRowHeight
 		return h
 	}
 	ft.table.UpdateHeader = ft.updateHeader
 	ft.table.HideSeparators = m.cfg.HideGrid
 	ft.setColumnWidths()
 	ft.catcher = newWheelCatcher(ft)
-	ft.view = container.NewThemeOverride(container.New(&tableLayout{ft}, ft.table, ft.catcher), tableTheme{})
+	ft.view = container.NewThemeOverride(container.New(&tableLayout{ft}, ft.table, ft.catcher), tableTheme{ft})
+	ft.applyCompact()
 	return ft
 }
 
@@ -211,8 +214,9 @@ func (ft *fileTable) setGridLines(show bool) {
 // the separators elsewhere in the app.
 var gridColor = color.RGBA{0xe8, 0xe8, 0xe8, 0xff}
 
-// tableTheme is the app theme with lighter grid lines, used only for the table.
-type tableTheme struct{}
+// tableTheme is the app theme with lighter grid lines, used only for the
+// table; in the compact view the lines between cells are also thinner.
+type tableTheme struct{ ft *fileTable }
 
 func (tableTheme) current() fyne.Theme { return fyne.CurrentApp().Settings().Theme() }
 
@@ -224,7 +228,42 @@ func (t tableTheme) Color(n fyne.ThemeColorName, v fyne.ThemeVariant) color.Colo
 }
 func (t tableTheme) Font(s fyne.TextStyle) fyne.Resource     { return t.current().Font(s) }
 func (t tableTheme) Icon(n fyne.ThemeIconName) fyne.Resource { return t.current().Icon(n) }
-func (t tableTheme) Size(n fyne.ThemeSizeName) float32       { return t.current().Size(n) }
+func (t tableTheme) Size(n fyne.ThemeSizeName) float32 {
+	if n == theme.SizeNamePadding && t.ft != nil && t.ft.m.cfg.Compact {
+		return compactSeparator
+	}
+	return t.current().Size(n)
+}
+
+// compactSeparator is the thickness of the lines between cells in the
+// compact view; the rest of the row spacing comes from the cell height.
+const compactSeparator = 1
+
+// compactRowHeight is the height of a data row in the compact view, so that
+// the text of two rows is CompactGapPx apart (grid line included), or 0 in
+// the normal view (FR-033).
+func (ft *fileTable) compactRowHeight() float32 {
+	if !ft.m.cfg.Compact {
+		return 0
+	}
+	text := fyne.MeasureText("Ag", theme.TextSize(), fyne.TextStyle{}).Height
+	return text + float32(ft.m.cfg.CompactGapPx) - compactSeparator
+}
+
+// headerHeight is the normal height of the header row; the header keeps it
+// in the compact view.
+func headerHeight() float32 {
+	l := widget.NewLabel("Ag")
+	l.TextStyle.Bold = true
+	return l.MinSize().Height
+}
+
+// applyCompact switches the table between the normal and compact view.
+func (ft *fileTable) applyCompact() {
+	ft.table.SetRowHeight(-1, headerHeight())
+	ft.view.Refresh() // re-reads the theme; the table re-measures its rows
+	ft.refresh()
+}
 
 // setColumns changes the visible columns, e.g. after the Columns settings.
 func (ft *fileTable) setColumns(cols []listing.Column) {
@@ -388,8 +427,9 @@ type fileCell struct {
 	onSecondary func(row int, pos fyne.Position)
 	onDrag      func(row int, abs fyne.Position, first bool) bool // false: not draggable
 	onDragEnd   func()
-	dragging    bool // a drag that started here is in progress
-	dragIgnored bool // a drag that started here has nothing to drag
+	dragging    bool           // a drag that started here is in progress
+	dragIgnored bool           // a drag that started here has nothing to drag
+	compactH    func() float32 // row height in the compact view, 0 = normal
 }
 
 func newFileCell(onTap, onDouble func(int)) *fileCell {
@@ -417,7 +457,37 @@ func (c *fileCell) set(row int, text string, align fyne.TextAlign, selected bool
 }
 
 func (c *fileCell) CreateRenderer() fyne.WidgetRenderer {
-	return widget.NewSimpleRenderer(container.NewStack(c.bg, c.label))
+	return widget.NewSimpleRenderer(container.New(centreLayout{}, c.bg, c.label))
+}
+
+// MinSize is lower than the label's in the compact view (FR-033).
+func (c *fileCell) MinSize() fyne.Size {
+	return compactMinSize(c.BaseWidget.MinSize(), c.compactH)
+}
+
+func compactMinSize(s fyne.Size, compactH func() float32) fyne.Size {
+	if compactH != nil {
+		if h := compactH(); h > 0 {
+			s.Height = h
+		}
+	}
+	return s
+}
+
+// centreLayout fills the cell with the background and centres the label
+// vertically at no less than its own height. In the compact view the
+// label's padding then lies outside the cell, where nothing is drawn, so
+// the rows come closer without crowding the text sideways.
+type centreLayout struct{}
+
+func (centreLayout) MinSize(objs []fyne.CanvasObject) fyne.Size { return objs[1].MinSize() }
+
+func (centreLayout) Layout(objs []fyne.CanvasObject, size fyne.Size) {
+	objs[0].Move(fyne.NewPos(0, 0))
+	objs[0].Resize(size)
+	h := max(objs[1].MinSize().Height, size.Height)
+	objs[1].Move(fyne.NewPos(0, (size.Height-h)/2))
+	objs[1].Resize(fyne.NewSize(size.Width, h))
 }
 
 func (c *fileCell) Tapped(*fyne.PointEvent)       { c.onTap(c.row) }
@@ -452,11 +522,12 @@ func (c *fileCell) TappedSecondary(ev *fyne.PointEvent) {
 // headerCell is a clickable column header with a sort direction icon.
 type headerCell struct {
 	widget.BaseWidget
-	label  *widget.Label
-	icon   *widget.Icon
-	target desktop.Mouseable // the table; receives forwarded mouse presses
-	col    int
-	onTap  func(col int)
+	label    *widget.Label
+	icon     *widget.Icon
+	target   desktop.Mouseable // the table; receives forwarded mouse presses
+	compactH func() float32    // see fileCell; the header row itself keeps its normal height
+	col      int
+	onTap    func(col int)
 }
 
 func newHeaderCell(onTap func(int)) *headerCell {
@@ -482,6 +553,13 @@ func (h *headerCell) set(col int, text string, dir int) {
 
 func (h *headerCell) CreateRenderer() fyne.WidgetRenderer {
 	return widget.NewSimpleRenderer(container.NewHBox(h.label, h.icon))
+}
+
+// MinSize follows the compact row height so the header template does not
+// force data rows back to normal height; the header row's own height is
+// set separately (applyCompact).
+func (h *headerCell) MinSize() fyne.Size {
+	return compactMinSize(h.BaseWidget.MinSize(), h.compactH)
 }
 
 func (h *headerCell) Tapped(*fyne.PointEvent) {

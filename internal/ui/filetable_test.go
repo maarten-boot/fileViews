@@ -267,13 +267,13 @@ func TestTableOpenFile(t *testing.T) {
 func TestTableGridLines(t *testing.T) {
 	m := newTestWindow(t, t.TempDir())
 	m.app.Settings().SetTheme(newLightTheme(4.5))
-	if got := (tableTheme{}).Color(theme.ColorNameSeparator, theme.VariantLight); got != gridColor {
+	if got := (tableTheme{m.files}).Color(theme.ColorNameSeparator, theme.VariantLight); got != gridColor {
 		t.Errorf("table separator = %v", got)
 	}
 	if got := theme.Color(theme.ColorNameSeparator); got == gridColor {
 		t.Error("app-wide separator changed too")
 	}
-	if got := (tableTheme{}).Color(theme.ColorNameForeground, theme.VariantLight); got != contrast.Black {
+	if got := (tableTheme{m.files}).Color(theme.ColorNameForeground, theme.VariantLight); got != contrast.Black {
 		t.Errorf("other colours not from the app theme: %v", got)
 	}
 	if m.files.table.HideSeparators || !m.gridItem.Checked {

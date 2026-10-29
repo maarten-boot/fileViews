@@ -1,6 +1,6 @@
 # Specification — fileViews
 
-_Status: draft v0.22 · Last updated: 2026-10-29_
+_Status: draft v0.23 · Last updated: 2026-10-29_
 
 ## 1. Purpose
 A simple hierarchical file and directory viewer with a graphical interface, laid out similar to Thunar.
@@ -39,9 +39,9 @@ The split between left and right pane is user-resizable.
 ### 5.1 Menu bar
 - **FR-001** The menu bar has these menus:
   - File: Quit
-  - View: Show hidden files (toggle), Show grid lines (toggle), Refresh
+  - View: Show hidden files (toggle), Show grid lines (toggle), Compact view (toggle), Refresh
   - Go: Back, Forward, Up, Home
-  - Settings: Columns…, Side pane indent…, Exact sizes (bytes) (toggle; off = human-readable), Contrast minimum…
+  - Settings: Columns…, Side pane indent…, Compact row spacing…, Exact sizes (bytes) (toggle; off = human-readable), Contrast minimum…
   - Help: About
 - **FR-002** Keyboard shortcuts: Ctrl+H show hidden files, Alt+Left back, Alt+Right forward, Alt+Up up, Alt+Home home, F5 refresh, Ctrl+Q quit. F5 works when the path field does not have keyboard focus (it is not a modifier shortcut, so the focused text field receives it).
 
@@ -57,6 +57,7 @@ The split between left and right pane is user-resizable.
 
 ### 5.3 Right pane (directory listing)
 - **FR-020** The right pane lists the entries of the current directory: files and directories, as a table with one row per entry. Clicking a row selects the whole row; Ctrl+click adds or removes a row, Shift+click selects the range from the last clicked row. The selection stays on the same entries when sorting, filtering or refreshing (entries no longer shown drop out of it), and is cleared when going to another directory. Columns start at a width measured from their header and a typical value (room for the sort arrow only on the sorted column; sorting by another column widens it if needed) and can be resized by dragging the header borders; Size and Links are right-aligned. The Name column stretches to fill the remaining width (at least 150 px), unless the user has dragged it to another width; so normally there is no sideways scrolling.
+- **FR-033** Compact view of the right pane: View → Compact view (default off) reduces the space between the text of two table rows to the compact row spacing, grid line included; Settings → Compact row spacing… sets it with a slider and a number field (whole numbers 2–10 px, default 4 px). The lines between cells are 1 px thin in the compact view. The space left and right of the text, the header row and the left pane keep their normal size. Both settings are kept across sessions. The normal view (about 20 px between rows) is unchanged.
 - **FR-032** Scrolling the right pane: a newly opened directory always starts at the top-left (a refresh keeps the position). The mouse wheel scrolls up and down only when there are more rows than fit; otherwise it does nothing. Sideways scrolling happens only with Shift+wheel or a sideways touchpad movement, and only when the columns are wider than the pane.
 - **FR-021** Hidden entries (names starting with `.`) are hidden by default. View → Show hidden files (Ctrl+H) toggles them; the setting is kept across sessions.
 - **FR-022** Columns, comparable to `ls -lF`:
@@ -106,7 +107,7 @@ The split between left and right pane is user-resizable.
 
 ### 5.6 Persistence
 - **FR-060** All settings and state are saved in `$XDG_CONFIG_HOME/fileViews/config.json` (default `~/.config/fileViews/config.json`).
-- **FR-061** Saved: bookmarks (with colours and hover texts), column order and visibility, sort column and direction, indent size, show-hidden setting, grid lines setting, size format, contrast minimum, recent directories, last directory, window size and pane split. The file has a format `version` field (currently 1).
+- **FR-061** Saved: bookmarks (with colours and hover texts), column order and visibility, sort column and direction, indent size, show-hidden setting, grid lines setting, compact view and its row spacing, size format, contrast minimum, recent directories, last directory, window size and pane split. The file has a format `version` field (currently 1).
 - **FR-062** Loading the config file:
   - missing file: defaults, no warning
   - invalid JSON: the file is renamed to `config.json.bak` (replacing an older `.bak`), defaults are used, and the user gets a warning
@@ -116,7 +117,7 @@ The split between left and right pane is user-resizable.
   - right after every change to something in FR-061 (toggles, sorting, bookmark edits, and every navigation for the recent list and last directory), written in the background so a slow disk cannot freeze the window (NFR-002); a snapshot is never overwritten by an older one
   - on quit (File → Quit, Ctrl+Q or closing the window), together with the window size and pane split
   - a save error is shown once per session; after an unreadable config (FR-062) nothing is saved and no further error is shown
-- **FR-064** Missing or out-of-range values are replaced by defaults, unknown fields and column names are ignored: indent 1–25 px (default 12), contrast minimum 3–7 (default 4.5), window 1000×650 if unset, pane split between 0 and 1 (default 0.25), recent list cleaned as in FR-015.
+- **FR-064** Missing or out-of-range values are replaced by defaults, unknown fields and column names are ignored: indent 1–25 px (default 12), compact row spacing 2–10 px (default 4), contrast minimum 3–7 (default 4.5), window 1000×650 if unset, pane split between 0 and 1 (default 0.25), recent list cleaned as in FR-015.
 
 ### 5.7 Appearance
 - **FR-070** Default colours: white background, black text, in all panes and bars. The app uses a light theme regardless of the desktop's dark-mode setting.

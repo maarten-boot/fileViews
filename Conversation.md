@@ -250,3 +250,12 @@ All core packages are now done: the planned point for the first Spec ↔ Plan �
 **User:** go with your proposals for both
 
 **Assistant:** The bookmark of the shown directory is now bold, however you got there; only an exact match; bold keeps the item's colours (new FR-039, TC-039). The pane redraws after every completed navigation. 134 tests pass, also with `-race`; `ManualTests.md` regenerated (54 checks).
+
+### 26. Compact view (pending confirmation)
+**User:** allow for a compact view where the space between the lines on the right pand is reduced to a minimal (configurable >= 2 px <= 10 px)
+
+**Assistant:** Suggested correction ("pand" → "pane") and asked: what the 2–10 px measures (proposal: the vertical gap between the text of two rows, grid line included), how to switch it (proposal: View → Compact view toggle + Settings → Compact row spacing… with slider and number field, default 4 px), and whether the left pane should follow. Not implemented until confirmed.
+
+**User:** go with your proposals for 1-3, keep the left pane unchanged
+
+**Assistant:** Compact view built (new FR-033): View → Compact view, Settings → Compact row spacing… (slider + number field, 2–10 px, default 4). In compact view the gap between the text of two rows is exactly the setting (grid line 1 px included); labels keep their own height and are centred, so text is not squeezed sideways; the header row and the left pane keep their normal size; both settings are saved. The indent dialog was generalised into one pixel dialog used by both settings. 137 tests pass, also with `-race`; `ManualTests.md` regenerated (58 checks).

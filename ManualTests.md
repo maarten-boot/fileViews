@@ -1,6 +1,6 @@
 # Manual Test Checklist — fileViews
 
-_Generated from `TestCases.md` (regenerated 2026-10-29 after the bold current bookmark). Run on a desktop; tick each item and note anything odd next to it._
+_Generated from `TestCases.md` (regenerated 2026-10-29 after the compact view). Run on a desktop; tick each item and note anything odd next to it._
 
 **Preparation:** `make testdir` creates `/tmp/fileviews-test` with files, a subfolder, a hidden file, an executable, symlinks to a file and a folder, a broken symlink and a FIFO, plus `remove-me/` to bookmark and then delete (missing bookmarks), and starts the app there. For the scrolling checks use a big folder too, e.g. `/usr/bin`.
 
@@ -27,6 +27,10 @@ _Generated from `TestCases.md` (regenerated 2026-10-29 after the bold current bo
 - [ ] **TC-027** (FR-027) Double-click directory — *Double-click `sub/`; double-click `link -> sub`* → Right pane shows `sub`; shows `link`
 - [ ] **TC-028** (FR-028) Double-click file — *Double-click `a.txt`; a FIFO; a file removed since listing; opener fails* → `xdg-open a.txt`; others: error, nothing opened
 - [ ] **TC-031** (FR-031) Grid lines — *Default; View → Show grid lines; new window with saved setting* → Light gray `#E8E8E8` only in the table; hidden after toggle; setting applied
+- [ ] **TC-033a** (FR-033) Normal view unchanged — *Default view* → About 20 px between rows; header at normal height
+- [ ] **TC-033b** (FR-033) Compact spacing — *Compact view at 4, 2, 10, 7 px; back to normal* → Gap between rows exactly as set; header unchanged; 1 px grid lines; normal gap restored; app-wide padding untouched
+- [ ] **TC-033c** (FR-033) Text not squeezed — *Cell lower than the label* → Label keeps its height, centred
+- [ ] **TC-033d** (FR-033) Spacing dialog, saving — *Dialog 2–10 at 4; type 1, 11, x; apply 6; compact on; new window* → Invalid input disables Apply; saved; restored with 6 px; left pane rows unchanged
 - [ ] **TC-030** (FR-030) Read-only — *Browse around* → No file is modified
 
 ## Path bar / history (`internal/history`)

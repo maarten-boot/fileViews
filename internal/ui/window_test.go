@@ -69,9 +69,9 @@ func TestMenus(t *testing.T) {
 	m := newTestWindow(t, t.TempDir())
 	want := map[string][]string{
 		"File":     {"Quit"},
-		"View":     {"Show hidden files", "Show grid lines", "Refresh (F5)"},
+		"View":     {"Show hidden files", "Show grid lines", "Compact view", "Refresh (F5)"},
 		"Go":       {"Back", "Forward", "Up", "Home"},
-		"Settings": {"Columns…", "Side pane indent…", "Exact sizes (bytes)", "Contrast minimum…"},
+		"Settings": {"Columns…", "Side pane indent…", "Compact row spacing…", "Exact sizes (bytes)", "Contrast minimum…"},
 		"Help":     {"About"},
 	}
 	var order []string

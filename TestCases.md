@@ -58,6 +58,10 @@ A ✔ with a test name means the automated test exists and passes. The manual ch
 | TC-029b | FR-029 | Unreadable subdir | `chmod 000 sub` | `sub/` listed | Auto ✔ `TestUnreadableSubdir` |
 | TC-029c | FR-029 | Unreadable metadata | Entry with stat error | Fields `?`, name shown | Auto ✔ `TestUnreadableFieldsShowQuestionMark` |
 | TC-031 | FR-031 | Grid lines | Default; View → Show grid lines; new window with saved setting | Light gray `#E8E8E8` only in the table; hidden after toggle; setting applied | Auto ✔ `TestTableGridLines` + Manual |
+| TC-033a | FR-033 | Normal view unchanged | Default view | About 20 px between rows; header at normal height | Auto ✔ `TestCompactRowSpacing` + Manual |
+| TC-033b | FR-033 | Compact spacing | Compact view at 4, 2, 10, 7 px; back to normal | Gap between rows exactly as set; header unchanged; 1 px grid lines; normal gap restored; app-wide padding untouched | Auto ✔ `TestCompactRowSpacing` + Manual |
+| TC-033c | FR-033 | Text not squeezed | Cell lower than the label | Label keeps its height, centred | Auto ✔ `TestCompactCellLayout` + Manual |
+| TC-033d | FR-033 | Spacing dialog, saving | Dialog 2–10 at 4; type 1, 11, x; apply 6; compact on; new window | Invalid input disables Apply; saved; restored with 6 px; left pane rows unchanged | Auto ✔ `TestCompactSettingsSaved` + Manual |
 | TC-030 | FR-030 | Read-only | Browse around | No file is modified | Manual |
 
 ## Path bar / history (`internal/history`)
@@ -151,7 +155,7 @@ A ✔ with a test name means the automated test exists and passes. The manual ch
 | TC-062d | FR-065 | No save after unreadable config | Config mode 000, change something, quit | File unchanged, no error dialog | Auto ✔ `TestNoSaveAfterUnreadableConfig` |
 | TC-063c | FR-065 | Save error once | Config path under a file; two changes and quit | One error shown | Auto ✔ `TestSaveErrorReportedOnce` |
 | TC-063d | FR-065 | Newest snapshot wins | Older save finishes after newer | Newer values kept | Auto ✔ `TestSaverOrder` |
-| TC-064 | FR-064 | Bad values normalised | Negative indent (and > 25 → 25), contrast 1, split 1.5, unknown sort/columns, duplicate recent, unknown field | Defaults/limits applied, unknowns ignored | Auto ✔ `TestNormalize` |
+| TC-064 | FR-064 | Bad values normalised | Negative indent (and > 25 → 25), compact spacing 1 (→ 2) and 50 (→ 10), contrast 1, split 1.5, unknown sort/columns, duplicate recent, unknown field | Defaults/limits applied, unknowns ignored | Auto ✔ `TestNormalize` |
 
 ## Non-functional
 | ID | Req | Description | Steps / input | Expected result | Type |

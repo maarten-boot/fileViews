@@ -33,7 +33,7 @@ func TestDefaultPath(t *testing.T) {
 // TC-062a
 func TestDefaults(t *testing.T) {
 	c := Default()
-	if c.IndentPx != 12 || c.ContrastMin != 4.5 || c.ShowHidden || c.ExactSizes {
+	if c.IndentPx != 12 || c.ContrastMin != 4.5 || c.ShowHidden || c.ExactSizes || c.Compact || c.CompactGapPx != 4 {
 		t.Errorf("defaults: %+v", c)
 	}
 	if c.Window != (Window{1000, 650, 0.25}) {
@@ -128,6 +128,8 @@ func TestRoundTrip(t *testing.T) {
 	want.IndentPx = 20
 	want.ShowHidden = true
 	want.HideGrid = true
+	want.Compact = true
+	want.CompactGapPx = 7
 	want.ExactSizes = true
 	want.ContrastMin = 7
 	want.Recent = []string{"/a", "/b"}
@@ -215,6 +217,7 @@ func TestNormalize(t *testing.T) {
 	os.MkdirAll(filepath.Dir(s.Path), 0o755)
 	data := `{
 		"indentPx": -5,
+		"compactGapPx": 1,
 		"contrastMin": 1,
 		"window": {"width": 0, "height": 500, "split": 1.5},
 		"sort": {"column": "Bogus", "descending": true},
@@ -229,7 +232,7 @@ func TestNormalize(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if c.IndentPx != DefaultIndentPx || c.ContrastMin != contrast.FloorMin {
+	if c.IndentPx != DefaultIndentPx || c.ContrastMin != contrast.FloorMin || c.CompactGapPx != MinCompactGapPx {
 		t.Errorf("indent %d contrast %v", c.IndentPx, c.ContrastMin)
 	}
 	if c.Window != (Window{DefaultWidth, DefaultHeight, DefaultSplit}) {
@@ -246,9 +249,9 @@ func TestNormalize(t *testing.T) {
 		t.Errorf("columns %v, want %v", got, want)
 	}
 
-	big := Config{IndentPx: 500, ContrastMin: 50}
+	big := Config{IndentPx: 500, ContrastMin: 50, CompactGapPx: 50}
 	big.Normalize()
-	if big.IndentPx != MaxIndentPx || big.ContrastMin != contrast.CeilingMin {
+	if big.IndentPx != MaxIndentPx || big.ContrastMin != contrast.CeilingMin || big.CompactGapPx != MaxCompactGapPx {
 		t.Errorf("upper limits: indent %d contrast %v", big.IndentPx, big.ContrastMin)
 	}
 }

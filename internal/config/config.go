@@ -11,27 +11,32 @@ const CurrentVersion = 1
 
 // Defaults for settings whose zero value is not a sensible default.
 const (
-	DefaultIndentPx = 12
-	MaxIndentPx     = 25
-	DefaultWidth    = 1000
-	DefaultHeight   = 650
-	DefaultSplit    = 0.25
+	DefaultIndentPx     = 12
+	MaxIndentPx         = 25
+	DefaultCompactGapPx = 4
+	MinCompactGapPx     = 2
+	MaxCompactGapPx     = 10
+	DefaultWidth        = 1000
+	DefaultHeight       = 650
+	DefaultSplit        = 0.25
 )
 
 // Config is everything that is kept across sessions (FR-061).
 type Config struct {
-	Version     int        `json:"version"`
-	Bookmarks   []Bookmark `json:"bookmarks,omitempty"`
-	Columns     Columns    `json:"columns"`
-	Sort        Sort       `json:"sort"`
-	IndentPx    int        `json:"indentPx"`
-	ShowHidden  bool       `json:"showHidden"`
-	HideGrid    bool       `json:"hideGridLines"`
-	ExactSizes  bool       `json:"exactSizes"`
-	ContrastMin float64    `json:"contrastMin"`
-	Recent      []string   `json:"recent,omitempty"`
-	LastDir     string     `json:"lastDir,omitempty"`
-	Window      Window     `json:"window"`
+	Version      int        `json:"version"`
+	Bookmarks    []Bookmark `json:"bookmarks,omitempty"`
+	Columns      Columns    `json:"columns"`
+	Sort         Sort       `json:"sort"`
+	IndentPx     int        `json:"indentPx"`
+	ShowHidden   bool       `json:"showHidden"`
+	HideGrid     bool       `json:"hideGridLines"`
+	Compact      bool       `json:"compact"`
+	CompactGapPx int        `json:"compactGapPx"`
+	ExactSizes   bool       `json:"exactSizes"`
+	ContrastMin  float64    `json:"contrastMin"`
+	Recent       []string   `json:"recent,omitempty"`
+	LastDir      string     `json:"lastDir,omitempty"`
+	Window       Window     `json:"window"`
 }
 
 // Bookmark is one side pane item as stored. Colours are "#RRGGBB" or empty
@@ -77,6 +82,10 @@ func (c *Config) Normalize() {
 		c.IndentPx = DefaultIndentPx
 	}
 	c.IndentPx = min(c.IndentPx, MaxIndentPx)
+	if c.CompactGapPx == 0 {
+		c.CompactGapPx = DefaultCompactGapPx
+	}
+	c.CompactGapPx = max(MinCompactGapPx, min(c.CompactGapPx, MaxCompactGapPx))
 	if c.ContrastMin == 0 {
 		c.ContrastMin = contrast.DefaultMin
 	}

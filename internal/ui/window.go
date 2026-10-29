@@ -36,7 +36,7 @@ type mainWindow struct {
 	split                              *container.Split
 	status                             *widget.Label
 	showHiddenItem, exactSizesItem     *fyne.MenuItem
-	gridItem                           *fyne.MenuItem
+	gridItem, compactItem              *fyne.MenuItem
 	mainMenu                           *fyne.MainMenu
 
 	// State of the current directory; only touched on the UI goroutine.
@@ -95,6 +95,8 @@ func (m *mainWindow) buildMenu() *fyne.MainMenu {
 	m.showHiddenItem.Checked = m.cfg.ShowHidden
 	m.gridItem = item("Show grid lines", m.toggleGrid, "", 0)
 	m.gridItem.Checked = !m.cfg.HideGrid
+	m.compactItem = item("Compact view", m.toggleCompact, "", 0)
+	m.compactItem.Checked = m.cfg.Compact
 	m.exactSizesItem = item("Exact sizes (bytes)", m.toggleExactSizes, "", 0)
 	m.exactSizesItem.Checked = m.cfg.ExactSizes
 	refresh := item("Refresh", m.refresh, "", 0)
@@ -103,18 +105,19 @@ func (m *mainWindow) buildMenu() *fyne.MainMenu {
 
 	columns := fyne.NewMenuItem("Columns…", func() { newColumnsDialog(m).show() })
 	indent := fyne.NewMenuItem("Side pane indent…", m.showIndentDialog)
+	spacing := fyne.NewMenuItem("Compact row spacing…", m.showCompactGapDialog)
 	minimum := fyne.NewMenuItem("Contrast minimum…", m.showContrastDialog)
 
 	m.mainMenu = fyne.NewMainMenu(
 		fyne.NewMenu("File", quit),
-		fyne.NewMenu("View", m.showHiddenItem, m.gridItem, refresh),
+		fyne.NewMenu("View", m.showHiddenItem, m.gridItem, m.compactItem, refresh),
 		fyne.NewMenu("Go",
 			item("Back", m.goBack, fyne.KeyLeft, fyne.KeyModifierAlt),
 			item("Forward", m.goForward, fyne.KeyRight, fyne.KeyModifierAlt),
 			item("Up", m.goUp, fyne.KeyUp, fyne.KeyModifierAlt),
 			item("Home", m.goHome, fyne.KeyHome, fyne.KeyModifierAlt),
 		),
-		fyne.NewMenu("Settings", columns, indent, m.exactSizesItem, minimum),
+		fyne.NewMenu("Settings", columns, indent, spacing, m.exactSizesItem, minimum),
 		fyne.NewMenu("Help", fyne.NewMenuItem("About", m.about)),
 	)
 	return m.mainMenu
@@ -324,6 +327,15 @@ func (m *mainWindow) toggleGrid() {
 	m.gridItem.Checked = !m.cfg.HideGrid
 	m.mainMenu.Refresh()
 	m.files.setGridLines(!m.cfg.HideGrid)
+	m.changed()
+}
+
+// toggleCompact switches the right pane between the normal and compact view (FR-033).
+func (m *mainWindow) toggleCompact() {
+	m.cfg.Compact = !m.cfg.Compact
+	m.compactItem.Checked = m.cfg.Compact
+	m.mainMenu.Refresh()
+	m.files.applyCompact()
 	m.changed()
 }
 
