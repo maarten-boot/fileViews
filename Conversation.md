@@ -147,3 +147,9 @@ All core packages are now done: the planned point for the first Spec ↔ Plan �
 **User:** go with your proposal for Q-3, start milestone 7
 
 **Assistant:** Contrast minimum now limited to 3–7 (`contrast.CeilingMin`); FR-064, FR-074 and TC-074b updated; theme test now runs at 3, 4.5 and 7.
+
+**Assistant (milestone 7 result):** Right pane is now an `ls -lF` table (`internal/ui/filetable.go`): columns from the column layout, Size/Links right-aligned, clickable headers with an up/down arrow (click again to reverse), whole-row selection that follows the entry through sort/filter/refresh, double-click opens directories (and links to them) or opens regular files with `xdg-open`; other entry types give an error. 6 new tests; all pass, also with `-race`. Findings:
+- Fyne sends a click to one object only, so cells handle both single and double click and draw the row highlight themselves
+- my sort test assumed the name tie-break stays ascending when sorting descending; the code reverses the whole order (as most file managers do); kept that and made FR-025 say so
+- spec v0.11: FR-020 (selection, column widths, alignment), FR-028 (only regular files are opened)
+- new open question Q-4: multi-select (Ctrl/Shift+click), since FR-050 speaks of "selected entries"

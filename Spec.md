@@ -1,6 +1,6 @@
 # Specification — fileViews
 
-_Status: draft v0.10 · Last updated: 2026-10-29_
+_Status: draft v0.11 · Last updated: 2026-10-29_
 
 ## 1. Purpose
 A simple hierarchical file and directory viewer with a graphical interface, laid out similar to Thunar.
@@ -56,7 +56,7 @@ The split between left and right pane is user-resizable.
 - **FR-017** Startup directory: a directory given on the command line (`fileviews /some/dir`; a relative path is taken from the working directory, `~` means `$HOME`; more than one argument prints a usage message) if it can be read; otherwise the last directory (FR-061) if it can still be read; otherwise `$HOME`; otherwise `/`. If the command-line directory cannot be read, the user gets an error and the next choice is used.
 
 ### 5.3 Right pane (directory listing)
-- **FR-020** The right pane lists the entries of the current directory: files and directories.
+- **FR-020** The right pane lists the entries of the current directory: files and directories, as a table with one row per entry. Clicking a row selects the whole row (one row at a time). The selection stays on the same entry when sorting, filtering or refreshing, and is cleared when going to another directory. Columns start at fixed widths and can be resized by dragging the header borders; Size and Links are right-aligned.
 - **FR-021** Hidden entries (names starting with `.`) are hidden by default. View → Show hidden files (Ctrl+H) toggles them; the setting is kept across sessions.
 - **FR-022** Columns, comparable to `ls -lF`:
   | Column | Content |
@@ -70,10 +70,10 @@ The split between left and right pane is user-resizable.
   | Name | name plus type marker |
 - **FR-023** Type markers in the Name column: `/` directory, `*` executable regular file, `@` symlink, `|` named pipe (FIFO), `=` socket. For symlinks the target is shown as `name@ -> target`.
 - **FR-024** Settings → Columns lets the user change the column order and show/hide columns. The Name column cannot be hidden. The configuration is kept across sessions.
-- **FR-025** Clicking a column header sorts by that column; clicking again reverses the order. Directories (and symlinks to directories) always come before other entries, whatever the sort column or direction. Names compare case-insensitively; ties are broken by name. Default sort: by name, ascending.
+- **FR-025** Clicking a column header sorts by that column; clicking again reverses the order. Directories (and symlinks to directories) always come before other entries, whatever the sort column or direction. Names compare case-insensitively; ties are broken by name. Descending reverses the whole order within each group, including that tie-break. Default sort: by name, ascending.
 - **FR-026** Sizes are shown human-readable by default (e.g. `4.2K`); a setting switches to exact bytes.
 - **FR-027** Double-clicking a directory (or a symlink to a directory) navigates into it.
-- **FR-028** Double-clicking a file opens it with the system default application (`xdg-open` on Linux).
+- **FR-028** Double-clicking a regular file (or a symlink to one) opens it with the system default application (`xdg-open` on Linux). Other entries (pipes, sockets, devices, broken links, entries removed since the listing) show an error instead.
 - **FR-029** Entries that cannot be read (permission denied, broken symlink) are still listed with the information that is available; they must not stop the listing. Fields that cannot be read are shown as `?`. A broken symlink is listed with its target, and is not treated as a directory.
 - **FR-030** The viewer is read-only: it does not change files or directories.
 
@@ -130,4 +130,4 @@ The split between left and right pane is user-resizable.
 - **NFR-004** Builds with `go build` (`make build`); Go 1.26+, Fyne v2.8+.
 
 ## 7. Open questions
-_None._ (Q-1 → FR-017, Q-2 → FR-015, Q-3 → FR-074; all resolved 2026-10-29.)
+- **Q-4** FR-050 speaks of "the selected entries" (plural), but only one row can be selected now. *Proposal: add multi-select with Ctrl+click (toggle a row) and Shift+click (select a range); the status bar then shows the count and total size of the selection.*

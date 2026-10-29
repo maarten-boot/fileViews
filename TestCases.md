@@ -15,9 +15,11 @@ A ✔ with a test name means the automated test exists and passes.
 | ID | Req | Description | Steps / input | Expected result | Type |
 |----|-----|-------------|---------------|-----------------|------|
 | TC-020 | FR-020 | List directory | Temp dir with `a.txt`, `sub/` | Both entries listed | Auto ✔ `TestReadListsFilesAndDirs`, `TestNavigateShowsDirectory` |
+| TC-020b | FR-020 | Whole-row selection | Click a cell of `a.txt`; sort by name descending; show hidden; refresh; go to `sub` | Whole row highlighted; selection kept through sort, filter and refresh; cleared on navigation | Auto ✔ `TestTableSelection` + Manual |
 | TC-021a | FR-021 | Hidden filtered by default | Dir with `.x`, `y` | Only `y` listed | Auto ✔ `TestFilterHidden` |
 | TC-021b | FR-021 | Show hidden | Same dir, show-hidden on | `.x` and `y` listed | Auto ✔ `TestFilterHidden`, `TestToggleHidden` |
 | TC-022 | FR-022 | Permission string | File with mode 0754; also dir, link, pipe, socket, devices, setuid/setgid/sticky | `-rwxr-xr--` etc. | Auto ✔ `TestPermString`, `TestReadPermissions` |
+| TC-022c | FR-022 | Table cells | `a.txt` mode 0640, 100 bytes | `-rw-r-----`, `1`, owner, group, `100`, `YYYY-MM-DD HH:MM`, `a.txt`; Size and Links right-aligned | Auto ✔ `TestTableCells` + Manual |
 | TC-022b | FR-022 | Unknown uid/gid | uid 4000000000 | Shown numerically | Auto ✔ `TestUnknownIDsAreNumeric` |
 | TC-023a | FR-023 | Directory marker | `sub/` | Name `sub/` | Auto ✔ `TestDisplayNameMarkers` |
 | TC-023b | FR-023 | Executable marker | File mode 0755 | Name ends in `*` | Auto ✔ `TestDisplayNameMarkers` |
@@ -26,17 +28,19 @@ A ✔ with a test name means the automated test exists and passes.
 | TC-023e | FR-023 | Socket marker | Unix socket `s` | `s=` | Auto ✔ `TestSocket`, `TestDisplayNameSpecial` |
 | TC-024a | FR-024 | Column order applied | Order `[Name, Size, Perms]` | Rows formatted in that order | Auto ✔ `TestColumnOrder` |
 | TC-024b | FR-024 | Name cannot be hidden | Config hides Name | Name still shown | Auto ✔ `TestColumnLayoutNormalises` |
+| TC-024e | FR-024 | Table follows layout | Columns `[Name, Size]` | 2 columns, header `Size` second | Auto ✔ `TestTableColumns` |
 | TC-024c | FR-024 | Stale/bad column config | Duplicates, unknown ids, missing columns | Dropped / appended | Auto ✔ `TestColumnLayoutNormalises` |
 | TC-024d | FR-024 | Column names round trip | Every column name → column → name; `Bogus` | Same column; `Bogus` rejected | Auto ✔ `TestParseColumn` |
 | TC-025a | FR-025 | Default sort | `b`, `A/`, `a`, `B` | `A/`, `a`, `B`, `b` | Auto ✔ `TestDefaultSort` |
 | TC-025b | FR-025 | Sort by size, reverse | Files of 1, 3, 2 bytes + a dir | dir, then 3, 2, 1 | Auto ✔ `TestSortBySizeDescending` |
+| TC-025e | FR-025 | Sort by clicking headers | Click Size, Size again, Name | Size ascending (dirs first); descending (whole order reversed, dirs first); back to name; arrow icon on sorted column | Auto ✔ `TestTableSortByHeader` + Manual |
 | TC-025c | FR-025 | Ties broken by name | Equal mtimes | Ordered by name | Auto ✔ `TestSortTiesByName` |
 | TC-025d | FR-025 | Symlink to dir sorts as dir | `ls -> sub` | Treated as directory | Auto ✔ `TestSymlinkToDir` |
 | TC-026a | FR-026 | Human-readable size | 4300 bytes | `4.2K` | Auto ✔ `TestSizeFormat` |
 | TC-026b | FR-026 | Exact size | 4300 bytes, exact mode | `4300` | Auto ✔ `TestSizeFormat`, `TestStatusSelectionAndExactSizes` |
 | TC-026c | — | Modified time format | 2026-10-29 11:04:59 | `2026-10-29 11:04` | Auto ✔ `TestModifiedFormat` |
-| TC-027 | FR-027 | Double-click directory | Double-click `sub/` | Right pane shows `sub` | Manual |
-| TC-028 | FR-028 | Double-click file | Double-click `a.txt` | Opens in default app | Manual |
+| TC-027 | FR-027 | Double-click directory | Double-click `sub/`; double-click `link -> sub` | Right pane shows `sub`; shows `link` | Auto ✔ `TestTableOpenDirectory` + Manual |
+| TC-028 | FR-028 | Double-click file | Double-click `a.txt`; a FIFO; a file removed since listing; opener fails | `xdg-open a.txt`; others: error, nothing opened | Auto ✔ `TestTableOpenFile` + Manual |
 | TC-029a | FR-029 | Broken symlink | `l -> missing` | Listed; rest of listing unaffected | Auto ✔ `TestBrokenSymlink` |
 | TC-029b | FR-029 | Unreadable subdir | `chmod 000 sub` | `sub/` listed | Auto ✔ `TestUnreadableSubdir` |
 | TC-029c | FR-029 | Unreadable metadata | Entry with stat error | Fields `?`, name shown | Auto ✔ `TestUnreadableFieldsShowQuestionMark` |

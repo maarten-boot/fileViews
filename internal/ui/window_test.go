@@ -188,7 +188,7 @@ func TestStatusSelectionAndExactSizes(t *testing.T) {
 	os.WriteFile(filepath.Join(root, "big"), make([]byte, 4300), 0o644)
 	m := newTestWindow(t, root)
 	wait(t, m, func() { m.goPath(root) })
-	m.right.Select(2) // sub/, a.txt, big
+	m.files.selectRow(2) // sub/, a.txt, big
 	if !strings.Contains(m.status.Text, "1 selected (4.2K)") {
 		t.Errorf("status = %q", m.status.Text)
 	}
@@ -196,7 +196,7 @@ func TestStatusSelectionAndExactSizes(t *testing.T) {
 	if !strings.Contains(m.status.Text, "1 selected (4300)") || !strings.Contains(m.status.Text, "4400 total") {
 		t.Errorf("exact status = %q", m.status.Text)
 	}
-	m.right.UnselectAll()
+	m.setSelection("")
 	if strings.Contains(m.status.Text, "selected") {
 		t.Errorf("selection still shown: %q", m.status.Text)
 	}

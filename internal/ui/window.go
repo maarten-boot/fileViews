@@ -26,19 +26,21 @@ type mainWindow struct {
 
 	back, forward, up, home, recentBtn *widget.Button
 	path                               *widget.Entry
-	left, right                        *widget.List
+	left                               *widget.List
+	files                              *fileTable
 	split                              *container.Split
 	status                             *widget.Label
 	showHiddenItem, exactSizesItem     *fyne.MenuItem
 	mainMenu                           *fyne.MainMenu
 
 	// State of the current directory; only touched on the UI goroutine.
-	all      []listing.Entry
-	shown    []listing.Entry
-	selected int // index into shown, or -1
-	free     uint64
-	freeOK   bool
-	loadSeq  int
+	all          []listing.Entry
+	shown        []listing.Entry
+	selected     int    // index into shown, or -1
+	selectedName string // name of the selected entry; kept across sorting and filtering
+	free         uint64
+	freeOK       bool
+	loadSeq      int
 
 	// onLoaded is called after a directory listing is shown; used by tests.
 	onLoaded func()
@@ -121,8 +123,8 @@ func (m *mainWindow) buildPathBar() fyne.CanvasObject {
 	return container.NewBorder(nil, nil, buttons, m.recentBtn, m.path)
 }
 
-// buildPanes creates the left (bookmarks) and right (listing) panes. Both
-// are plain lists for now; milestones 7 and 8 replace them.
+// buildPanes creates the left (bookmarks) and right (listing) panes. The
+// left pane is a plain list for now; milestone 8 replaces it.
 func (m *mainWindow) buildPanes() fyne.CanvasObject {
 	m.left = widget.NewList(
 		func() int { return len(m.marks.Items()) },
@@ -140,19 +142,9 @@ func (m *mainWindow) buildPanes() fyne.CanvasObject {
 		}
 	}
 
-	m.right = widget.NewList(
-		func() int { return len(m.shown) },
-		func() fyne.CanvasObject { return widget.NewLabel("") },
-		func(id widget.ListItemID, o fyne.CanvasObject) {
-			if id < len(m.shown) {
-				o.(*widget.Label).SetText(listing.DisplayName(m.shown[id]))
-			}
-		},
-	)
-	m.right.OnSelected = func(id widget.ListItemID) { m.selected = id; m.updateStatus() }
-	m.right.OnUnselected = func(widget.ListItemID) { m.selected = -1; m.updateStatus() }
+	m.files = newFileTable(m)
 
-	m.split = container.NewHSplit(m.left, m.right)
+	m.split = container.NewHSplit(m.left, m.files.table)
 	m.split.Offset = m.cfg.Window.Split
 	return m.split
 }
@@ -172,13 +164,21 @@ func (m *mainWindow) goUp()           { m.navigate(m.nav.Up) }
 func (m *mainWindow) goHome()         { m.navigate(m.nav.Home) }
 
 func (m *mainWindow) navigate(move func() (string, error)) {
+	prev := m.nav.Current()
 	dir, err := move()
 	if err != nil {
-		m.path.SetText(m.nav.Current()) // undo whatever was typed
-		dialog.ShowError(err, m.win)
+		m.path.SetText(prev) // undo whatever was typed
+		m.showError(err)
 		return
 	}
+	if dir != prev {
+		m.selectedName = ""
+	}
 	m.load(dir)
+}
+
+func (m *mainWindow) showError(err error) {
+	dialog.ShowError(err, m.win)
 }
 
 func (m *mainWindow) refresh() {
@@ -208,7 +208,7 @@ func (m *mainWindow) applyLoad(seq int, entries []listing.Entry, err error, free
 		return
 	}
 	if err != nil {
-		dialog.ShowError(err, m.win)
+		m.showError(err)
 		entries = nil
 	}
 	m.all = entries
@@ -219,14 +219,29 @@ func (m *mainWindow) applyLoad(seq int, entries []listing.Entry, err error, free
 	}
 }
 
-// applyView filters and sorts the current listing and redraws it.
+// applyView filters and sorts the current listing and redraws it. The
+// selection follows the selected entry's name, if it is still shown.
 func (m *mainWindow) applyView() {
 	m.shown = listing.Filter(m.all, m.cfg.ShowHidden)
 	listing.Sort(m.shown, m.cfg.SortSpec())
 	m.selected = -1
-	m.right.UnselectAll()
-	m.right.Refresh()
+	for i, e := range m.shown {
+		if e.Name == m.selectedName {
+			m.selected = i
+			break
+		}
+	}
+	if m.selected < 0 {
+		m.selectedName = ""
+	}
+	m.files.refresh()
 	m.updateStatus()
+}
+
+// setSelection selects the entry with the given name; "" clears the selection.
+func (m *mainWindow) setSelection(name string) {
+	m.selectedName = name
+	m.applyView()
 }
 
 func (m *mainWindow) updateButtons() {
@@ -281,6 +296,7 @@ func (m *mainWindow) toggleExactSizes() {
 	m.cfg.ExactSizes = !m.cfg.ExactSizes
 	m.exactSizesItem.Checked = m.cfg.ExactSizes
 	m.mainMenu.Refresh()
+	m.files.refresh()
 	m.updateStatus()
 }
 

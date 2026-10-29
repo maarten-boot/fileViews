@@ -1,6 +1,6 @@
 # Plan — fileViews
 
-_Status: draft v0.9 · Last updated: 2026-10-29_
+_Status: draft v0.10 · Last updated: 2026-10-29_
 
 ## Approach
 Build the non-GUI core first, with unit tests (NFR-003), then add the Fyne GUI on top of it, one area at a time.
@@ -27,7 +27,7 @@ internal/arch/            architecture test: core packages have no GUI dependenc
 | 4 | Core: config load/save, normalisation | FR-060–064 | done |
 | 5 | Core: bookmarks (defaults, order, depth, colours with contrast check, hover text, missing style) | FR-040–047, FR-075–076 | done |
 | 6 | GUI: main window layout — light theme passing the contrast minimum, menu bar, shortcuts, path bar, split panes, status bar, startup directory | FR-001, FR-002, FR-010–017, FR-070–071, FR-077, §4 | done — panes are plain lists until M7/M8; Settings dialogs disabled until M9; settings not saved until M10 |
-| 7 | GUI: right pane table — columns, sorting, double-click, hidden toggle | FR-020–028 | todo |
+| 7 | GUI: right pane table — columns, sorting, double-click, hidden toggle | FR-020–028 | done — single selection only (Q-4) |
 | 8 | GUI: left pane — indent, colours, tooltips, context menu | FR-040–047 | todo |
 | 9 | GUI: Settings dialogs — column order/visibility, indent, size format, contrast minimum; bookmark colour dialog with live ratio | FR-024, FR-026, FR-044, FR-074, FR-075 | todo |
 | 10 | Persistence wiring (save on change/quit), window state, error handling, performance check | FR-061, NFR-001, NFR-002 | todo |
@@ -42,6 +42,7 @@ internal/arch/            architecture test: core packages have no GUI dependenc
 - Owner/group lookup and link count use `syscall.Stat_t` (Unix only); keep that in a file with a build tag.
 - Free disk space uses `statfs` (Unix only); same approach. Both live in `internal/listing/stat_unix.go`, with a stub in `stat_other.go`.
 - Fyne follows the desktop dark mode by default; FR-070 needs a custom theme that forces the light variant. **Done in M6** (`internal/ui/theme.go`); Fyne's own light theme failed FR-071/FR-077 (gray `#565656` text, `#E3E3E3` disabled text, `#888` placeholder on `#F3F3F3`, white on light green/orange/red).
+- Fyne sends a click to one object only: table cells handle both tap (select row) and double tap (open), so the table's own cell selection is not used; whole-row highlighting is drawn by the cells.
 - Fyne triggers main-menu shortcuts itself on Linux; shortcuts are only set on the menu items. F5 has no modifier, so it uses the canvas key handler (only when no text field has focus).
 
 ## Crosscheck log
