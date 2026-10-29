@@ -196,7 +196,8 @@ func TestStatusSelectionAndExactSizes(t *testing.T) {
 	if !strings.Contains(m.status.Text, "1 selected (4300)") || !strings.Contains(m.status.Text, "4400 total") {
 		t.Errorf("exact status = %q", m.status.Text)
 	}
-	m.clearSelection()
+	m.sel.clear()
+	m.updateStatus()
 	if strings.Contains(m.status.Text, "selected") {
 		t.Errorf("selection still shown: %q", m.status.Text)
 	}

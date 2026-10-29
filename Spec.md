@@ -1,6 +1,6 @@
 # Specification — fileViews
 
-_Status: draft v0.19 · Last updated: 2026-10-29_
+_Status: draft v0.20 · Last updated: 2026-10-29_
 
 ## 1. Purpose
 A simple hierarchical file and directory viewer with a graphical interface, laid out similar to Thunar.
@@ -84,7 +84,7 @@ The split between left and right pane is user-resizable.
 - **FR-041** Two default items are always present and cannot be removed:
   - `/` — label `/`
   - `$HOME` — label is the basename of `$HOME` (e.g. `mboot`), target is the full path. If `$HOME` is `/`, there is only one default item.
-- **FR-042** The user can add the current directory (or a selected directory in the right pane) as a bookmark, and remove user-added bookmarks, via a right-click menu. Bookmark right-click menu: Open, Set colours…, Reset colours (only when colours are set), Edit hover text…, Add current directory, Remove bookmark (not for default items). Right-clicking a directory row in the right pane selects it and offers "Add to bookmarks". New bookmarks from the menus are added at the end. Adding a path that is already bookmarked is refused. Saved bookmarks with an empty or relative path, or a duplicate path, are ignored when loading (the first one wins); invalid saved colours are cleared.
+- **FR-042** The user can add the current directory (or a selected directory in the right pane) as a bookmark, and remove user-added bookmarks, via a right-click menu. Bookmark right-click menu: Open, Move up, Move down (FR-048), Set colours…, Reset colours (only when colours are set), Edit hover text…, Add current directory, Remove bookmark (not for default items). Right-clicking a directory row in the right pane selects it and offers "Add to bookmarks". New bookmarks from the menus are added at the end. Adding a path that is already bookmarked is refused. Saved bookmarks with an empty or relative path, or a duplicate path, are ignored when loading (the first one wins); invalid saved colours are cleared.
 - **FR-043** Single-clicking an item opens its directory in the right pane.
 - **FR-044** Each item is indented by `depth × indent`, where depth is the number of path components from `/` (`/` = 0, `/home/mboot` = 2). The indent is configurable in Settings → Side pane indent: a slider and a number field that follow each other (whole numbers 1–25 px; anything else disables Apply); default 12 px.
 - **FR-045** Each item can have a custom background and foreground colour, set via right-click → "Set colours…" (background and text fields as `#RRGGBB`, empty = default, each with a colour picker; live preview), with a "Reset colours" option. Colours are kept across sessions. The combination must meet the contrast minimum (FR-073–FR-075).

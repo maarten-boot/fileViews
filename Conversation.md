@@ -223,3 +223,8 @@ All core packages are now done: the planned point for the first Spec ↔ Plan �
 3. Dragging directories from the right pane adds bookmarks at the drop line (FR-049). Per the user's correction, an already-bookmarked directory is never placed again: while dragging the label says "already a bookmark" and no drop line is shown; with a selection only the new ones are added. Files are not dragged; dropping outside does nothing
 - found while testing: Fyne's list creates measuring item widgets that never get a row; they now start at position −1 so they are never used as drop targets or drag sources
 - 133 tests pass, also with `-race`; `ManualTests.md` regenerated
+
+### 23. Crosscheck #4 (after milestone 12)
+**User:** do a crosscheck now
+
+**Assistant:** Scripted checks all clean (53 requirement IDs, 148 test cases, 133 tests, test comments and `ManualTests.md` in sync). Read-through of the latest changes found only small things: FR-042 still listed the bookmark menu without Move up/down (fixed); `clearSelection` was no longer used outside tests (removed); M12 was listed above M11 in the plan (fixed). No code defects. Remaining: the user's manual test pass.
