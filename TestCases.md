@@ -96,4 +96,13 @@ A ✔ with a test name means the automated test exists and passes.
 |----|-----|-------------|---------------|-----------------|------|
 | TC-070a | FR-070 | Light theme by default | Start app | White background, black text everywhere | Auto + Manual |
 | TC-070b | FR-070 | Ignores desktop dark mode | Desktop in dark mode, start app | Still white background, black text | Manual |
-| TC-071 | FR-071 | No gray-on-gray | Inspect missing bookmark, disabled buttons, status bar | No gray text on gray background | Manual |
+| TC-071a | FR-071 | Gray on pure white / black | Min 4.5 | `#767676` on white, `#757575` on black; each passes the minimum | Auto ✔ `TestGray` |
+| TC-071b | FR-071 | No gray on other backgrounds | `#FEFEFE`, `#808080`, `#FFFFE0` | Gray refused | Auto ✔ `TestGray` |
+| TC-071c | FR-071 | No gray-on-gray in the GUI | Inspect missing bookmark, disabled buttons, status bar | No gray text on gray background | Manual |
+| TC-073a | FR-073 | Contrast ratio | black/white, yellow/white, light green/white, `#767676`/white | 21, 1.07, 1.42, 4.54 | Auto ✔ `TestRatio` |
+| TC-074a | FR-074 | Default minimum 4.5 | Yellow, light green, `#777777` on white | Rejected; `#767676` and black accepted | Auto ✔ `TestMeetsDefault` |
+| TC-074b | FR-074 | Minimum limits | Set 1, 30 | Clamped to 3, 21 | Auto ✔ `TestClampMin` |
+| TC-075a | FR-075 | Fallback text colour | Background white, yellow, black, dark blue | black, black, white, white | Auto ✔ `TestBestText` |
+| TC-075b | FR-075 | Dialog refuses failing colours | Pick yellow text on white | Ratio shown, Save disabled, black text offered | Manual |
+| TC-076 | FR-076 | Saved colours re-checked | Yellow on white; gray at min 7 | Drawn in black; saved colours unchanged | Auto ✔ `TestEffective` (+ config test in M5) |
+| TC-077 | FR-077 | Theme colours pass | Every theme text/background pair | All ≥ minimum | Auto (M6) |

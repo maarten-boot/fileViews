@@ -1,6 +1,6 @@
 # Specification — fileViews
 
-_Status: draft v0.2 · Last updated: 2026-10-29_
+_Status: draft v0.3 · Last updated: 2026-10-29_
 
 ## 1. Purpose
 A simple hierarchical file and directory viewer with a graphical interface, laid out similar to Thunar.
@@ -83,9 +83,9 @@ The split between left and right pane is user-resizable.
 - **FR-042** The user can add the current directory (or a selected directory in the right pane) as a bookmark, and remove user-added bookmarks, via a right-click menu.
 - **FR-043** Single-clicking an item opens its directory in the right pane.
 - **FR-044** Each item is indented by `depth × indent`, where depth is the number of path components from `/` (`/` = 0, `/home/mboot` = 2). The indent is configurable in Settings; default 12 px.
-- **FR-045** Each item can have a custom background and foreground colour, set via right-click → "Set colours…", with a "Reset" option. Colours are kept across sessions.
+- **FR-045** Each item can have a custom background and foreground colour, set via right-click → "Set colours…", with a "Reset" option. Colours are kept across sessions. The combination must meet the contrast minimum (FR-073–FR-075).
 - **FR-046** Each item has a hover text (tooltip). The default is the full path. The user can change it via right-click → "Edit hover text…"; an empty text goes back to the default. Hover texts are kept across sessions.
-- **FR-047** A bookmark whose target no longer exists is still shown, in italics with the suffix ` (missing)` (normal black text, no gray — see FR-071); clicking it shows an error.
+- **FR-047** A bookmark whose target no longer exists is still shown, in italics with the suffix ` (missing)`; clicking it shows an error. On a pure white or pure black background its text is also gray (FR-071). On a user-chosen background it keeps its own text colour (no gray). The text marker is always shown, so the state never depends on colour alone.
 
 ### 5.5 Status bar (bottom line)
 - **FR-050** The status bar shows, for the current directory:
@@ -105,13 +105,18 @@ The split between left and right pane is user-resizable.
 
 ### 5.7 Appearance
 - **FR-070** Default colours: white background, black text, in all panes and bars. The app uses a light theme regardless of the desktop's dark-mode setting.
-- **FR-071** State is never shown as gray text on a gray background. Use text markers, italics, bold or icons instead (see FR-047).
+- **FR-071** Gray text ("greyed out") is only used on a pure white (`#FFFFFF`) or pure black (`#000000`) background, and must meet the contrast minimum (on white: no lighter than about `#767676`; on black: no darker than about `#757575`). Never gray on gray. On other backgrounds, state is shown with text markers, italics, bold or icons instead.
 - **FR-072** User-chosen bookmark colours (FR-045) override the defaults only for that item.
+- **FR-073** Contrast is measured as the WCAG 2 contrast ratio, from 1:1 (same colour) to 21:1 (black on white). Every text/background combination in the app must be at or above the minimum ratio.
+- **FR-074** The minimum ratio defaults to **4.5:1** and can be changed in Settings; it cannot be set below 3:1. Examples on white: yellow `#FFFF00` ≈ 1.07:1 and light green `#90EE90` ≈ 1.4:1 are rejected; `#767676` ≈ 4.54:1 is allowed.
+- **FR-075** The bookmark colour dialog shows the contrast ratio live and refuses to save a combination below the minimum. It then offers black or white text, whichever gives the higher contrast with the chosen background.
+- **FR-076** Saved bookmark colours are checked at startup and when the minimum changes. A failing combination is drawn with black or white text (whichever contrasts more) until the user changes it; the saved colours are kept.
+- **FR-077** The app's own theme colours (including disabled buttons, placeholder text and the status bar) also meet the minimum; the custom light theme overrides Fyne defaults that do not.
 
 ## 6. Non-functional requirements
 - **NFR-001** A directory with 10,000 entries lists in under 1 second on a typical desktop.
 - **NFR-002** The UI stays responsive while reading a directory: directories are read off the UI thread.
-- **NFR-003** Core logic (listing, formatting, history, config, bookmarks) is in packages without GUI dependencies, so it can be unit-tested headless.
+- **NFR-003** Core logic (listing, formatting, history, config, bookmarks, colour contrast) is in packages without GUI dependencies, so it can be unit-tested headless.
 - **NFR-004** Builds with `go build` (`make build`); Go 1.26+, Fyne v2.8+.
 
 ## 7. Open questions

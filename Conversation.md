@@ -68,3 +68,13 @@ Wrote `Spec.md` v0.1 (FR-001…FR-063, NFR-001…004), `Plan.md` v0.1 (11 milest
 - FR-025 clarified: directories always first in every sort order; names compare case-insensitively; ties broken by name
 
 Milestone 2 done in `internal/listing`: `Read`, `Filter`, `Sort`, `ColumnLayout.Visible`, `FormatRow`/`FormatField`, `DisplayName`, `PermString`, `HumanSize`, `ComputeStats`, `TotalSize`, `FreeSpace`. 25 unit tests pass; benchmark: 10,000 entries read + sorted + formatted in ≈ 17 ms (NFR-001: < 1 s).
+
+### 8. Gray text and contrast (pending confirmation)
+**User:** greyed out is possible only on black and full white background and allow for a contrast index to allow always well vizible color combinations (e.g light green or yellow text on a white background is unreadable for most)
+
+**Assistant:** Suggested wording fix ("vizible" → "visible") and proposed: WCAG 2 contrast ratio as the contrast index, minimum 4.5:1 (configurable); gray allowed only on pure black/white backgrounds and only if it passes the minimum; the colour dialog shows the ratio and rejects failing combinations; the app's own theme colours must pass too; missing bookmarks use gray + italics + ` (missing)` on white/black backgrounds, italics + suffix only on custom backgrounds. Spec not changed until confirmed.
+
+### 9. Contrast rules accepted
+**User:** yes, go with 4.5 and your proposals
+
+**Assistant:** Spec v0.3: FR-071 rewritten (gray only on pure white/black and only if it passes), new FR-073–FR-077 (WCAG ratio, default minimum 4.5:1 with floor 3:1, colour dialog refuses failing combinations and offers black/white, saved colours re-checked, theme colours must pass); FR-045 and FR-047 updated. Built `internal/contrast` early (pure logic, used by M5, M6, M9) with tests. My first expected values for light green (1.42, not 1.38) and `#757575` on black (4.56, not 4.61) were wrong in the test and are corrected; the test also caught a real bug in picking the gray for black backgrounds, now fixed.

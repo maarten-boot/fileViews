@@ -1,6 +1,6 @@
 # Plan — fileViews
 
-_Status: draft v0.3 · Last updated: 2026-10-29_
+_Status: draft v0.4 · Last updated: 2026-10-29_
 
 ## Approach
 Build the non-GUI core first, with unit tests (NFR-003), then add the Fyne GUI on top of it, one area at a time.
@@ -12,6 +12,7 @@ internal/listing/         read directory, entries, ls -lF formatting, sorting, s
 internal/history/         back/forward history, recent directories
 internal/bookmarks/       side pane items, depth, colours, hover text
 internal/config/          load/save config.json (atomic, defaults, broken-file handling)
+internal/contrast/        WCAG contrast ratio, fallback text colour, allowed gray
 internal/ui/              Fyne windows and widgets
 ```
 
@@ -23,11 +24,11 @@ internal/ui/              Fyne windows and widgets
 | 2 | Core: directory listing, `ls -lF` formatting, type markers, sorting, hidden filter, stats, free space | FR-020–026, FR-029, FR-050 | done |
 | 3 | Core: navigation history and recent directories | FR-012–016 | todo |
 | 4 | Core: config load/save | FR-060–063 | todo |
-| 5 | Core: bookmarks (defaults, depth, colours, hover text) | FR-040–047 | todo |
-| 6 | GUI: main window layout — light theme, menu bar, path bar, split panes, status bar | FR-001, FR-010–015, FR-070–071, §4 | todo |
+| 5 | Core: bookmarks (defaults, depth, colours with contrast check, hover text) | FR-040–047, FR-076 | todo — contrast core (`internal/contrast`) done early |
+| 6 | GUI: main window layout — light theme passing the contrast minimum, menu bar, path bar, split panes, status bar | FR-001, FR-010–015, FR-070–071, FR-077, §4 | todo |
 | 7 | GUI: right pane table — columns, sorting, double-click, hidden toggle | FR-020–028 | todo |
 | 8 | GUI: left pane — indent, colours, tooltips, context menu | FR-040–047 | todo |
-| 9 | GUI: Settings dialogs — column order/visibility, indent, size format | FR-024, FR-026, FR-044 | todo |
+| 9 | GUI: Settings dialogs — column order/visibility, indent, size format, contrast minimum; bookmark colour dialog with live ratio | FR-024, FR-026, FR-044, FR-074, FR-075 | todo |
 | 10 | Persistence wiring, window state, error handling, performance check | FR-061, NFR-001, NFR-002 | todo |
 | 11 | Final crosscheck Spec ↔ Plan ↔ code, manual test pass | all | todo |
 
