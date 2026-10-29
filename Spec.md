@@ -1,6 +1,6 @@
 # Specification — fileViews
 
-_Status: draft v0.14 · Last updated: 2026-10-29_
+_Status: draft v0.15 · Last updated: 2026-10-29_
 
 ## 1. Purpose
 A simple hierarchical file and directory viewer with a graphical interface, laid out similar to Thunar.
@@ -108,6 +108,10 @@ The split between left and right pane is user-resizable.
   - invalid JSON: the file is renamed to `config.json.bak` (replacing an older `.bak`), defaults are used, and the user gets a warning
   - file exists but cannot be read (e.g. permissions): defaults are used, the user gets a warning, and the app does **not** save during that session, so the file is never overwritten with defaults
 - **FR-063** The config is written atomically (write a temporary file in the same directory, then rename it). A failed save leaves the old file intact and no temporary file behind. The file is created with mode 0644; the directory is created if needed.
+- **FR-065** When the config is saved:
+  - right after every change to something in FR-061 (toggles, sorting, bookmark edits, and every navigation for the recent list and last directory), written in the background so a slow disk cannot freeze the window (NFR-002); a snapshot is never overwritten by an older one
+  - on quit (File → Quit, Ctrl+Q or closing the window), together with the window size and pane split
+  - a save error is shown once per session; after an unreadable config (FR-062) nothing is saved and no further error is shown
 - **FR-064** Missing or out-of-range values are replaced by defaults, unknown fields and column names are ignored: indent 1–64 px (default 12), contrast minimum 3–7 (default 4.5), window 1000×650 if unset, pane split between 0 and 1 (default 0.25), recent list cleaned as in FR-015.
 
 ### 5.7 Appearance

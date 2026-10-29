@@ -52,11 +52,12 @@ func (sp *sidePane) update(id int, mi *markItem) {
 	mi.set(items[id], sp.missing[items[id].Path], sp.m.cfg.ContrastMin, sp.m.cfg.IndentPx)
 }
 
-// refresh redraws the list and re-checks in the background which
-// bookmark directories are missing.
+// refresh redraws the list after the bookmarks changed, saves them and
+// re-checks in the background which bookmark directories are missing.
 func (sp *sidePane) refresh() {
 	sp.list.Refresh()
 	sp.checkMissing()
+	sp.m.changed()
 }
 
 func (sp *sidePane) checkMissing() {

@@ -117,11 +117,17 @@ A ✔ with a test name means the automated test exists and passes.
 |----|-----|-------------|---------------|-----------------|------|
 | TC-060 | FR-060 | Config path | `XDG_CONFIG_HOME=/x`; unset with `HOME=/home/u` | `/x/fileViews/config.json`; `/home/u/.config/fileViews/config.json` | Auto ✔ `TestDefaultPath` |
 | TC-061 | FR-061 | All settings round trip | Save every field, reload | Identical config | Auto ✔ `TestRoundTrip` |
+| TC-061b | FR-065 | Save on change | Navigate; toggle hidden, grid, exact sizes; sort by size; add bookmark with colours and hover text | Each change is in `config.json` right away | Auto ✔ `TestSaveOnChange` |
+| TC-061c | FR-065 | Save on quit | Resize to 800×500, split 0.4, quit | Window size and split saved | Auto ✔ `TestSaveOnQuit` + Manual |
+| TC-061d | FR-061 | Restore | Config with every setting | New window shows toggles, sort, bookmarks, recent, split, size; starts in last directory | Auto ✔ `TestRestoreFromConfig` + Manual |
 | TC-062a | FR-062 | Missing config | No file | Defaults, no warning | Auto ✔ `TestLoadMissing`, `TestDefaults` |
 | TC-062b | FR-062 | Broken config | File with `{garbage` | Renamed to `.bak`, defaults, warning; saving works afterwards | Auto ✔ `TestLoadBroken` |
 | TC-062c | FR-062 | Unreadable config | File with mode 000 | Defaults, warning; Save refused; file unchanged | Auto ✔ `TestLoadUnreadableBlocksSave` |
 | TC-063a | FR-063 | Atomic write | Save 3 times into a new directory | Only `config.json` (0644) remains, last values | Auto ✔ `TestSaveAtomic` |
 | TC-063b | FR-063 | Failed save | Read-only config directory | Error; old file unchanged; no temp file | Auto ✔ `TestSaveFailureKeepsOld` |
+| TC-062d | FR-065 | No save after unreadable config | Config mode 000, change something, quit | File unchanged, no error dialog | Auto ✔ `TestNoSaveAfterUnreadableConfig` |
+| TC-063c | FR-065 | Save error once | Config path under a file; two changes and quit | One error shown | Auto ✔ `TestSaveErrorReportedOnce` |
+| TC-063d | FR-065 | Newest snapshot wins | Older save finishes after newer | Newer values kept | Auto ✔ `TestSaverOrder` |
 | TC-064 | FR-064 | Bad values normalised | Negative indent, contrast 1, split 1.5, unknown sort/columns, duplicate recent, unknown field | Defaults/limits applied, unknowns ignored | Auto ✔ `TestNormalize` |
 
 ## Non-functional
@@ -129,6 +135,7 @@ A ✔ with a test name means the automated test exists and passes.
 |----|-----|-------------|---------------|-----------------|------|
 | TC-N01 | NFR-001 | Large directory | 10,000 files: read + sort + format | < 1 s (measured ≈ 17 ms) | Bench ✔ `BenchmarkListLargeDir` |
 | TC-N03 | NFR-003 | Core has no GUI dependency | `go list -deps` of listing, history, bookmarks, config, contrast | No `fyne.io/…` or `internal/ui` | Auto ✔ `TestCoreHasNoGUIDeps` |
+| TC-N01b | NFR-001 | Large directory in the window | 10,000 files, navigate | Shown < 1 s (measured ≈ 42 ms, headless) | Auto ✔ `TestLargeDirectoryInWindow` |
 | TC-N02 | NFR-002 | Responsive UI | Open a large directory | Window stays responsive | Auto ✔ `TestStaleLoadDropped`, `TestBookmarkMissingCheckedInBackground` + Manual |
 
 ## Build / smoke

@@ -1,6 +1,6 @@
 # Plan — fileViews
 
-_Status: draft v0.13 · Last updated: 2026-10-29_
+_Status: draft v0.14 · Last updated: 2026-10-29_
 
 ## Approach
 Build the non-GUI core first, with unit tests (NFR-003), then add the Fyne GUI on top of it, one area at a time.
@@ -30,7 +30,7 @@ internal/arch/            architecture test: core packages have no GUI dependenc
 | 7 | GUI: right pane table — columns, sorting, double-click, hidden toggle | FR-020–028 | done — multi-select (Q-4) and light/toggleable grid lines (FR-031) added afterwards |
 | 8 | GUI: left pane — indent, colours, tooltips, context menu, colour dialog with live ratio | FR-040–047, FR-072, FR-075 | done |
 | 9 | GUI: Settings dialogs — column order/visibility, indent, contrast minimum (size format is already a menu toggle; colour dialog done in M8) | FR-024, FR-044, FR-074 | todo |
-| 10 | Persistence wiring (save on change/quit), window state, error handling, performance check | FR-061, NFR-001, NFR-002 | todo |
+| 10 | Persistence wiring (save on change/quit), window state, error handling, performance check | FR-061, FR-065, NFR-001, NFR-002 | done (before M9, at the user's request) |
 | 11 | Final crosscheck Spec ↔ Plan ↔ code, manual test pass | all | todo |
 
 **Crosscheck points:** after milestones 5 (core done), 8 (main GUI done) and 11.

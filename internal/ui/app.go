@@ -20,11 +20,13 @@ func Run(dirArg string) {
 
 	var warnings []error
 	var cfg config.Config
+	var store *config.Store
 	if path, err := config.DefaultPath(); err != nil {
 		cfg, warnings = config.Default(), append(warnings, err)
 	} else {
 		var warn error
-		cfg, warn = config.NewStore(path).Load()
+		store = config.NewStore(path)
+		cfg, warn = store.Load()
 		warnings = append(warnings, warn)
 	}
 	a.Settings().SetTheme(newLightTheme(cfg.ContrastMin))
@@ -34,6 +36,9 @@ func Run(dirArg string) {
 		home = "/"
 	}
 	m := newMainWindow(a, cfg, home)
+	if store != nil {
+		m.saver = newSaver(store)
+	}
 	start, err := startupDir(dirArg, cfg.LastDir, home)
 	warnings = append(warnings, err)
 	m.goPath(start)

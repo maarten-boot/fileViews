@@ -154,6 +154,7 @@ func (ft *fileTable) sortBy(col int) {
 	}
 	ft.m.cfg.SetSortSpec(s)
 	ft.m.applyView()
+	ft.m.changed()
 }
 
 // openRow handles a double click: directories (and links to them) are

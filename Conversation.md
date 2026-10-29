@@ -177,3 +177,8 @@ All core packages are now done: the planned point for the first Spec ↔ Plan �
 - the race detector then flagged the test setup (Fyne's test driver runs `fyne.Do` on the calling goroutine); background work now goes through one helper that runs inline in tests
 - bookkeeping: 7 test comments fixed, a nonexistent case ID removed; spec sketch, FR-002 (F5 needs the path field unfocused), FR-047, NFR-002 and README Usage updated
 - known gap (planned): nothing is saved yet, so "last directory" at startup only works after M10
+
+### 19. Milestone 10 before milestone 9
+**User:** do milestone 10 first, then milestone 9
+
+**Assistant:** Milestone 10 done (`internal/ui/persist.go`): the config is saved in the background after every change (toggles, sort, bookmark edits, navigation) and synchronously on quit/close together with window size and split; a newer snapshot is never overwritten by an older one; save errors are shown once; after an unreadable config nothing is saved. New FR-065. 7 new tests; 111 pass, also with `-race`. 10,000-entry directory shown in ≈ 42 ms through the window (headless). One test expectation of mine was wrong (size-descending order of `a.txt` vs `.hidden`); the code was right.

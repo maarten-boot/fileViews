@@ -47,8 +47,13 @@ type mainWindow struct {
 	freeOK  bool
 	loadSeq int
 
+	saver        *saver // nil: nothing is saved (tests without a store)
+	saveErrShown bool
+
 	// onLoaded is called after a directory listing is shown; used by tests.
 	onLoaded func()
+	// onError replaces the error dialog; used by tests.
+	onError func(error)
 }
 
 func newMainWindow(a fyne.App, cfg config.Config, home string) *mainWindow {
@@ -62,6 +67,7 @@ func newMainWindow(a fyne.App, cfg config.Config, home string) *mainWindow {
 	m.win.SetMainMenu(m.buildMenu())
 	m.win.SetContent(container.NewBorder(m.buildPathBar(), m.buildStatusBar(), nil, nil, m.buildPanes()))
 	m.win.Resize(fyne.NewSize(cfg.Window.Width, cfg.Window.Height))
+	m.win.SetCloseIntercept(m.quit)
 	m.win.Canvas().SetOnTypedKey(func(ev *fyne.KeyEvent) {
 		if ev.Name == fyne.KeyF5 {
 			m.refresh()
@@ -165,9 +171,14 @@ func (m *mainWindow) navigate(move func() (string, error)) {
 		m.sel.clear()
 	}
 	m.load(dir)
+	m.changed() // recent list and last directory
 }
 
 func (m *mainWindow) showError(err error) {
+	if m.onError != nil {
+		m.onError(err)
+		return
+	}
 	dialog.ShowError(err, m.win)
 }
 
@@ -279,6 +290,7 @@ func (m *mainWindow) toggleHidden() {
 	m.showHiddenItem.Checked = m.cfg.ShowHidden
 	m.mainMenu.Refresh()
 	m.applyView()
+	m.changed()
 }
 
 func (m *mainWindow) toggleGrid() {
@@ -286,6 +298,7 @@ func (m *mainWindow) toggleGrid() {
 	m.gridItem.Checked = !m.cfg.HideGrid
 	m.mainMenu.Refresh()
 	m.files.setGridLines(!m.cfg.HideGrid)
+	m.changed()
 }
 
 func (m *mainWindow) toggleExactSizes() {
@@ -294,12 +307,16 @@ func (m *mainWindow) toggleExactSizes() {
 	m.mainMenu.Refresh()
 	m.files.refresh()
 	m.updateStatus()
+	m.changed()
 }
 
 func (m *mainWindow) about() {
 	dialog.ShowInformation("About "+appTitle, appTitle+"\nA simple hierarchical file and directory viewer.", m.win)
 }
 
+// quit saves everything, including the window size and pane split, and
+// ends the application. It also handles closing the window.
 func (m *mainWindow) quit() {
+	m.saveNow()
 	m.app.Quit()
 }
