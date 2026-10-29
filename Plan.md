@@ -1,6 +1,6 @@
 # Plan — fileViews
 
-_Status: draft v0.22 · Last updated: 2026-10-29_
+_Status: draft v0.23 · Last updated: 2026-10-29_
 
 ## Approach
 Build the non-GUI core first, with unit tests (NFR-003), then add the Fyne GUI on top of it, one area at a time.
@@ -34,7 +34,7 @@ internal/arch/            architecture test: core packages have no GUI dependenc
 | 11 | Final crosscheck Spec ↔ Plan ↔ code, manual test pass | all | crosscheck done; manual pass by the user pending (`ManualTests.md`, `make testdir`) |
 | 12 | Feedback from the manual pass: indent field 1–25, bookmark order (move up/down, drag within pane), drag directories from the right pane; current bookmark bold (FR-039); compact view (FR-033) | FR-033, FR-039, FR-040, FR-044, FR-048, FR-049 | done |
 
-**Crosscheck points:** after milestones 5 (core done), 8 (main GUI done) and 11; after that, on request (#4 after milestone 12).
+**Crosscheck points:** after milestones 5 (core done), 8 (main GUI done) and 11; after that, on request (#4 after milestone 12, #5 after the compact view).
 
 ## Risks / notes
 - Fyne's standard widgets do not support per-item background colours; a custom list item widget is needed (milestone 8).
@@ -57,6 +57,7 @@ Record each Spec ↔ Plan ↔ code crosscheck here.
 
 | Date | Result | Follow-ups |
 |------|--------|------------|
+| 2026-10-29 | **#5, after the compact view (user request).** 56 requirement IDs, 155 test cases, 138 tests (all pass, none skipped, also with `-race`); IDs, test names, test comments and `ManualTests.md` consistent; `govulncheck`: no vulnerabilities; gofmt/vet clean; no unused production functions. Read-through of the changes since #4 (bold current bookmark, dependency upgrades and Go 1.26.10 toolchain, compact view and its header fix): no code defects; Spec §3 named neither the Fyne version nor the toolchain (fixed). | Manual pass by the user (59 checks) still pending |
 | 2026-10-29 | **#4, after M12 (user request).** 53 requirement IDs, 148 test cases, 133 tests (none skipped, all pass, also with `-race`): IDs, test names, test comments and `ManualTests.md` all consistent. Read-through of the M12 changes (manual bookmark order, drag & drop, indent field) found: FR-042 still listed the old bookmark menu (without Move up/down); `clearSelection` was unused outside tests (removed); M12 was listed above M11 in this table. No code defects found. | Manual pass by the user (53 checks) still pending |
 | 2026-10-29 | **#3, final (M11).** 50 requirement IDs, 133 test cases, 119 tests: all cross-references consistent, every requirement has a test case, all automated tests pass (also with `-race`). Read-through found NFR-002 still broken in two places — every navigation checked its target (`stat` + open) on the UI thread, and a double-click did a `stat` there — so a hung network mount could still freeze the window; fixed (navigator split into Target/Commit, checks in the background, newer navigation wins). Also: the recent drop-down (FR-015) had no test (added); FR-001 named the size toggle differently from the menu; 2 test case IDs used in tests had no row. Manual checklist generated (`ManualTests.md`, 42 checks) with `make testdir` to set up a test folder. | Manual pass by the user; known, documented limits: startup (config load, start directory) and the final save on quit are synchronous (NFR-002) |
 | 2026-10-29 | **#2, after M8 (main GUI done).** Checked 49 requirement IDs, 116 test cases and 104 tests; ID and test-name cross-references all consistent. Found and fixed: (1) dragging a header border could not resize columns (FR-020) — header cells swallowed the mouse press; now forwarded; (2) bookmark missing-checks ran `stat` on the UI thread on every redraw — a hung NFS mount would freeze the window (NFR-002); now cached and checked in the background; (3) 7 test comments with wrong/missing case IDs and one nonexistent ID (TC-023f); (4) spec layout sketch showed an old status-bar format; FR-002 now says F5 needs the path field unfocused; README gained a Usage section. | Settings, bookmarks, sort and toggles are not saved yet, so the startup "last directory" (FR-017) only works after M10; column resizing and all visual checks need a manual run |

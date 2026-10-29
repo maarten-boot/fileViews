@@ -264,3 +264,8 @@ All core packages are now done: the planned point for the first Spec ↔ Plan �
 **User:** ok the compact works but the first row with the names should not be affected as now we see only half the names
 
 **Assistant:** Reproduced by rendering the table headless with Fyne's software renderer: in compact view the header shrank to the data row height (22 px instead of 35 px), cutting the column names. Cause: Fyne's `SetRowHeight(-1, h)` silently ignores `h` when the header already has that height, so pinning it in the normal view did nothing. Fix: pin after the table re-measured itself in compact view. My earlier test missed it because it forced an extra refresh; the new test (TC-033e) fails with the old order and passes now. Also: rectangles use `color.Transparent` instead of nil (needed by the software renderer). 138 tests pass, also with `-race`.
+
+### 28. Crosscheck #5
+**User:** do a crosscheck now;
+
+**Assistant:** Scripted checks all clean: 56 requirement IDs, 155 test cases, 138 tests (all pass, none skipped), test comments and `ManualTests.md` in sync, `govulncheck` reports no vulnerabilities, gofmt/vet clean, no unused production code. Read-through of the changes since #4 found no code defects; Spec §3 now names Fyne v2.8 and the Go 1.26.10 toolchain. Logged in `Plan.md`. Remaining: the user's manual pass (59 checks).

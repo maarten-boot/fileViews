@@ -1,6 +1,6 @@
 # Specification — fileViews
 
-_Status: draft v0.23 · Last updated: 2026-10-29_
+_Status: draft v0.24 · Last updated: 2026-10-29_
 
 ## 1. Purpose
 A simple hierarchical file and directory viewer with a graphical interface, laid out similar to Thunar.
@@ -13,7 +13,8 @@ A simple hierarchical file and directory viewer with a graphical interface, laid
 | Item | Choice |
 |------|--------|
 | Language | Go |
-| GUI toolkit | Fyne (v2) |
+| GUI toolkit | Fyne v2.8 (currently v2.8.2) |
+| Go toolchain | Go 1.26.10, set in `go.mod` (NFR-004) |
 | Target platform | Linux first; avoid needless platform lock-in |
 | Go module | `github.com/maarten-boot/fileViews` |
 
