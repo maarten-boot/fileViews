@@ -241,3 +241,12 @@ All core packages are now done: the planned point for the first Spec ↔ Plan �
 **User:** yes, push it → (push from this session failed: no SSH access here) → i pushed
 
 **Assistant:** Confirmed locally: `origin/main` is at `8e4e295`, so the dependency upgrades and the toolchain pin are on GitHub; Dependabot should close its alerts after its next scan.
+
+### 25. Bold current bookmark (pending confirmation)
+**User:** when you select a item in the left column and you change the working directory to that view make the bookmark bold to show where your currently are
+
+**Assistant:** Suggested corrections ("a item" → "an item", "where your currently are" → "where you currently are") and asked: bold whenever the current directory equals the bookmark however you got there, or only after clicking it; and what to show when you are inside a bookmarked folder (proposal: bold only on an exact match). Not implemented until confirmed.
+
+**User:** go with your proposals for both
+
+**Assistant:** The bookmark of the shown directory is now bold, however you got there; only an exact match; bold keeps the item's colours (new FR-039, TC-039). The pane redraws after every completed navigation. 134 tests pass, also with `-race`; `ManualTests.md` regenerated (54 checks).

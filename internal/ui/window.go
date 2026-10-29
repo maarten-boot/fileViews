@@ -183,6 +183,7 @@ func (m *mainWindow) navigate(mv history.Move, path string) {
 				m.sel.clear()
 			}
 			m.nav.Commit(mv, dir)
+			m.side.list.Refresh() // bold follows the current directory (FR-039)
 			m.load(dir)
 			m.changed() // recent list and last directory
 		})

@@ -1,6 +1,6 @@
 # Specification — fileViews
 
-_Status: draft v0.21 · Last updated: 2026-10-29_
+_Status: draft v0.22 · Last updated: 2026-10-29_
 
 ## 1. Purpose
 A simple hierarchical file and directory viewer with a graphical interface, laid out similar to Thunar.
@@ -80,6 +80,7 @@ The split between left and right pane is user-resizable.
 - **FR-031** The lines between table cells are light gray (`#E8E8E8`), lighter than separators elsewhere. View → Show grid lines turns them off and on (default on); the setting is kept across sessions.
 
 ### 5.4 Left pane (side pane / bookmarks)
+- **FR-039** The bookmark whose directory is shown in the right pane is drawn **bold**, however you got there (bookmark click, typed path, Back/Forward, Up/Home, double-click, recent list); it updates on every navigation. Only an exact match is bold: inside a subfolder of a bookmark no item is bold. Bold keeps the item's own colours (so the contrast check is unchanged).
 - **FR-040** The left pane shows a list of bookmarked directories (not an expandable tree), in the user's order (FR-048). The indent (FR-044) shows each item's depth. User bookmarks are labelled with their base name. A config saved by an earlier version keeps its (path-sorted) order as the starting point.
 - **FR-041** Two default items are always present and cannot be removed:
   - `/` — label `/`

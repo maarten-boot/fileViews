@@ -310,3 +310,41 @@ func TestColourDialog(t *testing.T) {
 		t.Errorf("saved %+v", it)
 	}
 }
+
+// TC-039: the bookmark of the directory shown is bold, however you got
+// there; a subfolder of a bookmark makes nothing bold.
+func TestCurrentBookmarkBold(t *testing.T) {
+	root := fixture(t)
+	sub := filepath.Join(root, "sub")
+	m := newTestWindow(t, root)
+	m.marks.Add(sub)
+	idx := func(p string) int { return m.marks.Index(p) }
+	bold := func(p string) bool { return markAt(m, idx(p)).text.TextStyle.Bold }
+
+	wait(t, m, func() { test.Tap(markAt(m, idx(root))) }) // click the home bookmark
+	if !bold(root) || bold(sub) || bold("/") {
+		t.Errorf("after click: home %v sub %v / %v", bold(root), bold(sub), bold("/"))
+	}
+	wait(t, m, func() { m.goPath(sub) }) // typed path
+	if bold(root) || !bold(sub) {
+		t.Errorf("after typed path: home %v sub %v", bold(root), bold(sub))
+	}
+	wait(t, m, m.goBack) // Back
+	if !bold(root) || bold(sub) {
+		t.Errorf("after Back: home %v sub %v", bold(root), bold(sub))
+	}
+	deeper := filepath.Join(sub, "deeper")
+	os.Mkdir(deeper, 0o755)
+	wait(t, m, func() { m.goPath(deeper) }) // inside a bookmark: nothing bold
+	for _, it := range m.marks.Items() {
+		if bold(it.Path) {
+			t.Errorf("%s bold while in %s", it.Path, deeper)
+		}
+	}
+	// Bold keeps the bookmark's own colours.
+	m.marks.SetColours(sub, "#000080", "#FFFFFF", 4.5)
+	wait(t, m, func() { m.goPath(sub) })
+	if mi := markAt(m, idx(sub)); !mi.text.TextStyle.Bold || mi.text.Color != contrastRGBA("#FFFFFF") {
+		t.Errorf("bold %v colour %v", mi.text.TextStyle.Bold, mi.text.Color)
+	}
+}

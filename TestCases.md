@@ -95,6 +95,7 @@ A ✔ with a test name means the automated test exists and passes. The manual ch
 | TC-041c | FR-041 | Home is `/` | `HOME=/` | One item `/` | Auto ✔ `TestHomeIsRoot` |
 | TC-042a | FR-042 | Add/remove bookmark | Add `/tmp`, add `/tmp/` again, add `tmp`, remove twice | Added; duplicate refused; relative refused; removed; then not found | Auto ✔ `TestAddRemove` |
 | TC-042b | FR-042, FR-040 | Saved data cleaned up | Relative, empty, duplicate paths, bad colour; `/` saved but not home | Ignored / first wins / colour cleared; saved order kept, home inserted right after `/` | Auto ✔ `TestNewFromSavedCleansUp` |
+| TC-039 | FR-039 | Current bookmark bold | Click home bookmark; type `sub`; Back; go to `sub/deeper`; coloured `sub` | Home bold; `sub` bold; home bold; none bold; `sub` bold in its own colours | Auto ✔ `TestCurrentBookmarkBold` + Manual |
 | TC-040 | FR-040 | User order; Add appends | Add `/home/mboot-old`, `/home/mboot/projects`, `/etc` | Listed after the defaults in that order | Auto ✔ `TestOrder` |
 | TC-043 | FR-043 | Click opens directory | Click `mboot` | Right pane shows `$HOME` | Auto ✔ `TestBookmarkClickNavigates` + Manual |
 | TC-041d | FR-041 | Default items in menu | Right-click `/` | Remove bookmark and Reset colours disabled | Auto ✔ `TestBookmarkMenu` + Manual |

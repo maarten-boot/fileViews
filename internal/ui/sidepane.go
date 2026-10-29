@@ -61,7 +61,8 @@ func (sp *sidePane) update(id int, mi *markItem) {
 		return
 	}
 	mi.id = id
-	mi.set(items[id], sp.missing[items[id].Path], sp.m.cfg.ContrastMin, sp.m.cfg.IndentPx)
+	current := items[id].Path == sp.m.nav.Current()
+	mi.set(items[id], sp.missing[items[id].Path], current, sp.m.cfg.ContrastMin, sp.m.cfg.IndentPx)
 }
 
 // refresh redraws the list after the bookmarks changed, saves them and
@@ -200,13 +201,14 @@ func newMarkItem(sp *sidePane) *markItem {
 }
 
 // set shows it with the colours from bookmarks.Item.Style (FR-044–FR-047, FR-076).
-func (mi *markItem) set(it bookmarks.Item, missing bool, minContrast float64, indentPx int) {
+// A current item (the directory shown in the right pane) is bold (FR-039).
+func (mi *markItem) set(it bookmarks.Item, missing, current bool, minContrast float64, indentPx int) {
 	mi.item = it
 	st := it.Style(minContrast, missing)
 	mi.bg.FillColor = st.Background
 	mi.text.Text = st.Label
 	mi.text.Color = st.Foreground
-	mi.text.TextStyle = fyne.TextStyle{Italic: st.Italic}
+	mi.text.TextStyle = fyne.TextStyle{Italic: st.Italic, Bold: current}
 	mi.text.TextSize = theme.TextSize()
 	mi.indent.SetMinSize(fyne.NewSize(float32(it.Indent(indentPx)), 1))
 	mi.Refresh()

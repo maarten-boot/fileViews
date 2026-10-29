@@ -1,6 +1,6 @@
 # Manual Test Checklist — fileViews
 
-_Generated from `TestCases.md` (regenerated 2026-10-29 after bookmark ordering and drag & drop). Run on a desktop; tick each item and note anything odd next to it._
+_Generated from `TestCases.md` (regenerated 2026-10-29 after the bold current bookmark). Run on a desktop; tick each item and note anything odd next to it._
 
 **Preparation:** `make testdir` creates `/tmp/fileviews-test` with files, a subfolder, a hidden file, an executable, symlinks to a file and a folder, a broken symlink and a FIFO, plus `remove-me/` to bookmark and then delete (missing bookmarks), and starts the app there. For the scrolling checks use a big folder too, e.g. `/usr/bin`.
 
@@ -41,6 +41,7 @@ _Generated from `TestCases.md` (regenerated 2026-10-29 after bookmark ordering a
 
 ## Left pane / bookmarks (`internal/bookmarks`)
 
+- [ ] **TC-039** (FR-039) Current bookmark bold — *Click home bookmark; type `sub`; Back; go to `sub/deeper`; coloured `sub`* → Home bold; `sub` bold; home bold; none bold; `sub` bold in its own colours
 - [ ] **TC-043** (FR-043) Click opens directory — *Click `mboot`* → Right pane shows `$HOME`
 - [ ] **TC-041d** (FR-041) Default items in menu — *Right-click `/`* → Remove bookmark and Reset colours disabled
 - [ ] **TC-042c** (FR-042) Bookmark menu actions — *Add current directory (twice), reset colours, open, remove* → Added once (duplicate: error); reset; opened; removed
