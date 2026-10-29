@@ -97,3 +97,16 @@ Milestone 2 done in `internal/listing`: `Read`, `Filter`, `Sort`, `ColumnLayout.
 - FR-062: split "broken" into invalid JSON (moved to `.bak`) and unreadable (defaults, warning, and no saving that session so the file is never overwritten)
 - FR-063: failed save leaves the old file and no temp file; mode 0644
 - new FR-064: bad or missing values fall back to defaults/limits; indent limited to 1–64 px
+
+### 12. README: minimal packages per distribution (pending confirmation)
+**User:** add a description in the Readme for Ubuntu, debian and Fedora what minimal components must be installed for this app to work
+
+**Assistant:** Suggested wording fixes ("Readme" → README, "debian" → Debian) and asked whether this means packages to *run* a prebuilt binary, to *build* it, or both. Checked the binary with `ldd`: it links libGL, libX11 (+ libxcb, libXau, libXdmcp), libwayland-client and libffi; GLFW loads the other X11 libraries (Xcursor, Xrandr, Xinerama, Xi, Xxf86vm) at runtime. Opening files (FR-028) also needs `xdg-utils`.
+
+**User:** yes, go ahead with both parts
+
+**Assistant:** Rewrote the README requirements as "To run" and "To build", for Ubuntu/Debian and Fedora. Findings that shaped the lists:
+- the Fyne/GLFW build compiles in both X11 and Wayland support and links `-lwayland-client -lwayland-cursor -lwayland-egl -lxkbcommon` besides the X11 libraries, so the earlier README list (no Wayland/xkbcommon headers) was incomplete
+- several X11/Wayland libraries are loaded at startup (dlopen), so `ldd` doesn't list them
+- the minimal build set replaces the old `xorg-dev` / `libgl1-mesa-dev` suggestion
+- Ubuntu package names were checked with `apt-cache` on Ubuntu 26.04; Debian uses the same names; Fedora names are not tested here
