@@ -58,6 +58,7 @@ func TestUnreadableSubdir(t *testing.T) {
 	}
 }
 
+// TC-022b
 func TestUnknownIDsAreNumeric(t *testing.T) {
 	const id = 4000000000 // not a real uid/gid
 	if got := userName(id); got != "4000000000" {
@@ -68,6 +69,7 @@ func TestUnknownIDsAreNumeric(t *testing.T) {
 	}
 }
 
+// TC-050d
 func TestFreeSpace(t *testing.T) {
 	n, err := FreeSpace(t.TempDir())
 	if err != nil {

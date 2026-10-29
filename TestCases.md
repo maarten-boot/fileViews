@@ -5,6 +5,12 @@ _Last updated: 2026-10-29_
 Each test case links to the requirement it verifies. **Auto** = Go unit test; **Manual** = GUI check.
 A ✔ with a test name means the automated test exists and passes.
 
+## Menu bar
+| ID | Req | Description | Steps / input | Expected result | Type |
+|----|-----|-------------|---------------|-----------------|------|
+| TC-001 | FR-001 | Menus present | Open each menu | File, View, Go, Settings, Help with the listed items | Auto (M6, headless) + Manual |
+| TC-002 | FR-002 | Keyboard shortcuts | Press each shortcut | Matching action runs | Manual |
+
 ## Right pane / listing (`internal/listing`)
 | ID | Req | Description | Steps / input | Expected result | Type |
 |----|-----|-------------|---------------|-----------------|------|
@@ -16,11 +22,12 @@ A ✔ with a test name means the automated test exists and passes.
 | TC-023a | FR-023 | Directory marker | `sub/` | Name `sub/` | Auto ✔ `TestDisplayNameMarkers` |
 | TC-023b | FR-023 | Executable marker | File mode 0755 | Name ends in `*` | Auto ✔ `TestDisplayNameMarkers` |
 | TC-023c | FR-023 | Symlink marker + target | `l -> a.txt` | `l@ -> a.txt` | Auto ✔ `TestDisplayNameMarkers` |
-| TC-023d | FR-023 | FIFO marker | `mkfifo p` | `p\|` | Auto ✔ `TestFIFO` |
-| TC-023e | FR-023 | Socket marker | Unix socket `s` | `s=` | Auto ✔ `TestSocket` |
+| TC-023d | FR-023 | FIFO marker | `mkfifo p` | `p\|` | Auto ✔ `TestFIFO`, `TestDisplayNameSpecial` |
+| TC-023e | FR-023 | Socket marker | Unix socket `s` | `s=` | Auto ✔ `TestSocket`, `TestDisplayNameSpecial` |
 | TC-024a | FR-024 | Column order applied | Order `[Name, Size, Perms]` | Rows formatted in that order | Auto ✔ `TestColumnOrder` |
 | TC-024b | FR-024 | Name cannot be hidden | Config hides Name | Name still shown | Auto ✔ `TestColumnLayoutNormalises` |
 | TC-024c | FR-024 | Stale/bad column config | Duplicates, unknown ids, missing columns | Dropped / appended | Auto ✔ `TestColumnLayoutNormalises` |
+| TC-024d | FR-024 | Column names round trip | Every column name → column → name; `Bogus` | Same column; `Bogus` rejected | Auto ✔ `TestParseColumn` |
 | TC-025a | FR-025 | Default sort | `b`, `A/`, `a`, `B` | `A/`, `a`, `B`, `b` | Auto ✔ `TestDefaultSort` |
 | TC-025b | FR-025 | Sort by size, reverse | Files of 1, 3, 2 bytes + a dir | dir, then 3, 2, 1 | Auto ✔ `TestSortBySizeDescending` |
 | TC-025c | FR-025 | Ties broken by name | Equal mtimes | Ordered by name | Auto ✔ `TestSortTiesByName` |
@@ -38,6 +45,7 @@ A ✔ with a test name means the automated test exists and passes.
 ## Path bar / history (`internal/history`)
 | ID | Req | Description | Steps / input | Expected result | Type |
 |----|-----|-------------|---------------|-----------------|------|
+| TC-010 | FR-010 | Path bar shows current path | Navigate to `/tmp` | Path field shows `/tmp` | Auto (M6, headless) + Manual |
 | TC-011a | FR-011 | Type valid path | Enter `/tmp` | Navigates to `/tmp` | Manual |
 | TC-011b | FR-011 | Type invalid path | Missing path, a file, empty input | Error; directory and recent list unchanged | Auto ✔ `TestGoInvalidKeepsCurrent`, `TestReadMissingDir` + Manual |
 | TC-011c | FR-011 | Unreadable directory | `chmod 000 a`, go to `a` | Permission error; directory unchanged | Auto ✔ `TestGoUnreadableDir` |
@@ -68,6 +76,7 @@ A ✔ with a test name means the automated test exists and passes.
 | TC-044b | FR-044 | Indent | Depth 2, indent 12 | 24 px | Auto ✔ `TestDepthAndIndent` |
 | TC-045a | FR-045 | Set and reset colours | Navy on white; reset | Stored as `#RRGGBB`; reset to defaults | Auto ✔ `TestSetColours` |
 | TC-045b | FR-045 | Colours kept | Set colours, save config, reload | Same items and colours | Auto ✔ `TestSavedRoundTrip` |
+| TC-045c | FR-045 | Colour notation | `#000000`, `abcdef`, `#FFF`, `#GGGGGG` | Parsed and written as `#RRGGBB`; bad values rejected | Auto ✔ `TestHexRoundTrip` |
 | TC-046a | FR-046 | Default hover text | No custom text | Full path | Auto ✔ `TestHoverText` |
 | TC-046b | FR-046 | Custom hover text kept | Set "work", save, reload | "work" | Auto ✔ `TestHoverText`, `TestSavedRoundTrip` |
 | TC-046c | FR-046 | Empty text resets | Set "   " | Full path | Auto ✔ `TestHoverText` |
@@ -99,6 +108,7 @@ A ✔ with a test name means the automated test exists and passes.
 | ID | Req | Description | Steps / input | Expected result | Type |
 |----|-----|-------------|---------------|-----------------|------|
 | TC-N01 | NFR-001 | Large directory | 10,000 files: read + sort + format | < 1 s (measured ≈ 17 ms) | Bench ✔ `BenchmarkListLargeDir` |
+| TC-N03 | NFR-003 | Core has no GUI dependency | `go list -deps` of listing, history, bookmarks, config, contrast | No `fyne.io/…` or `internal/ui` | Auto ✔ `TestCoreHasNoGUIDeps` |
 | TC-N02 | NFR-002 | Responsive UI | Open a large directory | Window stays responsive | Manual |
 
 ## Build / smoke
@@ -116,6 +126,7 @@ A ✔ with a test name means the automated test exists and passes.
 | TC-071a | FR-071 | Gray on pure white / black | Min 4.5 | `#767676` on white, `#757575` on black; each passes the minimum | Auto ✔ `TestGray` |
 | TC-071b | FR-071 | No gray on other backgrounds | `#FEFEFE`, `#808080`, `#FFFFE0` | Gray refused | Auto ✔ `TestGray` |
 | TC-071c | FR-071 | No gray-on-gray in the GUI | Inspect missing bookmark, disabled buttons, status bar | No gray text on gray background | Manual |
+| TC-072 | FR-072 | Colours only affect their item | Colour one bookmark | Other items and panes stay white/black | Auto (core ✔ `TestStyleColours`) + Manual |
 | TC-073a | FR-073 | Contrast ratio | black/white, yellow/white, light green/white, `#767676`/white | 21, 1.07, 1.42, 4.54 | Auto ✔ `TestRatio` |
 | TC-074a | FR-074 | Default minimum 4.5 | Yellow, light green, `#777777` on white | Rejected; `#767676` and black accepted | Auto ✔ `TestMeetsDefault` |
 | TC-074b | FR-074 | Minimum limits | Set 1, 30 | Clamped to 3, 21 | Auto ✔ `TestClampMin` |

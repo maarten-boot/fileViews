@@ -43,13 +43,14 @@ func TestDefaultItems(t *testing.T) {
 	}
 }
 
+// TC-041c
 func TestHomeIsRoot(t *testing.T) {
 	if got := paths(New("/", nil)); !slices.Equal(got, []string{"/"}) {
 		t.Errorf("paths = %v", got)
 	}
 }
 
-// TC-041b, TC-042
+// TC-041b, TC-042a
 func TestAddRemove(t *testing.T) {
 	l := New("/home/mboot", nil)
 	if err := l.Remove("/"); !errors.Is(err, ErrIsDefault) {
@@ -78,6 +79,7 @@ func TestAddRemove(t *testing.T) {
 	}
 }
 
+// TC-040
 // Items sort component-wise so the indent reads like a tree.
 func TestOrder(t *testing.T) {
 	l := New("/home/mboot", nil)
@@ -105,7 +107,7 @@ func TestDepthAndIndent(t *testing.T) {
 	}
 }
 
-// TC-046a, TC-046c
+// TC-046a, TC-046b, TC-046c
 func TestHoverText(t *testing.T) {
 	l := New("/home/mboot", nil)
 	if got := mustGet(t, l, "/home/mboot").Tooltip(); got != "/home/mboot" {
@@ -124,7 +126,7 @@ func TestHoverText(t *testing.T) {
 	}
 }
 
-// TC-045, TC-075b (core part): accepted and refused colour combinations.
+// TC-045a, TC-075b: accepted and refused colour combinations.
 func TestSetColours(t *testing.T) {
 	l := New("/home/mboot", nil)
 	if err := l.SetColours("/", "#ffffff", "#000080", contrast.DefaultMin); err != nil {
@@ -159,7 +161,7 @@ func TestSetColours(t *testing.T) {
 	}
 }
 
-// TC-070a (core part), TC-076: drawing colours.
+// TC-070a, TC-076: drawing colours.
 func TestStyleColours(t *testing.T) {
 	st := (Item{Path: "/a"}).Style(contrast.DefaultMin, false)
 	if st.Background != contrast.White || st.Foreground != contrast.Black || st.Italic || st.Label != "a" {
@@ -187,7 +189,7 @@ func TestStyleColours(t *testing.T) {
 	}
 }
 
-// TC-047, FR-071
+// TC-047b, FR-071
 func TestStyleMissing(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -212,6 +214,7 @@ func TestStyleMissing(t *testing.T) {
 	}
 }
 
+// TC-047a
 func TestMissing(t *testing.T) {
 	dir := t.TempDir()
 	if (Item{Path: dir}).Missing() {
@@ -227,7 +230,7 @@ func TestMissing(t *testing.T) {
 	}
 }
 
-// TC-045, TC-046b: settings survive a save/load through the config.
+// TC-045b, TC-046b: settings survive a save/load through the config.
 func TestSavedRoundTrip(t *testing.T) {
 	l := New("/home/mboot", nil)
 	l.Add("/tmp")
@@ -250,6 +253,7 @@ func TestSavedRoundTrip(t *testing.T) {
 	}
 }
 
+// TC-042b
 // Saved data from a hand-edited or older config is cleaned up.
 func TestNewFromSavedCleansUp(t *testing.T) {
 	saved := []config.Bookmark{

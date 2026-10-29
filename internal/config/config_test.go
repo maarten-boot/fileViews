@@ -30,6 +30,7 @@ func TestDefaultPath(t *testing.T) {
 	}
 }
 
+// TC-062a
 func TestDefaults(t *testing.T) {
 	c := Default()
 	if c.IndentPx != 12 || c.ContrastMin != 4.5 || c.ShowHidden || c.ExactSizes {
@@ -84,6 +85,7 @@ func TestLoadBroken(t *testing.T) {
 	}
 }
 
+// TC-062c
 // An existing file that cannot be read is never overwritten.
 func TestLoadUnreadableBlocksSave(t *testing.T) {
 	if os.Geteuid() == 0 {
@@ -110,7 +112,7 @@ func TestLoadUnreadableBlocksSave(t *testing.T) {
 	}
 }
 
-// TC-016, TC-045, TC-046b (storage part), FR-061: every field survives a round trip.
+// TC-016, TC-061, FR-061: every field survives a round trip.
 func TestRoundTrip(t *testing.T) {
 	s := storeIn(t)
 	want := Default()
@@ -150,7 +152,7 @@ func TestRoundTrip(t *testing.T) {
 	}
 }
 
-// TC-063
+// TC-063a
 func TestSaveAtomic(t *testing.T) {
 	s := storeIn(t)
 	for i := range 3 { // creates the directory, then replaces the file
@@ -177,7 +179,7 @@ func TestSaveAtomic(t *testing.T) {
 	}
 }
 
-// TC-063: a failed save leaves the existing file intact and no temp file.
+// TC-063b: a failed save leaves the existing file intact and no temp file.
 func TestSaveFailureKeepsOld(t *testing.T) {
 	if os.Geteuid() == 0 {
 		t.Skip("root ignores permissions")
@@ -205,6 +207,7 @@ func TestSaveFailureKeepsOld(t *testing.T) {
 	}
 }
 
+// TC-064
 // Hand-edited or older files with bad values still give a usable config.
 func TestNormalize(t *testing.T) {
 	s := storeIn(t)

@@ -1,6 +1,6 @@
 # Plan — fileViews
 
-_Status: draft v0.7 · Last updated: 2026-10-29_
+_Status: draft v0.8 · Last updated: 2026-10-29_
 
 ## Approach
 Build the non-GUI core first, with unit tests (NFR-003), then add the Fyne GUI on top of it, one area at a time.
@@ -14,6 +14,7 @@ internal/bookmarks/       side pane items, depth, colours, hover text
 internal/config/          load/save config.json (atomic, defaults, broken-file handling)
 internal/contrast/        WCAG contrast ratio, fallback text colour, allowed gray
 internal/ui/              Fyne windows and widgets
+internal/arch/            architecture test: core packages have no GUI dependency (NFR-003)
 ```
 
 ## Milestones
@@ -25,17 +26,18 @@ internal/ui/              Fyne windows and widgets
 | 3 | Core: navigation history, recent directories, path resolution and checks | FR-011–016 | done |
 | 4 | Core: config load/save, normalisation | FR-060–064 | done |
 | 5 | Core: bookmarks (defaults, order, depth, colours with contrast check, hover text, missing style) | FR-040–047, FR-075–076 | done |
-| 6 | GUI: main window layout — light theme passing the contrast minimum, menu bar, path bar, split panes, status bar | FR-001, FR-010–015, FR-070–071, FR-077, §4 | todo |
+| 6 | GUI: main window layout — light theme passing the contrast minimum, menu bar, shortcuts, path bar, split panes, status bar | FR-001, FR-002, FR-010–015, FR-070–071, FR-077, §4 | todo |
 | 7 | GUI: right pane table — columns, sorting, double-click, hidden toggle | FR-020–028 | todo |
 | 8 | GUI: left pane — indent, colours, tooltips, context menu | FR-040–047 | todo |
 | 9 | GUI: Settings dialogs — column order/visibility, indent, size format, contrast minimum; bookmark colour dialog with live ratio | FR-024, FR-026, FR-044, FR-074, FR-075 | todo |
-| 10 | Persistence wiring, window state, error handling, performance check | FR-061, NFR-001, NFR-002 | todo |
+| 10 | Persistence wiring, window state, startup directory (Q-1), error handling, performance check | FR-061, NFR-001, NFR-002 | todo |
 | 11 | Final crosscheck Spec ↔ Plan ↔ code, manual test pass | all | todo |
 
 **Crosscheck points:** after milestones 5 (core done), 8 (main GUI done) and 11.
 
 ## Risks / notes
-- Fyne's standard widgets may not support per-item background colours or tooltips directly; custom widgets may be needed (milestone 8). Tooltip support in recent Fyne versions still to be verified.
+- Fyne's standard widgets do not support per-item background colours; a custom list item widget is needed (milestone 8).
+- **Confirmed at crosscheck 1:** Fyne v2.8.2 has no tooltip support at all. Hover texts (FR-046) need a custom widget that shows a small pop-up on mouse hover (`desktop.Hoverable`), in milestone 8.
 - No display in the assistant's shell: GUI code is verified with Fyne's headless `test` driver; visual checks are done manually by the user.
 - Owner/group lookup and link count use `syscall.Stat_t` (Unix only); keep that in a file with a build tag.
 - Free disk space uses `statfs` (Unix only); same approach. Both live in `internal/listing/stat_unix.go`, with a stub in `stat_other.go`.
@@ -46,3 +48,4 @@ Record each Spec ↔ Plan ↔ code crosscheck here.
 
 | Date | Result | Follow-ups |
 |------|--------|------------|
+| 2026-10-29 | **#1, after M5 (core done).** Checked all 46 requirement IDs, 94 test cases and 69 tests. Code: every core requirement is implemented and tested; no ID in the code is missing from the spec; core packages have no GUI dependency. Fixed: 8 test comments with outdated case IDs and 19 with none; 3 tests not listed in TestCases; 4 requirements with no test case (FR-001, FR-010, FR-072, NFR-003); NFR-003 now enforced by a test; spec text out of date for FR-001 (missing settings), FR-022 (size/time), FR-029 (`?` fields), FR-050 (what is counted); accepted assumptions moved from open questions into FR-002, FR-022, FR-040. | Q-1 startup directory, Q-2 recent-list size (Spec §7); tooltip widget needed (M8) |

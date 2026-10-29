@@ -62,7 +62,7 @@ func TestClampMin(t *testing.T) {
 	}
 }
 
-// TC-075
+// TC-075a
 func TestBestText(t *testing.T) {
 	for hex, want := range map[string]color.RGBA{
 		"#FFFFFF": Black,

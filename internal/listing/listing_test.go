@@ -76,7 +76,7 @@ func TestReadListsFilesAndDirs(t *testing.T) {
 	}
 }
 
-// TC-011b (core part): an unreadable or missing directory is an error.
+// TC-011b: an unreadable or missing directory is an error.
 func TestReadMissingDir(t *testing.T) {
 	if _, err := Read(filepath.Join(t.TempDir(), "nonexistent")); err == nil {
 		t.Fatal("expected error")
@@ -126,7 +126,7 @@ func TestPermString(t *testing.T) {
 	}
 }
 
-// TC-022 via Read: mode bits survive the round trip.
+// TC-022: mode bits survive a Read.
 func TestReadPermissions(t *testing.T) {
 	dir := t.TempDir()
 	mkfile(t, dir, "f", 0, 0o754)
@@ -171,6 +171,7 @@ func TestDisplayNameSpecial(t *testing.T) {
 	}
 }
 
+// TC-025d
 // Symlink to a directory counts as a directory for sorting and navigation (FR-025, FR-027).
 func TestSymlinkToDir(t *testing.T) {
 	dir := t.TempDir()
@@ -199,7 +200,7 @@ func TestColumnOrder(t *testing.T) {
 	}
 }
 
-// TC-024b, plus robustness against stale or bad config.
+// TC-024b, TC-024c: Name is always shown; stale or bad config is cleaned up.
 func TestColumnLayoutNormalises(t *testing.T) {
 	tests := []struct {
 		name   string
@@ -245,7 +246,7 @@ func TestDefaultSort(t *testing.T) {
 	}
 }
 
-// TC-025b, and directories stay first when descending.
+// TC-025b: directories stay first when descending.
 func TestSortBySizeDescending(t *testing.T) {
 	entries := []Entry{
 		{Name: "one", Size: 1},
@@ -259,6 +260,7 @@ func TestSortBySizeDescending(t *testing.T) {
 	}
 }
 
+// TC-025c
 func TestSortTiesByName(t *testing.T) {
 	ts := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	entries := []Entry{{Name: "c", ModTime: ts}, {Name: "a", ModTime: ts}, {Name: "b", ModTime: ts.Add(-time.Hour)}}
@@ -296,6 +298,7 @@ func TestSizeFormat(t *testing.T) {
 	}
 }
 
+// TC-026c
 func TestModifiedFormat(t *testing.T) {
 	e := Entry{Kind: KindFile, Mode: 0o644, ModTime: time.Date(2026, 10, 29, 11, 4, 59, 0, time.Local)}
 	if got := FormatField(e, ColModified, FormatOptions{}); got != "2026-10-29 11:04" {
@@ -320,6 +323,7 @@ func TestBrokenSymlink(t *testing.T) {
 	}
 }
 
+// TC-029c
 func TestUnreadableFieldsShowQuestionMark(t *testing.T) {
 	e := Entry{Name: "x", Err: fs.ErrPermission}
 	if got := FormatRow(e, DefaultColumns, FormatOptions{}); got[0] != "?" || got[6] != "x" {

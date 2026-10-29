@@ -1,6 +1,6 @@
 # Specification — fileViews
 
-_Status: draft v0.6 · Last updated: 2026-10-29_
+_Status: draft v0.7 · Last updated: 2026-10-29_
 
 ## 1. Purpose
 A simple hierarchical file and directory viewer with a graphical interface, laid out similar to Thunar.
@@ -41,8 +41,9 @@ The split between left and right pane is user-resizable.
   - File: Quit
   - View: Show hidden files (toggle), Refresh
   - Go: Back, Forward, Up, Home
-  - Settings: Columns…, Side pane indent…
+  - Settings: Columns…, Side pane indent…, Size format (human-readable / exact bytes), Contrast minimum…
   - Help: About
+- **FR-002** Keyboard shortcuts: Ctrl+H show hidden files, Alt+Left back, Alt+Right forward, Alt+Up up, Alt+Home home, F5 refresh, Ctrl+Q quit.
 
 ### 5.2 Path bar and history
 - **FR-010** The path bar shows the absolute path of the current directory.
@@ -63,8 +64,8 @@ The split between left and right pane is user-resizable.
   | Links | hard link count |
   | Owner | user name (numeric uid if unknown) |
   | Group | group name (numeric gid if unknown) |
-  | Size | size in bytes |
-  | Modified | modification time |
+  | Size | size, human-readable or exact bytes (FR-026) |
+  | Modified | modification time in local time, `YYYY-MM-DD HH:MM` |
   | Name | name plus type marker |
 - **FR-023** Type markers in the Name column: `/` directory, `*` executable regular file, `@` symlink, `|` named pipe (FIFO), `=` socket. For symlinks the target is shown as `name@ -> target`.
 - **FR-024** Settings → Columns lets the user change the column order and show/hide columns. The Name column cannot be hidden. The configuration is kept across sessions.
@@ -72,11 +73,11 @@ The split between left and right pane is user-resizable.
 - **FR-026** Sizes are shown human-readable by default (e.g. `4.2K`); a setting switches to exact bytes.
 - **FR-027** Double-clicking a directory (or a symlink to a directory) navigates into it.
 - **FR-028** Double-clicking a file opens it with the system default application (`xdg-open` on Linux).
-- **FR-029** Entries that cannot be read (permission denied, broken symlink) are still listed with the information that is available; they must not stop the listing.
+- **FR-029** Entries that cannot be read (permission denied, broken symlink) are still listed with the information that is available; they must not stop the listing. Fields that cannot be read are shown as `?`. A broken symlink is listed with its target, and is not treated as a directory.
 - **FR-030** The viewer is read-only: it does not change files or directories.
 
 ### 5.4 Left pane (side pane / bookmarks)
-- **FR-040** The left pane shows a list of bookmarked directories (not an expandable tree). Items are sorted by path, component by component (`/home/mboot/projects` directly after `/home/mboot`, before `/home/mboot-old`), so together with the indent (FR-044) the list reads like a tree. User bookmarks are labelled with their base name.
+- **FR-040** The left pane shows a list of bookmarked directories (not an expandable tree). Items are sorted by path, component by component (`/home/mboot/projects` directly after `/home/mboot`, before `/home/mboot-old`), so together with the indent (FR-044) the list reads like a tree. User bookmarks are labelled with their base name. Bookmarks cannot be reordered by hand.
 - **FR-041** Two default items are always present and cannot be removed:
   - `/` — label `/`
   - `$HOME` — label is the basename of `$HOME` (e.g. `mboot`), target is the full path. If `$HOME` is `/`, there is only one default item.
@@ -89,10 +90,10 @@ The split between left and right pane is user-resizable.
 
 ### 5.5 Status bar (bottom line)
 - **FR-050** The status bar shows, for the current directory:
-  - number of directories
-  - number of files
+  - number of directories shown (including symlinks to directories)
+  - number of other entries shown ("files")
   - number of hidden entries (counted even when hidden entries are not shown)
-  - total size of the listed files
+  - total size of the shown non-directory entries
   - total size of the selected entries (when there is a selection)
   - free space on the filesystem of the current directory
 - **FR-051** The status bar updates on navigation, refresh, selection change and toggling hidden files.
@@ -124,6 +125,5 @@ The split between left and right pane is user-resizable.
 - **NFR-004** Builds with `go build` (`make build`); Go 1.26+, Fyne v2.8+.
 
 ## 7. Open questions
-- Keyboard shortcuts beyond Ctrl+H? *Assumed: Alt+Left / Alt+Right (history), Alt+Up, Alt+Home, F5 (refresh).*
-- Modified time format? *Assumed: `2006-01-02 15:04`.*
-- Should bookmarks be reorderable (drag & drop)? *Assumed: not in v1.*
+- **Q-1** Startup directory: FR-061 saves the last directory, but no requirement says where the app starts. *Proposal: the last directory if it can still be read, otherwise `$HOME`; a directory given on the command line (`fileviews /some/dir`) overrides both.*
+- **Q-2** FR-015 says "max 20 by default", which suggests a setting, but there is none. *Proposal: fixed at 20, drop "by default".*

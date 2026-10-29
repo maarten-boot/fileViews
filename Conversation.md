@@ -121,3 +121,13 @@ Milestone 2 done in `internal/listing`: `Read`, `Filter`, `Sort`, `ColumnLayout.
 - FR-047: gray for missing items on pure white/black backgrounds, whether default or chosen
 
 All core packages are now done: the planned point for the first Spec ↔ Plan ↔ code crosscheck.
+
+### 14. Crosscheck #1 (after milestone 5)
+**User:** yes, do the crosscheck now
+
+**Assistant:** Compared Spec, Plan, TestCases and code (scripted ID/test-name comparisons plus a read-through). Result logged in `Plan.md`. Summary:
+- code matches the spec for all core requirements; no unknown IDs; 69 tests pass, none skipped
+- fixed: test comments with outdated or missing case IDs; 3 tests and 4 requirements missing from TestCases; added `internal/arch` test enforcing NFR-003
+- spec v0.7: FR-001 lists the size-format and contrast settings; new FR-002 (keyboard shortcuts, adding Ctrl+Q quit); FR-022 size/time wording; FR-029 `?` for unreadable fields; FR-040 no manual reordering; FR-050 says exactly what is counted
+- plan: Fyne v2.8.2 has no tooltips → custom hover widget in M8
+- two open questions for the user: Q-1 startup directory, Q-2 whether the recent-list size of 20 should be configurable

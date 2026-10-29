@@ -41,6 +41,7 @@ func TestVisitClearsForward(t *testing.T) {
 	}
 }
 
+// TC-012c
 func TestHistoryEdges(t *testing.T) {
 	var h History
 	if h.Current() != "" || h.CanBack() || h.CanForward() {
@@ -82,7 +83,7 @@ func TestRecentMax(t *testing.T) {
 	}
 }
 
-// TC-016 (core part): a list loaded from config is cleaned up.
+// TC-016: a list loaded from config is cleaned up.
 func TestRecentFromConfig(t *testing.T) {
 	r := NewRecent(3, []string{"A", "", "B", "A", "C", "D"})
 	if got, want := r.Items(), []string{"A", "B", "C"}; !slices.Equal(got, want) {
@@ -137,7 +138,7 @@ func mustGo(t *testing.T, n *Navigator, path string) string {
 	return dir
 }
 
-// TC-011b (core part)
+// TC-011b
 func TestGoInvalidKeepsCurrent(t *testing.T) {
 	root := tree(t)
 	n := NewNavigator(nil, root)
@@ -159,6 +160,7 @@ func TestGoInvalidKeepsCurrent(t *testing.T) {
 	}
 }
 
+// TC-011c
 func TestGoUnreadableDir(t *testing.T) {
 	if os.Geteuid() == 0 {
 		t.Skip("root ignores permissions")
@@ -179,6 +181,7 @@ func TestGoUnreadableDir(t *testing.T) {
 	}
 }
 
+// TC-011d
 func TestGoResolvesPaths(t *testing.T) {
 	root := tree(t)
 	n := NewNavigator(nil, root)
@@ -197,13 +200,14 @@ func TestGoResolvesPaths(t *testing.T) {
 	}
 }
 
+// TC-011e
 func TestRelativeWithoutCurrent(t *testing.T) {
 	if _, err := NewNavigator(nil, "/").Go("a"); err == nil {
 		t.Error("relative path accepted without a current directory")
 	}
 }
 
-// TC-012a/b through the Navigator, plus recent updates on back/forward.
+// TC-012a, TC-015c: back/forward through the Navigator, and recent updates on back/forward.
 func TestNavigatorBackForward(t *testing.T) {
 	root := tree(t)
 	a, b := filepath.Join(root, "a"), filepath.Join(root, "a", "b")
@@ -226,6 +230,7 @@ func TestNavigatorBackForward(t *testing.T) {
 	}
 }
 
+// TC-012d
 // Back to a directory that was removed: error, position unchanged.
 func TestBackToRemovedDir(t *testing.T) {
 	root := tree(t)
