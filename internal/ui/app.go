@@ -2,27 +2,44 @@
 package ui
 
 import (
-	"fyne.io/fyne/v2"
+	"errors"
+	"os"
+
 	"fyne.io/fyne/v2/app"
-	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/widget"
+	"fyne.io/fyne/v2/dialog"
+
+	"github.com/maarten-boot/fileViews/internal/config"
 )
 
-const (
-	appID    = "com.github.maarten-boot.fileviews"
-	appTitle = "fileViews"
-)
+const appID = "com.github.maarten-boot.fileviews"
 
-// Run creates the main window and blocks until the application quits.
-func Run() {
+// Run opens the main window and blocks until the application quits.
+// dirArg is the directory given on the command line, or "".
+func Run(dirArg string) {
 	a := app.NewWithID(appID)
-	newMainWindow(a).ShowAndRun()
-}
 
-// newMainWindow builds the main window for app a without showing it.
-func newMainWindow(a fyne.App) fyne.Window {
-	w := a.NewWindow(appTitle)
-	w.SetContent(container.NewCenter(widget.NewLabel(appTitle)))
-	w.Resize(fyne.NewSize(1000, 650))
-	return w
+	var warnings []error
+	var cfg config.Config
+	if path, err := config.DefaultPath(); err != nil {
+		cfg, warnings = config.Default(), append(warnings, err)
+	} else {
+		var warn error
+		cfg, warn = config.NewStore(path).Load()
+		warnings = append(warnings, warn)
+	}
+	a.Settings().SetTheme(newLightTheme(cfg.ContrastMin))
+
+	home, err := os.UserHomeDir()
+	if err != nil {
+		home = "/"
+	}
+	m := newMainWindow(a, cfg, home)
+	start, err := startupDir(dirArg, cfg.LastDir, home)
+	warnings = append(warnings, err)
+	m.goPath(start)
+
+	if err := errors.Join(warnings...); err != nil {
+		dialog.ShowError(err, m.win)
+	}
+	m.win.ShowAndRun()
 }

@@ -131,3 +131,14 @@ All core packages are now done: the planned point for the first Spec ↔ Plan �
 - spec v0.7: FR-001 lists the size-format and contrast settings; new FR-002 (keyboard shortcuts, adding Ctrl+Q quit); FR-022 size/time wording; FR-029 `?` for unreadable fields; FR-040 no manual reordering; FR-050 says exactly what is counted
 - plan: Fyne v2.8.2 has no tooltips → custom hover widget in M8
 - two open questions for the user: Q-1 startup directory, Q-2 whether the recent-list size of 20 should be configurable
+
+### 15. Q-1, Q-2 resolved; milestone 6
+**User:** go with your proposals for Q-1 and Q-2, start milestone 6
+
+**Assistant:** Spec v0.8: new FR-017 (startup directory: command line → last directory → `$HOME` → `/`); FR-015 recent list fixed at 20. Startup directory moved from M10 into M6, since the window needs a directory to show.
+
+**Assistant (milestone 6 result):** Main window built in `internal/ui`: custom light theme, menu bar with shortcuts, path bar (Back/Forward/Up/Home, editable path, recent drop-down), split panes (plain lists for now), status bar, startup directory, and `fileviews [directory]`. Directories load off the UI thread; late results are dropped. 16 new UI tests (headless) pass, also with `-race`. Findings:
+- Fyne's own light theme fails our colour rules (gray body text, near-invisible disabled text, weak placeholder text, white on light colours); the custom theme replaces those colours and a test checks every text/background pair at minimums 3, 4.5 and 7
+- my first version resolved a relative command-line directory against `$HOME`; changed to the working directory, like any command-line path (FR-017 updated)
+- new open question Q-3: limit the contrast minimum to 3–7, since above ~7.8 coloured backgrounds cannot pass
+- not yet done (planned): the Settings dialogs (M9) and saving settings (M10), so Show hidden / Exact sizes are not remembered yet

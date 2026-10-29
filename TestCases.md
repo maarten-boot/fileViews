@@ -8,15 +8,15 @@ A ✔ with a test name means the automated test exists and passes.
 ## Menu bar
 | ID | Req | Description | Steps / input | Expected result | Type |
 |----|-----|-------------|---------------|-----------------|------|
-| TC-001 | FR-001 | Menus present | Open each menu | File, View, Go, Settings, Help with the listed items | Auto (M6, headless) + Manual |
-| TC-002 | FR-002 | Keyboard shortcuts | Press each shortcut | Matching action runs | Manual |
+| TC-001 | FR-001 | Menus present | Open each menu | File, View, Go, Settings, Help with the listed items | Auto ✔ `TestMenus` + Manual |
+| TC-002 | FR-002 | Keyboard shortcuts | Press each shortcut | Matching action runs | Auto (menu shortcuts ✔ `TestMenus`, F5 ✔ `TestF5Refresh`) + Manual |
 
 ## Right pane / listing (`internal/listing`)
 | ID | Req | Description | Steps / input | Expected result | Type |
 |----|-----|-------------|---------------|-----------------|------|
-| TC-020 | FR-020 | List directory | Temp dir with `a.txt`, `sub/` | Both entries listed | Auto ✔ `TestReadListsFilesAndDirs` |
+| TC-020 | FR-020 | List directory | Temp dir with `a.txt`, `sub/` | Both entries listed | Auto ✔ `TestReadListsFilesAndDirs`, `TestNavigateShowsDirectory` |
 | TC-021a | FR-021 | Hidden filtered by default | Dir with `.x`, `y` | Only `y` listed | Auto ✔ `TestFilterHidden` |
-| TC-021b | FR-021 | Show hidden | Same dir, show-hidden on | `.x` and `y` listed | Auto ✔ `TestFilterHidden` |
+| TC-021b | FR-021 | Show hidden | Same dir, show-hidden on | `.x` and `y` listed | Auto ✔ `TestFilterHidden`, `TestToggleHidden` |
 | TC-022 | FR-022 | Permission string | File with mode 0754; also dir, link, pipe, socket, devices, setuid/setgid/sticky | `-rwxr-xr--` etc. | Auto ✔ `TestPermString`, `TestReadPermissions` |
 | TC-022b | FR-022 | Unknown uid/gid | uid 4000000000 | Shown numerically | Auto ✔ `TestUnknownIDsAreNumeric` |
 | TC-023a | FR-023 | Directory marker | `sub/` | Name `sub/` | Auto ✔ `TestDisplayNameMarkers` |
@@ -33,7 +33,7 @@ A ✔ with a test name means the automated test exists and passes.
 | TC-025c | FR-025 | Ties broken by name | Equal mtimes | Ordered by name | Auto ✔ `TestSortTiesByName` |
 | TC-025d | FR-025 | Symlink to dir sorts as dir | `ls -> sub` | Treated as directory | Auto ✔ `TestSymlinkToDir` |
 | TC-026a | FR-026 | Human-readable size | 4300 bytes | `4.2K` | Auto ✔ `TestSizeFormat` |
-| TC-026b | FR-026 | Exact size | 4300 bytes, exact mode | `4300` | Auto ✔ `TestSizeFormat` |
+| TC-026b | FR-026 | Exact size | 4300 bytes, exact mode | `4300` | Auto ✔ `TestSizeFormat`, `TestStatusSelectionAndExactSizes` |
 | TC-026c | — | Modified time format | 2026-10-29 11:04:59 | `2026-10-29 11:04` | Auto ✔ `TestModifiedFormat` |
 | TC-027 | FR-027 | Double-click directory | Double-click `sub/` | Right pane shows `sub` | Manual |
 | TC-028 | FR-028 | Double-click file | Double-click `a.txt` | Opens in default app | Manual |
@@ -45,21 +45,25 @@ A ✔ with a test name means the automated test exists and passes.
 ## Path bar / history (`internal/history`)
 | ID | Req | Description | Steps / input | Expected result | Type |
 |----|-----|-------------|---------------|-----------------|------|
-| TC-010 | FR-010 | Path bar shows current path | Navigate to `/tmp` | Path field shows `/tmp` | Auto (M6, headless) + Manual |
-| TC-011a | FR-011 | Type valid path | Enter `/tmp` | Navigates to `/tmp` | Manual |
-| TC-011b | FR-011 | Type invalid path | Missing path, a file, empty input | Error; directory and recent list unchanged | Auto ✔ `TestGoInvalidKeepsCurrent`, `TestReadMissingDir` + Manual |
+| TC-010 | FR-010 | Path bar shows current path | Navigate to `/tmp` | Path field shows `/tmp` | Auto ✔ `TestNavigateShowsDirectory` + Manual |
+| TC-011a | FR-011 | Type valid path | Enter `/tmp` | Navigates to `/tmp` | Auto ✔ `TestNavigateShowsDirectory` + Manual |
+| TC-011b | FR-011 | Type invalid path | Missing path, a file, empty input | Error; directory and recent list unchanged | Auto ✔ `TestGoInvalidKeepsCurrent`, `TestReadMissingDir`, `TestInvalidPathKeepsCurrent` + Manual |
 | TC-011c | FR-011 | Unreadable directory | `chmod 000 a`, go to `a` | Permission error; directory unchanged | Auto ✔ `TestGoUnreadableDir` |
 | TC-011d | FR-011 | Path resolution | `a`, `b/..`, `~`, `~/a/b`, spaces around path | Resolved, cleaned absolute paths | Auto ✔ `TestGoResolvesPaths` |
 | TC-011e | FR-011 | Relative path with no current dir | `a` at startup | Error | Auto ✔ `TestRelativeWithoutCurrent` |
-| TC-012a | FR-012 | Back/forward | Visit A, B, C; Back; Back; Forward | Current = B | Auto ✔ `TestBackForward`, `TestNavigatorBackForward` |
+| TC-012a | FR-012 | Back/forward | Visit A, B, C; Back; Back; Forward | Current = B | Auto ✔ `TestBackForward`, `TestNavigatorBackForward`, `TestButtonsFollowHistory` |
 | TC-012b | FR-012 | New visit clears forward | Visit A, B; Back; visit C | Forward is empty | Auto ✔ `TestVisitClearsForward` |
 | TC-012c | FR-012 | Revisit current adds nothing | Visit A, A | No Back entry | Auto ✔ `TestHistoryEdges` |
 | TC-012d | FR-012 | Back to removed dir | Visit B, root; remove B; Back | Error; still at root, Back still possible | Auto ✔ `TestBackToRemovedDir` |
-| TC-013 | FR-013 | Up, and Up at root | `/x/a/b` → Up; at `/` | `/x/a`; at `/` Up disabled, error, no move | Auto ✔ `TestParent`, `TestUpAndHome` |
-| TC-014 | FR-014 | Home | Home | `$HOME` | Auto ✔ `TestUpAndHome` |
-| TC-015a | FR-015 | Recent: no duplicates | Visit A, B, A | Recent = `[A, B]` | Auto ✔ `TestRecentNoDuplicates` |
+| TC-013 | FR-013 | Up, and Up at root | `/x/a/b` → Up; at `/` | `/x/a`; at `/` Up disabled, error, no move | Auto ✔ `TestParent`, `TestUpAndHome`, `TestButtonsFollowHistory` |
+| TC-014 | FR-014 | Home | Home | `$HOME` | Auto ✔ `TestUpAndHome`, `TestButtonsFollowHistory` |
+| TC-015a | FR-015 | Recent: no duplicates | Visit A, B, A | Recent = `[A, B]` | Auto ✔ `TestRecentNoDuplicates`, `TestRecentFollowsNavigation` |
 | TC-015b | FR-015 | Recent: max size | Visit 25 dirs | 20 most recent kept | Auto ✔ `TestRecentMax` |
 | TC-015c | FR-015 | Recent updated by Back | A, B, C; Back | Recent starts with B | Auto ✔ `TestNavigatorBackForward` |
+| TC-017a | FR-017 | Command-line directory | `fileviews /x/sub`; relative `sub` from `/x`; `~/sub` | Starts in `/x/sub` | Auto ✔ `TestStartupDir` |
+| TC-017b | FR-017 | Last directory | No argument, last = `/x/sub` | Starts in `/x/sub` | Auto ✔ `TestStartupDir` |
+| TC-017c | FR-017 | Fallbacks | Last gone → home; home gone → `/` | `$HOME`; `/` | Auto ✔ `TestStartupDir` |
+| TC-017d | FR-017 | Bad command-line directory | `fileviews /gone` | Error shown, next choice used | Auto ✔ `TestStartupDir` + Manual |
 | TC-016 | FR-016 | Recent kept across sessions | Visit A, restart | A in dropdown | Auto ✔ `TestRecentFromConfig`, `TestRoundTrip` + Manual |
 
 ## Left pane / bookmarks (`internal/bookmarks`)
@@ -71,7 +75,7 @@ A ✔ with a test name means the automated test exists and passes.
 | TC-042a | FR-042 | Add/remove bookmark | Add `/tmp`, add `/tmp/` again, add `tmp`, remove twice | Added; duplicate refused; relative refused; removed; then not found | Auto ✔ `TestAddRemove` |
 | TC-042b | FR-042 | Saved data cleaned up | Relative, empty, duplicate paths, bad colour | Ignored / first wins / colour cleared | Auto ✔ `TestNewFromSavedCleansUp` |
 | TC-040 | FR-040 | Tree-like order | `/home/mboot-old`, `/home/mboot/projects`, `/etc`, `/home` | `/`, `/etc`, `/home`, `/home/mboot`, `/home/mboot/projects`, `/home/mboot-old` | Auto ✔ `TestOrder` |
-| TC-043 | FR-043 | Click opens directory | Click `mboot` | Right pane shows `$HOME` | Manual |
+| TC-043 | FR-043 | Click opens directory | Click `mboot` | Right pane shows `$HOME` | Auto ✔ `TestBookmarkClickNavigates` + Manual |
 | TC-044a | FR-044 | Depth | `/`, `/home`, `/home/mboot`, `/a/b/c/` | 0, 1, 2, 3 | Auto ✔ `TestDepthAndIndent` |
 | TC-044b | FR-044 | Indent | Depth 2, indent 12 | 24 px | Auto ✔ `TestDepthAndIndent` |
 | TC-045a | FR-045 | Set and reset colours | Navy on white; reset | Stored as `#RRGGBB`; reset to defaults | Auto ✔ `TestSetColours` |
@@ -88,9 +92,10 @@ A ✔ with a test name means the automated test exists and passes.
 |----|-----|-------------|---------------|-----------------|------|
 | TC-050a | FR-050 | Counts | 2 dirs, 3 files (2 hidden), with and without show-hidden | Hidden count always 2; dirs/files follow the filter | Auto ✔ `TestComputeStats` |
 | TC-050b | FR-050 | Total size | Files of 100 + 200 bytes | 300 | Auto ✔ `TestComputeStats` |
-| TC-050c | FR-050 | Selection size | Select a 100-byte file and a dir | selected 100 | Auto ✔ `TestSelectionSize` |
+| TC-050c | FR-050 | Selection size | Select a 100-byte file and a dir | selected 100 | Auto ✔ `TestSelectionSize`, `TestStatusSelectionAndExactSizes` |
+| TC-050e | FR-050 | Status bar text | Counts with singular/plural, sizes, selection, free space, exact mode | `1 directory · 1 file · 2 hidden · 4.2K total · 5.0G free` etc. | Auto ✔ `TestStatusText` |
 | TC-050d | FR-050 | Free space | Temp dir; missing path | Value; error | Auto ✔ `TestFreeSpace` |
-| TC-051 | FR-051 | Updates on toggle hidden | Ctrl+H | Counts/size update | Manual |
+| TC-051 | FR-051 | Updates on toggle hidden | Ctrl+H | Counts/size update | Auto ✔ `TestToggleHidden` + Manual |
 
 ## Persistence (`internal/config`)
 | ID | Req | Description | Steps / input | Expected result | Type |
@@ -109,23 +114,23 @@ A ✔ with a test name means the automated test exists and passes.
 |----|-----|-------------|---------------|-----------------|------|
 | TC-N01 | NFR-001 | Large directory | 10,000 files: read + sort + format | < 1 s (measured ≈ 17 ms) | Bench ✔ `BenchmarkListLargeDir` |
 | TC-N03 | NFR-003 | Core has no GUI dependency | `go list -deps` of listing, history, bookmarks, config, contrast | No `fyne.io/…` or `internal/ui` | Auto ✔ `TestCoreHasNoGUIDeps` |
-| TC-N02 | NFR-002 | Responsive UI | Open a large directory | Window stays responsive | Manual |
+| TC-N02 | NFR-002 | Responsive UI | Open a large directory | Window stays responsive | Auto ✔ `TestStaleLoadDropped` + Manual |
 
 ## Build / smoke
 | ID | Req | Description | Steps / input | Expected result | Type |
 |----|-----|-------------|---------------|-----------------|------|
 | TC-N04a | NFR-004 | Build | `make build` | `fileviews` binary, no errors | Auto |
-| TC-N04b | NFR-004 | Main window created (headless) | `TestNewMainWindow` | Title `fileViews`, content set | Auto ✔ `TestNewMainWindow` |
+| TC-N04b | NFR-004 | Main window created (headless) | Build window with test app | Title `fileViews`, content set | Auto ✔ `TestNewMainWindow` |
 | TC-N04c | NFR-004 | Window opens on desktop | `make run` | Window "fileViews" appears, 1000×650 | Manual ✔ (user, 2026-10-29) |
 
 ## Appearance
 | ID | Req | Description | Steps / input | Expected result | Type |
 |----|-----|-------------|---------------|-----------------|------|
-| TC-070a | FR-070 | Light theme by default | Start app; bookmark without colours | White background, black text everywhere | Auto (bookmark style ✔ `TestStyleColours`; theme in M6) + Manual |
-| TC-070b | FR-070 | Ignores desktop dark mode | Desktop in dark mode, start app | Still white background, black text | Manual |
+| TC-070a | FR-070 | Light theme by default | Start app; bookmark without colours | White background, black text everywhere | Auto ✔ `TestStyleColours`, `TestThemeContrast`, `TestThemeIgnoresDarkMode` + Manual |
+| TC-070b | FR-070 | Ignores desktop dark mode | Desktop in dark mode, start app | Still white background, black text | Auto ✔ `TestThemeIgnoresDarkMode` + Manual |
 | TC-071a | FR-071 | Gray on pure white / black | Min 4.5 | `#767676` on white, `#757575` on black; each passes the minimum | Auto ✔ `TestGray` |
 | TC-071b | FR-071 | No gray on other backgrounds | `#FEFEFE`, `#808080`, `#FFFFE0` | Gray refused | Auto ✔ `TestGray` |
-| TC-071c | FR-071 | No gray-on-gray in the GUI | Inspect missing bookmark, disabled buttons, status bar | No gray text on gray background | Manual |
+| TC-071c | FR-071 | No gray-on-gray in the GUI | Inspect missing bookmark, disabled buttons, status bar | No gray text on gray background | Auto ✔ `TestThemeContrast` (theme) + Manual |
 | TC-072 | FR-072 | Colours only affect their item | Colour one bookmark | Other items and panes stay white/black | Auto (core ✔ `TestStyleColours`) + Manual |
 | TC-073a | FR-073 | Contrast ratio | black/white, yellow/white, light green/white, `#767676`/white | 21, 1.07, 1.42, 4.54 | Auto ✔ `TestRatio` |
 | TC-074a | FR-074 | Default minimum 4.5 | Yellow, light green, `#777777` on white | Rejected; `#767676` and black accepted | Auto ✔ `TestMeetsDefault` |
@@ -133,4 +138,4 @@ A ✔ with a test name means the automated test exists and passes.
 | TC-075a | FR-075 | Fallback text colour | Background white, yellow, black, dark blue | black, black, white, white | Auto ✔ `TestBestText` |
 | TC-075b | FR-075 | Dialog refuses failing colours | Pick yellow text on white; black text on navy | Refused with ratio; black resp. white suggested; nothing stored | Auto (core ✔ `TestSetColours`) + Manual (dialog, M9) |
 | TC-076 | FR-076 | Saved colours re-checked | Yellow on white; `#767676` at min 4.5 and 7; invalid colour | Drawn in black where failing; saved colours unchanged | Auto ✔ `TestEffective`, `TestStyleColours` |
-| TC-077 | FR-077 | Theme colours pass | Every theme text/background pair | All ≥ minimum | Auto (M6) |
+| TC-077 | FR-077 | Theme colours pass | Every theme text/background pair | All ≥ minimum | Auto ✔ `TestThemeContrast`, `TestThemeGrayFollowsMinimum` |

@@ -1,8 +1,24 @@
 // Command fileviews is a graphical hierarchical file and directory viewer.
+//
+// Usage: fileviews [directory]
 package main
 
-import "github.com/maarten-boot/fileViews/internal/ui"
+import (
+	"flag"
+	"fmt"
+	"os"
+
+	"github.com/maarten-boot/fileViews/internal/ui"
+)
 
 func main() {
-	ui.Run()
+	flag.Usage = func() {
+		fmt.Fprintln(os.Stderr, "usage: fileviews [directory]")
+	}
+	flag.Parse()
+	if flag.NArg() > 1 {
+		flag.Usage()
+		os.Exit(2)
+	}
+	ui.Run(flag.Arg(0))
 }

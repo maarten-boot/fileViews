@@ -1,6 +1,6 @@
 # Specification — fileViews
 
-_Status: draft v0.7 · Last updated: 2026-10-29_
+_Status: draft v0.9 · Last updated: 2026-10-29_
 
 ## 1. Purpose
 A simple hierarchical file and directory viewer with a graphical interface, laid out similar to Thunar.
@@ -51,8 +51,9 @@ The split between left and right pane is user-resizable.
 - **FR-012** Back and Forward buttons move through the navigation history, like a browser: navigating somewhere new after going Back clears the Forward entries. Opening the current directory again adds no entry. If the Back/Forward target no longer exists or cannot be read, an error is shown and the position stays unchanged. The Back/Forward history lasts for the session only.
 - **FR-013** An Up button goes to the parent directory; it is disabled at `/`.
 - **FR-014** A Home button goes to `$HOME`.
-- **FR-015** A dropdown on the path bar lists recently visited directories (most recent first, no duplicates, max 20 by default). Every successful navigation (typed path, Back, Forward, Up, Home, bookmark, double-click) moves that directory to the top. Selecting one navigates there.
+- **FR-015** A dropdown on the path bar lists recently visited directories (most recent first, no duplicates, max 20; not configurable). Every successful navigation (typed path, Back, Forward, Up, Home, bookmark, double-click) moves that directory to the top. Selecting one navigates there.
 - **FR-016** The recent-directories list is kept across sessions.
+- **FR-017** Startup directory: a directory given on the command line (`fileviews /some/dir`; a relative path is taken from the working directory, `~` means `$HOME`; more than one argument prints a usage message) if it can be read; otherwise the last directory (FR-061) if it can still be read; otherwise `$HOME`; otherwise `/`. If the command-line directory cannot be read, the user gets an error and the next choice is used.
 
 ### 5.3 Right pane (directory listing)
 - **FR-020** The right pane lists the entries of the current directory: files and directories.
@@ -116,7 +117,11 @@ The split between left and right pane is user-resizable.
 - **FR-074** The minimum ratio defaults to **4.5:1** and can be changed in Settings; it cannot be set below 3:1. Examples on white: yellow `#FFFF00` ≈ 1.07:1 and light green `#90EE90` ≈ 1.4:1 are rejected; `#767676` ≈ 4.54:1 is allowed.
 - **FR-075** The bookmark colour dialog shows the contrast ratio live and refuses to save a combination below the minimum. It then offers black or white text, whichever gives the higher contrast with the chosen background.
 - **FR-076** Saved bookmark colours are checked at startup and when the minimum changes. A failing combination is drawn with black or white text (whichever contrasts more) until the user changes it; the saved colours are kept.
-- **FR-077** The app's own theme colours (including disabled buttons, placeholder text and the status bar) also meet the minimum; the custom light theme overrides Fyne defaults that do not.
+- **FR-077** The app's own theme colours (including disabled buttons, placeholder text and the status bar) also meet the minimum; the custom light theme overrides Fyne defaults that do not:
+  - normal text black; window, input fields, menus, pop-ups and disabled buttons pure white (so gray text can only appear on white)
+  - disabled and placeholder text: the gray from FR-071 for the current minimum
+  - buttons and table headers light gray (`#F0F0F0`) with black text only
+  - coloured backgrounds (primary blue, error red, success green, warning orange) with white text at 7:1 or better
 
 ## 6. Non-functional requirements
 - **NFR-001** A directory with 10,000 entries lists in under 1 second on a typical desktop.
@@ -125,5 +130,4 @@ The split between left and right pane is user-resizable.
 - **NFR-004** Builds with `go build` (`make build`); Go 1.26+, Fyne v2.8+.
 
 ## 7. Open questions
-- **Q-1** Startup directory: FR-061 saves the last directory, but no requirement says where the app starts. *Proposal: the last directory if it can still be read, otherwise `$HOME`; a directory given on the command line (`fileviews /some/dir`) overrides both.*
-- **Q-2** FR-015 says "max 20 by default", which suggests a setting, but there is none. *Proposal: fixed at 20, drop "by default".*
+- **Q-3** FR-074 lets the contrast minimum go up to 21:1. Above about 7.8:1, the coloured backgrounds (blue for highlighted buttons, red for errors, green, orange) cannot meet the minimum with either black or white text, and above about 18:1 no gray is possible, so disabled text becomes black and looks the same as enabled text. *Proposal: limit the minimum to 3–7 (7:1 is the strictest common accessibility level, WCAG AAA).*
