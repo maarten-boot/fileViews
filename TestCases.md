@@ -75,3 +75,10 @@ Each test case links to the requirement it verifies. **Auto** = planned as a Go 
 |----|-----|-------------|---------------|-----------------|------|
 | TC-N01 | NFR-001 | Large directory | 10,000 files | Listing < 1 s (benchmark) | Auto (bench) |
 | TC-N02 | NFR-002 | Responsive UI | Open a large directory | Window stays responsive | Manual |
+
+## Build / smoke
+| ID | Req | Description | Steps / input | Expected result | Type |
+|----|-----|-------------|---------------|-----------------|------|
+| TC-N04a | NFR-004 | Build | `make build` | `fileviews` binary, no errors | Auto |
+| TC-N04b | NFR-004 | Main window created (headless) | `TestNewMainWindow` | Title `fileViews`, content set | Auto |
+| TC-N04c | NFR-004 | Window opens on desktop | `make run` | Window "fileViews" appears, 1000×650 | Manual |

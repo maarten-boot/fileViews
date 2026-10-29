@@ -107,7 +107,7 @@ The split between left and right pane is user-resizable.
 - **NFR-001** A directory with 10,000 entries lists in under 1 second on a typical desktop.
 - **NFR-002** The UI stays responsive while reading a directory: directories are read off the UI thread.
 - **NFR-003** Core logic (listing, formatting, history, config, bookmarks) is in packages without GUI dependencies, so it can be unit-tested headless.
-- **NFR-004** Builds with `go build`; Go version follows the Fyne requirement.
+- **NFR-004** Builds with `go build` (`make build`); Go 1.26+, Fyne v2.8+.
 
 ## 7. Open questions
 - Keyboard shortcuts beyond Ctrl+H? *Assumed: Alt+Left / Alt+Right (history), Alt+Up, Alt+Home, F5 (refresh).*

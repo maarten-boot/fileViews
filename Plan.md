@@ -1,6 +1,6 @@
 # Plan — fileViews
 
-_Status: draft v0.1 · Last updated: 2026-10-29_
+_Status: draft v0.2 · Last updated: 2026-10-29_
 
 ## Approach
 Build the non-GUI core first, with unit tests (NFR-003), then add the Fyne GUI on top of it, one area at a time.
@@ -19,7 +19,7 @@ internal/ui/              Fyne windows and widgets
 | # | Milestone | Spec refs | Status |
 |---|-----------|-----------|--------|
 | 0 | Gather scenario, draft Spec | — | done |
-| 1 | Project scaffolding: `go mod init`, layout, Fyne dependency, empty window, Makefile / `go test ./...` | NFR-004 | todo |
+| 1 | Project scaffolding: `go mod init`, layout, Fyne dependency, empty window, Makefile / `go test ./...` | NFR-004 | done (Fyne v2.8.2) |
 | 2 | Core: directory listing, `ls -lF` formatting, type markers, sorting, hidden filter, stats | FR-020–026, FR-029, FR-050 | todo |
 | 3 | Core: navigation history and recent directories | FR-012–016 | todo |
 | 4 | Core: config load/save | FR-060–063 | todo |
@@ -35,6 +35,7 @@ internal/ui/              Fyne windows and widgets
 
 ## Risks / notes
 - Fyne's standard widgets may not support per-item background colours or tooltips directly; custom widgets may be needed (milestone 8). Tooltip support in recent Fyne versions still to be verified.
+- No display in the assistant's shell: GUI code is verified with Fyne's headless `test` driver; visual checks are done manually by the user.
 - Owner/group lookup and link count use `syscall.Stat_t` (Unix only); keep that in a file with a build tag.
 - Free disk space uses `statfs` (Unix only); same approach.
 

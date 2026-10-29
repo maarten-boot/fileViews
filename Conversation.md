@@ -43,3 +43,18 @@ Running log of the design conversation for **fileViews**. Newest entries at the 
 - columns can be reordered and hidden (Name always shown); header click sorts; human-readable sizes by default with an exact-bytes setting; symlinks shown as `name@ -> target`
 
 Wrote `Spec.md` v0.1 (FR-001…FR-063, NFR-001…004), `Plan.md` v0.1 (11 milestones, core-first, crosscheck after M5, M8, M11) and `TestCases.md` (test cases linked to requirements).
+
+### 5. Commit docs, milestone 1
+**User:** yes, commit the docs and start milestone 1
+
+**Assistant:** Committed the docs (`7b1b188`). Milestone 1 done:
+- `go mod init github.com/maarten-boot/fileViews`, Fyne v2.8.2 added
+- package layout `cmd/fileviews`, `internal/{listing,history,bookmarks,config,ui}`
+- `ui.Run()` opens an empty 1000×650 "fileViews" window; `newMainWindow` is split out so it can be tested headless
+- `Makefile` with `build`, `run`, `test`, `vet`, `clean`; binary added to `.gitignore`
+- `go vet` and `go test` pass. The app could not be launched in the assistant's shell (no display: "failed to initialise GLFW"), so the user needs to check the window visually with `make run`.
+
+### 6. Build fails on the user's laptop
+**User:** `make run` on the laptop fails: `/usr/bin/ld: cannot find -lXxf86vm: No such file or directory`.
+
+**Assistant:** The laptop is missing X11 development libraries that Fyne links against (here `libXxf86vm`). Fix: install the Fyne prerequisites (Debian/Ubuntu: `sudo apt install gcc libgl1-mesa-dev xorg-dev`; Fedora: `libXxf86vm-devel` and friends). Added a "Building" section with these prerequisites to `README.md`.
