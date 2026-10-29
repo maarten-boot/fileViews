@@ -237,3 +237,7 @@ All core packages are now done: the planned point for the first Spec ↔ Plan �
 **User:** go with option 1, add the toolchain line
 
 **Assistant:** Added `toolchain go1.26.10` to `go.mod`; Go downloaded it automatically. With it: 133 tests pass, build OK, `make vulncheck` reports "No vulnerabilities found." README (Go requirement, `make vulncheck`), NFR-004, new NFR-005 and TC-N05 updated.
+
+**User:** yes, push it → (push from this session failed: no SSH access here) → i pushed
+
+**Assistant:** Confirmed locally: `origin/main` is at `8e4e295`, so the dependency upgrades and the toolchain pin are on GitHub; Dependabot should close its alerts after its next scan.
