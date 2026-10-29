@@ -1,2 +1,2 @@
 # fileViews
-a simple hierarchial file and directory viewer
+a simple hierarchical file and directory viewer
