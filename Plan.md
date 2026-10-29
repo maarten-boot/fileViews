@@ -1,6 +1,6 @@
 # Plan — fileViews
 
-_Status: draft v0.17 · Last updated: 2026-10-29_
+_Status: draft v0.18 · Last updated: 2026-10-29_
 
 ## Approach
 Build the non-GUI core first, with unit tests (NFR-003), then add the Fyne GUI on top of it, one area at a time.
@@ -31,6 +31,7 @@ internal/arch/            architecture test: core packages have no GUI dependenc
 | 8 | GUI: left pane — indent, colours, tooltips, context menu, colour dialog with live ratio | FR-040–047, FR-072, FR-075 | done |
 | 9 | GUI: Settings dialogs — column order/visibility, indent, contrast minimum (size format is already a menu toggle; colour dialog done in M8) | FR-024, FR-044, FR-074, FR-076 | done |
 | 10 | Persistence wiring (save on change/quit), window state, error handling, performance check | FR-061, FR-065, NFR-001, NFR-002 | done (before M9, at the user's request) |
+| 12 | Feedback from the manual pass: indent field 1–25, bookmark order (move up/down, drag within pane), drag directories from the right pane | FR-040, FR-044, FR-048, FR-049 | done |
 | 11 | Final crosscheck Spec ↔ Plan ↔ code, manual test pass | all | crosscheck done; manual pass by the user pending (`ManualTests.md`, `make testdir`) |
 
 **Crosscheck points:** after milestones 5 (core done), 8 (main GUI done) and 11.
@@ -42,6 +43,7 @@ internal/arch/            architecture test: core packages have no GUI dependenc
 - Owner/group lookup and link count use `syscall.Stat_t` (Unix only); keep that in a file with a build tag.
 - Free disk space uses `statfs` (Unix only); same approach. Both live in `internal/listing/stat_unix.go`, with a stub in `stat_other.go`.
 - Fyne follows the desktop dark mode by default; FR-070 needs a custom theme that forces the light variant. **Done in M6** (`internal/ui/theme.go`); Fyne's own light theme failed FR-071/FR-077 (gray `#565656` text, `#E3E3E3` disabled text, `#888` placeholder on `#F3F3F3`, white on light green/orange/red).
+- Fyne has no drag and drop between widgets: bookmark rows and table cells implement `fyne.Draggable` and report the mouse; the drop slot is computed from the bookmark rows Fyne has actually laid out (`sidePane.rendered`), skipping the list's measuring templates (they never get a row).
 - **Found in the manual test pass (scrolling):** Fyne turns a vertical wheel movement into a sideways scroll when only the columns overflow, and its Table does not re-lay-out its scroller when the row count changes (a big directory opened after a small one could not scroll). Fixes: a wheel-catching layer filters wheel events (FR-032), the Name column fills the width, and the scroller is refreshed after row changes. Fyne v2.8 has no public access to the Table's scroller or column widths, so `internal/ui/fyneinternals.go` reads them via reflection/unsafe; `TestFyneInternals` fails if a Fyne upgrade changes them. Worth re-checking (or reporting upstream) on each Fyne upgrade.
 - Fyne gives a mouse press to the innermost widget that handles clicks. Found at crosscheck 2: clickable header cells therefore kept the table from starting a column resize; header cells now forward mouse presses to the table.
 - Under Fyne's test driver `fyne.Do` runs on the calling goroutine, so background work races with the test. Background work goes through `background()` (a goroutine in the app, inline in tests via `TestMain`).

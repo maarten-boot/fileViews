@@ -43,6 +43,7 @@ type mainWindow struct {
 	all      []listing.Entry
 	shown    []listing.Entry
 	sel      selection
+	drag     dragState
 	free     uint64
 	freeOK   bool
 	loadSeq  int
@@ -138,7 +139,7 @@ func (m *mainWindow) buildPanes() fyne.CanvasObject {
 	m.side = newSidePane(m)
 	m.files = newFileTable(m)
 
-	m.split = container.NewHSplit(m.side.list, m.files.view)
+	m.split = container.NewHSplit(m.side.view, m.files.view)
 	m.split.Offset = m.cfg.Window.Split
 	return m.split
 }

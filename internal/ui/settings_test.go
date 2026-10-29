@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
@@ -53,9 +54,28 @@ func TestColumnsDialog(t *testing.T) {
 func TestIndentSetting(t *testing.T) {
 	root := fixture(t)
 	m, store := savingWindow(t, config.Default(), root)
-	slider, label := m.indentSlider()
-	if slider.Value != 12 || label.Text != " 12 px" {
-		t.Errorf("slider %v label %q", slider.Value, label.Text)
+	d := newIndentDialog(m)
+	if d.slider.Value != 12 || d.slider.Max != 25 || d.entry.Text != "12" {
+		t.Errorf("slider %v (max %v), field %q", d.slider.Value, d.slider.Max, d.entry.Text)
+	}
+	d.entry.SetText("10") // typed
+	if d.slider.Value != 10 || d.apply.Disabled() {
+		t.Errorf("typed 10: slider %v, apply disabled %v", d.slider.Value, d.apply.Disabled())
+	}
+	d.slider.SetValue(7) // dragged
+	if d.entry.Text != "7" || d.value != 7 {
+		t.Errorf("slider 7: field %q value %d", d.entry.Text, d.value)
+	}
+	for _, bad := range []string{"0", "26", "abc", ""} {
+		d.entry.SetText(bad)
+		if !d.apply.Disabled() || d.note.Text == "" {
+			t.Errorf("%q accepted", bad)
+		}
+	}
+	d.entry.SetText(" 3 ")
+	test.Tap(d.apply)
+	if m.cfg.IndentPx != 3 {
+		t.Errorf("applied %d, want 3", m.cfg.IndentPx)
 	}
 	m.setIndent(20)
 	depth := (bookmarks.Item{Path: root}).Depth()

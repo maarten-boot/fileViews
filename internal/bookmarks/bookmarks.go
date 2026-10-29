@@ -112,42 +112,48 @@ func parseOr(hex string, def color.RGBA) color.RGBA {
 	return def
 }
 
-// List is the ordered set of side pane items. Items are kept sorted by
-// path, component by component, so the indent reads like a tree.
+// List is the side pane items in the user's order (FR-040).
 type List struct {
 	items []Item
 }
 
-// New builds the list from the saved bookmarks, always including "/" and
-// home as default items (FR-041). Saved entries with an empty or relative
-// path are dropped; duplicates keep their first settings; saved colours
-// that are not valid "#RRGGBB" are cleared.
+// New builds the list from the saved bookmarks, in their saved order,
+// always including "/" and home as default items (FR-041): if missing, "/"
+// goes first and home right after it. Saved entries with an empty or
+// relative path are dropped; duplicates keep their first position and
+// settings; saved colours that are not valid "#RRGGBB" are cleared.
 func New(home string, saved []config.Bookmark) *List {
 	l := &List{}
-	l.add(Item{Path: "/", Default: true})
-	if home = filepath.Clean(home); filepath.IsAbs(home) && home != "/" {
-		l.add(Item{Path: home, Default: true})
-	}
-	seen := map[string]bool{}
 	for _, b := range saved {
 		if !filepath.IsAbs(b.Path) {
 			continue
 		}
 		p := filepath.Clean(b.Path)
-		if seen[p] {
+		if l.index(p) >= 0 {
 			continue // duplicate entry; the first one wins
 		}
-		seen[p] = true
-		i := l.index(p)
-		if i < 0 {
-			l.add(Item{Path: p})
-			i = l.index(p)
-		}
-		l.items[i].Background = validHex(b.Background)
-		l.items[i].Foreground = validHex(b.Foreground)
-		l.items[i].HoverText = b.HoverText
+		l.items = append(l.items, Item{
+			Path:       p,
+			Background: validHex(b.Background),
+			Foreground: validHex(b.Foreground),
+			HoverText:  b.HoverText,
+		})
+	}
+	l.ensureDefault("/", 0)
+	if home = filepath.Clean(home); filepath.IsAbs(home) && home != "/" {
+		l.ensureDefault(home, l.index("/")+1)
 	}
 	return l
+}
+
+// ensureDefault marks path as a default item, inserting it at pos if missing.
+func (l *List) ensureDefault(path string, pos int) {
+	i := l.index(path)
+	if i < 0 {
+		l.items = slices.Insert(l.items, pos, Item{Path: path})
+		i = pos
+	}
+	l.items[i].Default = true
 }
 
 func validHex(s string) string {
@@ -172,8 +178,15 @@ func (l *List) Get(path string) (Item, bool) {
 	return l.items[i], true
 }
 
-// Add adds a user bookmark for an absolute directory path (FR-042).
+// Add adds a user bookmark for an absolute directory path at the end (FR-042).
 func (l *List) Add(path string) error {
+	return l.Insert(path, len(l.items))
+}
+
+// Insert adds a user bookmark at position pos (0 = first; clamped to the
+// list). A path that is already bookmarked is refused with ErrExists and
+// stays where it is (FR-049).
+func (l *List) Insert(path string, pos int) error {
 	if !filepath.IsAbs(path) {
 		return ErrNotAbsolute
 	}
@@ -181,8 +194,27 @@ func (l *List) Add(path string) error {
 	if l.index(path) >= 0 {
 		return ErrExists
 	}
-	l.add(Item{Path: path})
+	pos = max(0, min(pos, len(l.items)))
+	l.items = slices.Insert(l.items, pos, Item{Path: path})
 	return nil
+}
+
+// Move moves the bookmark for path so it ends up at position pos (FR-048).
+func (l *List) Move(path string, pos int) error {
+	i := l.index(filepath.Clean(path))
+	if i < 0 {
+		return ErrNotFound
+	}
+	it := l.items[i]
+	l.items = slices.Delete(l.items, i, i+1)
+	pos = max(0, min(pos, len(l.items)))
+	l.items = slices.Insert(l.items, pos, it)
+	return nil
+}
+
+// Index returns the position of path in the list, or -1.
+func (l *List) Index(path string) int {
+	return l.index(filepath.Clean(path))
 }
 
 // Remove removes a user bookmark; default items cannot be removed (FR-041, FR-042).
@@ -256,19 +288,6 @@ func (l *List) Saved() []config.Bookmark {
 
 func (l *List) index(path string) int {
 	return slices.IndexFunc(l.items, func(it Item) bool { return it.Path == path })
-}
-
-func (l *List) add(it Item) {
-	i, _ := slices.BinarySearchFunc(l.items, it.Path, func(a Item, p string) int {
-		return comparePaths(a.Path, p)
-	})
-	l.items = slices.Insert(l.items, i, it)
-}
-
-// comparePaths orders paths component by component, so "/a/b" sorts
-// directly after "/a" and before "/a-b".
-func comparePaths(a, b string) int {
-	return slices.Compare(components(a), components(b))
 }
 
 func components(path string) []string {

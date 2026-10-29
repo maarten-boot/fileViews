@@ -23,6 +23,9 @@ const tooltipDelay = 600 * time.Millisecond
 type sidePane struct {
 	m        *mainWindow
 	list     *widget.List
+	view     fyne.CanvasObject  // list with the drop marker on top
+	marker   *canvas.Rectangle  // drop position line while dragging (FR-048, FR-049)
+	rendered map[*markItem]bool // item widgets created by the list, for drop positions
 	tipDelay time.Duration
 	onTip    func() // test hook, called after a hover text is shown
 
@@ -35,20 +38,29 @@ type sidePane struct {
 }
 
 func newSidePane(m *mainWindow) *sidePane {
-	sp := &sidePane{m: m, tipDelay: tooltipDelay, missing: map[string]bool{}}
+	sp := &sidePane{m: m, tipDelay: tooltipDelay, missing: map[string]bool{}, rendered: map[*markItem]bool{}}
 	sp.list = widget.NewList(
 		func() int { return len(m.marks.Items()) },
-		func() fyne.CanvasObject { return newMarkItem(sp) },
+		func() fyne.CanvasObject {
+			mi := newMarkItem(sp)
+			sp.rendered[mi] = true
+			return mi
+		},
 		func(id widget.ListItemID, o fyne.CanvasObject) { sp.update(id, o.(*markItem)) },
 	)
+	sp.marker = canvas.NewRectangle(theme.Color(theme.ColorNamePrimary))
+	sp.marker.Hide()
+	sp.view = container.NewStack(sp.list, container.NewWithoutLayout(sp.marker))
 	return sp
 }
 
 func (sp *sidePane) update(id int, mi *markItem) {
 	items := sp.m.marks.Items()
 	if id < 0 || id >= len(items) {
+		mi.id = -1
 		return
 	}
+	mi.id = id
 	mi.set(items[id], sp.missing[items[id].Path], sp.m.cfg.ContrastMin, sp.m.cfg.IndentPx)
 }
 
@@ -97,8 +109,16 @@ func (sp *sidePane) menuFor(it bookmarks.Item) *fyne.Menu {
 		sp.refresh()
 	})
 	remove.Disabled = it.Default
+	pos, last := m.marks.Index(it.Path), len(m.marks.Items())-1
+	up := fyne.NewMenuItem("Move up", func() { sp.move(it.Path, pos-1) })
+	up.Disabled = pos <= 0
+	down := fyne.NewMenuItem("Move down", func() { sp.move(it.Path, pos+1) })
+	down.Disabled = pos >= last
 	return fyne.NewMenu("",
 		fyne.NewMenuItem("Open", func() { m.goPath(it.Path) }),
+		fyne.NewMenuItemSeparator(),
+		up,
+		down,
 		fyne.NewMenuItemSeparator(),
 		fyne.NewMenuItem("Set colours…", func() { newColourDialog(m, it).show() }),
 		reset,
@@ -107,6 +127,14 @@ func (sp *sidePane) menuFor(it bookmarks.Item) *fyne.Menu {
 		fyne.NewMenuItem("Add current directory", func() { sp.addBookmark(m.nav.Current()) }),
 		remove,
 	)
+}
+
+// move puts the bookmark for path at position pos (FR-048).
+func (sp *sidePane) move(path string, pos int) {
+	if err := sp.m.marks.Move(path, pos); err != nil {
+		sp.m.showError(err)
+	}
+	sp.refresh()
 }
 
 // addBookmark adds dir; adding an existing bookmark is reported (FR-042).
@@ -150,6 +178,9 @@ type markItem struct {
 	indent *canvas.Rectangle
 	text   *canvas.Text
 	item   bookmarks.Item
+	id     int // position in the list, or -1
+
+	dragging bool
 
 	tip      *widget.PopUp
 	hoverSeq atomic.Int64 // bumped on every enter/leave; a pending tooltip shows only if unchanged
@@ -158,6 +189,7 @@ type markItem struct {
 
 func newMarkItem(sp *sidePane) *markItem {
 	mi := &markItem{
+		id:     -1, // until the list assigns a row; measuring templates never get one
 		sp:     sp,
 		bg:     canvas.NewRectangle(nil),
 		indent: canvas.NewRectangle(nil),
@@ -188,6 +220,26 @@ func (mi *markItem) CreateRenderer() fyne.WidgetRenderer {
 func (mi *markItem) Tapped(*fyne.PointEvent) {
 	mi.hideTip()
 	mi.sp.m.goPath(mi.item.Path)
+}
+
+// Dragged moves the bookmark to another place in the list (FR-048).
+func (mi *markItem) Dragged(ev *fyne.DragEvent) {
+	if mi.id < 0 {
+		return
+	}
+	if !mi.dragging {
+		mi.dragging = true
+		mi.hideTip()
+		mi.sp.m.beginSideDrag(mi.item.Path)
+	}
+	mi.sp.m.dragMove(ev.AbsolutePosition)
+}
+
+func (mi *markItem) DragEnd() {
+	if mi.dragging {
+		mi.dragging = false
+		mi.sp.m.endDrag()
+	}
 }
 
 func (mi *markItem) TappedSecondary(ev *fyne.PointEvent) {

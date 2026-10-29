@@ -209,3 +209,17 @@ All core packages are now done: the planned point for the first Spec ↔ Plan �
 - found on the way: Fyne's Table does not re-lay-out its scroller when the row count changes, so a big directory opened after a small one could not scroll once the columns fit; the scroller is now refreshed after row changes (TC-020l)
 - Fyne v2.8 offers no public access to the Table's scroller or column widths; read via reflection/unsafe in `fyneinternals.go`, guarded by `TestFyneInternals`
 - 126 tests pass, also with `-race`; `ManualTests.md` regenerated with the new scrolling checks
+
+### 22. Indent entry, bookmark order, drag & drop (pending confirmation)
+**User:** ok looks already great. The indent size is curretly a slider but the lower range is difficult to precisely edit: allow the test 10 px also to be ediyed freely ald limit it between 1px and 25 px no need for much more there. Allow the bookmarks to be moved up and down, could we add a drag and drop between a directory on the right to be moved to a slot on the bookmarks pane ?
+
+**Assistant:** Suggested corrections (curretly → currently, test → text, ediyed → edited, ald → and) and asked for confirmation: indent as slider + number field, 1–25 px; manual bookmark order replaces the path-sorted order of FR-040; drag & drop from the right pane *adds a bookmark* at the drop slot (the directory itself is not moved — the viewer stays read-only, FR-030). Not implemented until confirmed.
+
+**User:** go with your proposals for 1-3; but i would prevent a item already in the bookmark list to be placed again in a different bookmark position — *(follow-up)* i mean while dragging
+
+**Assistant:** Implemented:
+1. Indent: slider + number field kept in sync, whole numbers 1–25 px (max lowered from 64; saved values above 25 become 25); invalid input disables Apply with a hint
+2. Bookmarks in the user's order (replaces path sorting, FR-040): Move up / Move down in the right-click menu, and dragging a bookmark within the pane (FR-048); new bookmarks from menus go to the end
+3. Dragging directories from the right pane adds bookmarks at the drop line (FR-049). Per the user's correction, an already-bookmarked directory is never placed again: while dragging the label says "already a bookmark" and no drop line is shown; with a selection only the new ones are added. Files are not dragged; dropping outside does nothing
+- found while testing: Fyne's list creates measuring item widgets that never get a row; they now start at position −1 so they are never used as drop targets or drag sources
+- 133 tests pass, also with `-race`; `ManualTests.md` regenerated

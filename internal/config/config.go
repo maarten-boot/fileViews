@@ -12,7 +12,7 @@ const CurrentVersion = 1
 // Defaults for settings whose zero value is not a sensible default.
 const (
 	DefaultIndentPx = 12
-	MaxIndentPx     = 64
+	MaxIndentPx     = 25
 	DefaultWidth    = 1000
 	DefaultHeight   = 650
 	DefaultSplit    = 0.25

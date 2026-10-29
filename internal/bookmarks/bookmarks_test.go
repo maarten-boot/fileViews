@@ -81,16 +81,45 @@ func TestAddRemove(t *testing.T) {
 
 // TC-040
 // Items sort component-wise so the indent reads like a tree.
+// TC-040: the user's order; Add appends.
 func TestOrder(t *testing.T) {
 	l := New("/home/mboot", nil)
-	for _, p := range []string{"/home/mboot-old", "/home/mboot/projects", "/etc", "/home"} {
+	for _, p := range []string{"/home/mboot-old", "/home/mboot/projects", "/etc"} {
 		if err := l.Add(p); err != nil {
 			t.Fatal(err)
 		}
 	}
-	want := []string{"/", "/etc", "/home", "/home/mboot", "/home/mboot/projects", "/home/mboot-old"}
+	want := []string{"/", "/home/mboot", "/home/mboot-old", "/home/mboot/projects", "/etc"}
 	if got := paths(l); !slices.Equal(got, want) {
 		t.Errorf("paths = %v, want %v", got, want)
+	}
+}
+
+// TC-048a: Insert at a position, Move up and down, already bookmarked is refused.
+func TestInsertMove(t *testing.T) {
+	l := New("/h", nil) // /, /h
+	if err := l.Insert("/a", 1); err != nil {
+		t.Fatal(err)
+	}
+	l.Insert("/b", 99) // clamped to the end
+	l.Insert("/c", -5) // clamped to the start
+	if got, want := paths(l), []string{"/c", "/", "/a", "/h", "/b"}; !slices.Equal(got, want) {
+		t.Fatalf("after insert %v, want %v", got, want)
+	}
+	if err := l.Insert("/a/", 0); !errors.Is(err, ErrExists) || l.Index("/a") != 2 {
+		t.Errorf("duplicate insert: %v, index %d", err, l.Index("/a"))
+	}
+	l.Move("/c", 4)  // to the end
+	l.Move("/h", 0)  // default items move too
+	l.Move("/b", -1) // clamped
+	if got, want := paths(l), []string{"/b", "/h", "/", "/a", "/c"}; !slices.Equal(got, want) {
+		t.Errorf("after move %v, want %v", got, want)
+	}
+	if err := l.Move("/nope", 0); !errors.Is(err, ErrNotFound) {
+		t.Errorf("move unknown: %v", err)
+	}
+	if it, _ := l.Get("/h"); !it.Default {
+		t.Error("moved default lost its default flag")
 	}
 }
 
@@ -265,7 +294,8 @@ func TestNewFromSavedCleansUp(t *testing.T) {
 		{Path: "/opt", Foreground: "not-a-colour"},
 	}
 	l := New("/home/mboot", saved)
-	if got, want := paths(l), []string{"/", "/home/mboot", "/opt", "/tmp"}; !slices.Equal(got, want) {
+	// Saved order is kept; "/" was saved, home was not and goes right after "/".
+	if got, want := paths(l), []string{"/tmp", "/", "/home/mboot", "/opt"}; !slices.Equal(got, want) {
 		t.Errorf("paths = %v, want %v", got, want)
 	}
 	// The first entry wins, even when it has no settings.

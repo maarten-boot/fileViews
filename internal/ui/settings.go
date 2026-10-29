@@ -3,6 +3,8 @@ package ui
 import (
 	"fmt"
 	"slices"
+	"strconv"
+	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -99,26 +101,62 @@ func (d *columnsDialog) apply() {
 	d.m.changed()
 }
 
-// showIndentDialog sets the side pane indent per directory level (FR-044).
-func (m *mainWindow) showIndentDialog() {
-	slider, value := m.indentSlider()
-	content := container.NewVBox(widget.NewLabel("Indent per directory level"), container.NewBorder(nil, nil, nil, value, slider))
-	dialog.ShowCustomConfirm("Side pane indent", "Apply", "Cancel", content, func(ok bool) {
-		if ok {
-			m.setIndent(int(slider.Value))
-		}
-	}, m.win)
+// indentDialog sets the side pane indent per directory level (FR-044):
+// a slider and a number field that follow each other.
+type indentDialog struct {
+	m      *mainWindow
+	slider *widget.Slider
+	entry  *widget.Entry
+	note   *widget.Label
+	apply  *widget.Button
+	dlg    dialog.Dialog
+	value  int
 }
 
-func (m *mainWindow) indentSlider() (*widget.Slider, *widget.Label) {
-	slider := widget.NewSlider(1, config.MaxIndentPx)
-	slider.Step = 1
-	value := widget.NewLabel("")
-	slider.OnChanged = func(v float64) { value.SetText(fmt.Sprintf("%3.0f px", v)) }
-	slider.SetValue(float64(m.cfg.IndentPx))
-	slider.OnChanged(slider.Value)
-	return slider, value
+func newIndentDialog(m *mainWindow) *indentDialog {
+	d := &indentDialog{m: m, value: m.cfg.IndentPx, note: widget.NewLabel("")}
+	d.slider = widget.NewSlider(1, config.MaxIndentPx)
+	d.slider.Step = 1
+	d.slider.SetValue(float64(d.value))
+	d.entry = widget.NewEntry()
+	d.entry.SetText(strconv.Itoa(d.value))
+	d.slider.OnChanged = func(v float64) {
+		if int(v) != d.value || d.entry.Text != strconv.Itoa(int(v)) {
+			d.value = int(v)
+			d.entry.SetText(strconv.Itoa(d.value))
+		}
+	}
+	d.entry.OnChanged = d.typed
+	d.apply = widget.NewButton("Apply", func() { m.setIndent(d.value); d.dlg.Hide() })
+	d.apply.Importance = widget.HighImportance
+	field := container.NewBorder(nil, nil, nil, widget.NewLabel("px"), d.entry)
+	row := container.NewBorder(nil, nil, nil, container.NewGridWrap(fyne.NewSize(90, d.entry.MinSize().Height), field), d.slider)
+	buttons := container.NewHBox(widget.NewButton("Cancel", func() { d.dlg.Hide() }), d.apply)
+	content := container.NewVBox(widget.NewLabel(fmt.Sprintf("Indent per directory level (1–%d px)", config.MaxIndentPx)), row, d.note, buttons)
+	d.dlg = dialog.NewCustomWithoutButtons("Side pane indent", content, m.win)
+	return d
 }
+
+func (d *indentDialog) show() { d.dlg.Show() }
+
+// typed handles the number field: a whole number from 1 to MaxIndentPx
+// moves the slider; anything else disables Apply.
+func (d *indentDialog) typed(text string) {
+	n, err := strconv.Atoi(strings.TrimSpace(text))
+	if err != nil || n < 1 || n > config.MaxIndentPx {
+		d.note.SetText(fmt.Sprintf("Enter a whole number from 1 to %d.", config.MaxIndentPx))
+		d.apply.Disable()
+		return
+	}
+	d.note.SetText("")
+	d.apply.Enable()
+	d.value = n
+	if int(d.slider.Value) != n {
+		d.slider.SetValue(float64(n))
+	}
+}
+
+func (m *mainWindow) showIndentDialog() { newIndentDialog(m).show() }
 
 func (m *mainWindow) setIndent(px int) {
 	m.cfg.IndentPx = px

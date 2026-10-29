@@ -84,6 +84,8 @@ func newFileTable(m *mainWindow) *fileTable {
 		func() fyne.CanvasObject {
 			c := newFileCell(func(row int) { m.clickRow(row, currentModifiers()) }, ft.openRow)
 			c.onSecondary = ft.showRowMenu
+			c.onDrag = ft.dragRow
+			c.onDragEnd = m.endDrag
 			return c
 		},
 		ft.updateCell,
@@ -340,6 +342,20 @@ func (ft *fileTable) refresh() {
 	}
 }
 
+// dragRow handles a drag over the table: the first call starts a drag of
+// the directories at row; it returns false if there is nothing to drag.
+func (ft *fileTable) dragRow(row int, abs fyne.Position, first bool) bool {
+	if first {
+		paths := ft.tableDragPaths(row)
+		if len(paths) == 0 {
+			return false
+		}
+		ft.m.beginTableDrag(paths)
+	}
+	ft.m.dragMove(abs)
+	return true
+}
+
 // rowMenu is the right-click menu of a row: directories can be bookmarked
 // (FR-042). It returns nil when there is nothing to offer.
 func (ft *fileTable) rowMenu(row int) *fyne.Menu {
@@ -370,6 +386,10 @@ type fileCell struct {
 	onTap       func(row int)
 	onDouble    func(row int)
 	onSecondary func(row int, pos fyne.Position)
+	onDrag      func(row int, abs fyne.Position, first bool) bool // false: not draggable
+	onDragEnd   func()
+	dragging    bool // a drag that started here is in progress
+	dragIgnored bool // a drag that started here has nothing to drag
 }
 
 func newFileCell(onTap, onDouble func(int)) *fileCell {
@@ -402,6 +422,26 @@ func (c *fileCell) CreateRenderer() fyne.WidgetRenderer {
 
 func (c *fileCell) Tapped(*fyne.PointEvent)       { c.onTap(c.row) }
 func (c *fileCell) DoubleTapped(*fyne.PointEvent) { c.onDouble(c.row) }
+
+// Dragged drags directories to the bookmark pane (FR-049).
+func (c *fileCell) Dragged(ev *fyne.DragEvent) {
+	if c.onDrag == nil || c.dragIgnored {
+		return
+	}
+	first := !c.dragging
+	if !c.onDrag(c.row, ev.AbsolutePosition, first) {
+		c.dragIgnored = true
+		return
+	}
+	c.dragging = true
+}
+
+func (c *fileCell) DragEnd() {
+	if c.dragging && c.onDragEnd != nil {
+		c.onDragEnd()
+	}
+	c.dragging, c.dragIgnored = false, false
+}
 
 func (c *fileCell) TappedSecondary(ev *fyne.PointEvent) {
 	if c.onSecondary != nil {

@@ -219,7 +219,7 @@ func TestBookmarkMenu(t *testing.T) {
 	wait(t, m, func() { m.goPath(sub) })
 
 	slash := m.marks.Items()[0]
-	want := []string{"Open", "-", "Set colours…", "Reset colours (disabled)", "Edit hover text…", "-", "Add current directory", "Remove bookmark (disabled)"}
+	want := []string{"Open", "-", "Move up (disabled)", "Move down", "-", "Set colours…", "Reset colours (disabled)", "Edit hover text…", "-", "Add current directory", "Remove bookmark (disabled)"}
 	if got := menuLabels(m.side.menuFor(slash)); !slices.Equal(got, want) {
 		t.Errorf("menu = %v", got)
 	}

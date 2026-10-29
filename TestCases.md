@@ -94,8 +94,8 @@ A ✔ with a test name means the automated test exists and passes. The manual ch
 | TC-041b | FR-041 | Defaults not removable | Remove `/`, remove home | Refused | Auto ✔ `TestAddRemove` |
 | TC-041c | FR-041 | Home is `/` | `HOME=/` | One item `/` | Auto ✔ `TestHomeIsRoot` |
 | TC-042a | FR-042 | Add/remove bookmark | Add `/tmp`, add `/tmp/` again, add `tmp`, remove twice | Added; duplicate refused; relative refused; removed; then not found | Auto ✔ `TestAddRemove` |
-| TC-042b | FR-042 | Saved data cleaned up | Relative, empty, duplicate paths, bad colour | Ignored / first wins / colour cleared | Auto ✔ `TestNewFromSavedCleansUp` |
-| TC-040 | FR-040 | Tree-like order | `/home/mboot-old`, `/home/mboot/projects`, `/etc`, `/home` | `/`, `/etc`, `/home`, `/home/mboot`, `/home/mboot/projects`, `/home/mboot-old` | Auto ✔ `TestOrder` |
+| TC-042b | FR-042, FR-040 | Saved data cleaned up | Relative, empty, duplicate paths, bad colour; `/` saved but not home | Ignored / first wins / colour cleared; saved order kept, home inserted right after `/` | Auto ✔ `TestNewFromSavedCleansUp` |
+| TC-040 | FR-040 | User order; Add appends | Add `/home/mboot-old`, `/home/mboot/projects`, `/etc` | Listed after the defaults in that order | Auto ✔ `TestOrder` |
 | TC-043 | FR-043 | Click opens directory | Click `mboot` | Right pane shows `$HOME` | Auto ✔ `TestBookmarkClickNavigates` + Manual |
 | TC-041d | FR-041 | Default items in menu | Right-click `/` | Remove bookmark and Reset colours disabled | Auto ✔ `TestBookmarkMenu` + Manual |
 | TC-042c | FR-042 | Bookmark menu actions | Add current directory (twice), reset colours, open, remove | Added once (duplicate: error); reset; opened; removed | Auto ✔ `TestBookmarkMenu` + Manual |
@@ -105,7 +105,7 @@ A ✔ with a test name means the automated test exists and passes. The manual ch
 | TC-046d | FR-046 | Hover text pop-up | Hover home; leave; custom text; leave before delay | Full path shown; hidden; "work" shown; nothing shown | Auto ✔ `TestBookmarkTooltip`, `TestBookmarkTooltipCancelled` + Manual |
 | TC-047c | FR-047 | Missing bookmark drawn and clicked | Bookmark removed dir | `gone (missing)`, italic, `#767676`; click: error, directory unchanged | Auto ✔ `TestBookmarkStyle` + Manual |
 | TC-044a | FR-044 | Depth | `/`, `/home`, `/home/mboot`, `/a/b/c/` | 0, 1, 2, 3 | Auto ✔ `TestDepthAndIndent` |
-| TC-044d | FR-044 | Indent setting | Slider shows 12 px; apply 20; apply 500 | Home indent 20·depth, saved; limited to 64 | Auto ✔ `TestIndentSetting` + Manual |
+| TC-044d | FR-044 | Indent setting | Field 12 / slider max 25; type 10; drag to 7; type 0, 26, abc, empty; type " 3 " and apply; apply 500 | Slider and field follow each other; invalid input disables Apply with a hint; 3 applied and saved; 500 limited to 25 | Auto ✔ `TestIndentSetting` + Manual |
 | TC-044b | FR-044 | Indent | Depth 2, indent 12 | 24 px | Auto ✔ `TestDepthAndIndent` |
 | TC-045a | FR-045 | Set and reset colours | Navy on white; reset | Stored as `#RRGGBB`; reset to defaults | Auto ✔ `TestSetColours` |
 | TC-045b | FR-045 | Colours kept | Set colours, save config, reload | Same items and colours | Auto ✔ `TestSavedRoundTrip` |
@@ -113,6 +113,13 @@ A ✔ with a test name means the automated test exists and passes. The manual ch
 | TC-046a | FR-046 | Default hover text | No custom text | Full path | Auto ✔ `TestHoverText` |
 | TC-046b | FR-046 | Custom hover text kept | Set "work", save, reload | "work" | Auto ✔ `TestHoverText`, `TestSavedRoundTrip` |
 | TC-046c | FR-046 | Empty text resets | Set "   " | Full path | Auto ✔ `TestHoverText` |
+| TC-048a | FR-048 | Insert and move (core) | Insert at 1, 99, -5; insert existing; move to end/start/-1; move unknown | Positions clamped; existing refused and not moved; defaults movable and still default | Auto ✔ `TestInsertMove` |
+| TC-048b | FR-048 | Move up / Move down menu | Move `/a2` up, `/` down; menu of last item | Order changed; Move down disabled on the last item | Auto ✔ `TestBookmarkMoveMenu` + Manual |
+| TC-048c | FR-048 | Drag a bookmark within the pane | Drag last item above row 1; drag first item below the last | Drop line shown; moved to the slot; drag state cleared | Auto ✔ `TestDragBookmarkWithinPane` + Manual |
+| TC-049a | FR-049 | Drag a directory to the pane | Drag `other/` above `/a1` | Label "Add bookmark: other", drop line; inserted at that slot | Auto ✔ `TestDragDirectoryToPane` + Manual |
+| TC-049b | FR-049 | Already bookmarked: refused while dragging | Drag `sub/` which is a bookmark | Label "sub: already a bookmark", no drop line; drop changes nothing, no error | Auto ✔ `TestDragBookmarkedDirectoryRefused` + Manual |
+| TC-049c | FR-049 | Drag a selection | Select `other/`, `sub/` (bookmarked), `a.txt`; drag | Label "Add 1 bookmark (1 already bookmarked)"; only `other` added | Auto ✔ `TestDragSelection` + Manual |
+| TC-049d | FR-049 | Ignored drags | Drag a file; drop a directory outside the pane | Nothing happens, no drop line | Auto ✔ `TestDragIgnoredCases` + Manual |
 | TC-047a | FR-047 | Missing detection | Existing dir; removed dir; a file | false; true; true | Auto ✔ `TestMissing` |
 | TC-047b | FR-047 | Missing style | Default white; black bg; light yellow bg with navy text | `gone (missing)`, italic; text `#767676`; `#757575`; navy — all pass 4.5:1 | Auto ✔ `TestStyleMissing` + Manual |
 
@@ -143,7 +150,7 @@ A ✔ with a test name means the automated test exists and passes. The manual ch
 | TC-062d | FR-065 | No save after unreadable config | Config mode 000, change something, quit | File unchanged, no error dialog | Auto ✔ `TestNoSaveAfterUnreadableConfig` |
 | TC-063c | FR-065 | Save error once | Config path under a file; two changes and quit | One error shown | Auto ✔ `TestSaveErrorReportedOnce` |
 | TC-063d | FR-065 | Newest snapshot wins | Older save finishes after newer | Newer values kept | Auto ✔ `TestSaverOrder` |
-| TC-064 | FR-064 | Bad values normalised | Negative indent, contrast 1, split 1.5, unknown sort/columns, duplicate recent, unknown field | Defaults/limits applied, unknowns ignored | Auto ✔ `TestNormalize` |
+| TC-064 | FR-064 | Bad values normalised | Negative indent (and > 25 → 25), contrast 1, split 1.5, unknown sort/columns, duplicate recent, unknown field | Defaults/limits applied, unknowns ignored | Auto ✔ `TestNormalize` |
 
 ## Non-functional
 | ID | Req | Description | Steps / input | Expected result | Type |

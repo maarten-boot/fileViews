@@ -1,6 +1,6 @@
 # Specification — fileViews
 
-_Status: draft v0.18 · Last updated: 2026-10-29_
+_Status: draft v0.19 · Last updated: 2026-10-29_
 
 ## 1. Purpose
 A simple hierarchical file and directory viewer with a graphical interface, laid out similar to Thunar.
@@ -80,15 +80,17 @@ The split between left and right pane is user-resizable.
 - **FR-031** The lines between table cells are light gray (`#E8E8E8`), lighter than separators elsewhere. View → Show grid lines turns them off and on (default on); the setting is kept across sessions.
 
 ### 5.4 Left pane (side pane / bookmarks)
-- **FR-040** The left pane shows a list of bookmarked directories (not an expandable tree). Items are sorted by path, component by component (`/home/mboot/projects` directly after `/home/mboot`, before `/home/mboot-old`), so together with the indent (FR-044) the list reads like a tree. User bookmarks are labelled with their base name. Bookmarks cannot be reordered by hand.
+- **FR-040** The left pane shows a list of bookmarked directories (not an expandable tree), in the user's order (FR-048). The indent (FR-044) shows each item's depth. User bookmarks are labelled with their base name. A config saved by an earlier version keeps its (path-sorted) order as the starting point.
 - **FR-041** Two default items are always present and cannot be removed:
   - `/` — label `/`
   - `$HOME` — label is the basename of `$HOME` (e.g. `mboot`), target is the full path. If `$HOME` is `/`, there is only one default item.
-- **FR-042** The user can add the current directory (or a selected directory in the right pane) as a bookmark, and remove user-added bookmarks, via a right-click menu. Bookmark right-click menu: Open, Set colours…, Reset colours (only when colours are set), Edit hover text…, Add current directory, Remove bookmark (not for default items). Right-clicking a directory row in the right pane selects it and offers "Add to bookmarks". Adding a path that is already bookmarked is refused. Saved bookmarks with an empty or relative path, or a duplicate path, are ignored when loading (the first one wins); invalid saved colours are cleared.
+- **FR-042** The user can add the current directory (or a selected directory in the right pane) as a bookmark, and remove user-added bookmarks, via a right-click menu. Bookmark right-click menu: Open, Set colours…, Reset colours (only when colours are set), Edit hover text…, Add current directory, Remove bookmark (not for default items). Right-clicking a directory row in the right pane selects it and offers "Add to bookmarks". New bookmarks from the menus are added at the end. Adding a path that is already bookmarked is refused. Saved bookmarks with an empty or relative path, or a duplicate path, are ignored when loading (the first one wins); invalid saved colours are cleared.
 - **FR-043** Single-clicking an item opens its directory in the right pane.
-- **FR-044** Each item is indented by `depth × indent`, where depth is the number of path components from `/` (`/` = 0, `/home/mboot` = 2). The indent is configurable in Settings → Side pane indent (slider, 1–64 px); default 12 px.
+- **FR-044** Each item is indented by `depth × indent`, where depth is the number of path components from `/` (`/` = 0, `/home/mboot` = 2). The indent is configurable in Settings → Side pane indent: a slider and a number field that follow each other (whole numbers 1–25 px; anything else disables Apply); default 12 px.
 - **FR-045** Each item can have a custom background and foreground colour, set via right-click → "Set colours…" (background and text fields as `#RRGGBB`, empty = default, each with a colour picker; live preview), with a "Reset colours" option. Colours are kept across sessions. The combination must meet the contrast minimum (FR-073–FR-075).
 - **FR-046** Each item has a hover text (tooltip), shown in a small pop-up after the mouse rests on the item for about 0.6 s and hidden when it leaves. The default is the full path. The user can change it via right-click → "Edit hover text…"; an empty text goes back to the default. Hover texts are kept across sessions.
+- **FR-048** Bookmarks can be reordered, all of them including the default items: right-click → Move up / Move down (disabled at the ends), or drag a bookmark to another place in the pane; a line shows where it will land. The order is kept across sessions.
+- **FR-049** Directories (and links to directories) can be dragged from the right pane onto the bookmark pane; a line shows where they will be added. Dragging a selected row drags all selected directories (files in the selection are ignored); dragging a file does nothing. A directory that is already a bookmark is never placed a second time: while dragging, the floating label says so ("already a bookmark", or how many are already bookmarked), no drop line is shown when nothing new would be added, and on drop only the new ones are added. Dropping outside the bookmark pane does nothing. Only bookmarks are created; the directory itself is never moved (FR-030).
 - **FR-047** A bookmark whose target no longer exists is still shown, in italics with the suffix ` (missing)`; clicking it shows an error. On a pure white or pure black background (default or chosen) its text is also gray (FR-071). On any other background it keeps its own text colour (no gray). The text marker is always shown, so the state never depends on colour alone. Whether a bookmark is missing is checked in the background (NFR-002) when bookmarks change and after every navigation or refresh, so the marker can lag a moment behind the file system.
 
 ### 5.5 Status bar (bottom line)
@@ -113,7 +115,7 @@ The split between left and right pane is user-resizable.
   - right after every change to something in FR-061 (toggles, sorting, bookmark edits, and every navigation for the recent list and last directory), written in the background so a slow disk cannot freeze the window (NFR-002); a snapshot is never overwritten by an older one
   - on quit (File → Quit, Ctrl+Q or closing the window), together with the window size and pane split
   - a save error is shown once per session; after an unreadable config (FR-062) nothing is saved and no further error is shown
-- **FR-064** Missing or out-of-range values are replaced by defaults, unknown fields and column names are ignored: indent 1–64 px (default 12), contrast minimum 3–7 (default 4.5), window 1000×650 if unset, pane split between 0 and 1 (default 0.25), recent list cleaned as in FR-015.
+- **FR-064** Missing or out-of-range values are replaced by defaults, unknown fields and column names are ignored: indent 1–25 px (default 12), contrast minimum 3–7 (default 4.5), window 1000×650 if unset, pane split between 0 and 1 (default 0.25), recent list cleaned as in FR-015.
 
 ### 5.7 Appearance
 - **FR-070** Default colours: white background, black text, in all panes and bars. The app uses a light theme regardless of the desktop's dark-mode setting.

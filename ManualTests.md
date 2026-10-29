@@ -1,6 +1,6 @@
 # Manual Test Checklist — fileViews
 
-_Generated from `TestCases.md` (regenerated 2026-10-29 after the scrolling fixes). Run on a desktop; tick each item and note anything odd next to it._
+_Generated from `TestCases.md` (regenerated 2026-10-29 after bookmark ordering and drag & drop). Run on a desktop; tick each item and note anything odd next to it._
 
 **Preparation:** `make testdir` creates `/tmp/fileviews-test` with files, a subfolder, a hidden file, an executable, symlinks to a file and a folder, a broken symlink and a FIFO, plus `remove-me/` to bookmark and then delete (missing bookmarks), and starts the app there. For the scrolling checks use a big folder too, e.g. `/usr/bin`.
 
@@ -49,7 +49,13 @@ _Generated from `TestCases.md` (regenerated 2026-10-29 after the scrolling fixes
 - [ ] **TC-045d** (FR-045) Colours drawn — *White on navy for home* → Home drawn white on navy; `/` stays black on white
 - [ ] **TC-046d** (FR-046) Hover text pop-up — *Hover home; leave; custom text; leave before delay* → Full path shown; hidden; "work" shown; nothing shown
 - [ ] **TC-047c** (FR-047) Missing bookmark drawn and clicked — *Bookmark removed dir* → `gone (missing)`, italic, `#767676`; click: error, directory unchanged
-- [ ] **TC-044d** (FR-044) Indent setting — *Slider shows 12 px; apply 20; apply 500* → Home indent 20·depth, saved; limited to 64
+- [ ] **TC-044d** (FR-044) Indent setting — *Field 12 / slider max 25; type 10; drag to 7; type 0, 26, abc, empty; type " 3 " and apply; apply 500* → Slider and field follow each other; invalid input disables Apply with a hint; 3 applied and saved; 500 limited to 25
+- [ ] **TC-048b** (FR-048) Move up / Move down menu — *Move `/a2` up, `/` down; menu of last item* → Order changed; Move down disabled on the last item
+- [ ] **TC-048c** (FR-048) Drag a bookmark within the pane — *Drag last item above row 1; drag first item below the last* → Drop line shown; moved to the slot; drag state cleared
+- [ ] **TC-049a** (FR-049) Drag a directory to the pane — *Drag `other/` above `/a1`* → Label "Add bookmark: other", drop line; inserted at that slot
+- [ ] **TC-049b** (FR-049) Already bookmarked: refused while dragging — *Drag `sub/` which is a bookmark* → Label "sub: already a bookmark", no drop line; drop changes nothing, no error
+- [ ] **TC-049c** (FR-049) Drag a selection — *Select `other/`, `sub/` (bookmarked), `a.txt`; drag* → Label "Add 1 bookmark (1 already bookmarked)"; only `other` added
+- [ ] **TC-049d** (FR-049) Ignored drags — *Drag a file; drop a directory outside the pane* → Nothing happens, no drop line
 - [ ] **TC-047b** (FR-047) Missing style — *Default white; black bg; light yellow bg with navy text* → `gone (missing)`, italic; text `#767676`; `#757575`; navy — all pass 4.5:1
 
 ## Status bar

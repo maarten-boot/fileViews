@@ -159,12 +159,12 @@ func TestSaverOrder(t *testing.T) {
 	s := newSaver(store)
 	older, newer := s.ticket(), s.ticket()
 	c := config.Default()
-	c.IndentPx = 30
+	c.IndentPx = 20
 	s.write(newer, c)
 	c.IndentPx = 10
 	s.write(older, c) // finishes late: skipped
-	if got := loadCfg(t, store).IndentPx; got != 30 {
-		t.Errorf("IndentPx = %d, want the newer 30", got)
+	if got := loadCfg(t, store).IndentPx; got != 20 {
+		t.Errorf("IndentPx = %d, want the newer 20", got)
 	}
 }
 
