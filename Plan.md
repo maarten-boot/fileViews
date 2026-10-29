@@ -1,6 +1,6 @@
 # Plan — fileViews
 
-_Status: draft v0.15 · Last updated: 2026-10-29_
+_Status: draft v0.16 · Last updated: 2026-10-29_
 
 ## Approach
 Build the non-GUI core first, with unit tests (NFR-003), then add the Fyne GUI on top of it, one area at a time.
@@ -31,7 +31,7 @@ internal/arch/            architecture test: core packages have no GUI dependenc
 | 8 | GUI: left pane — indent, colours, tooltips, context menu, colour dialog with live ratio | FR-040–047, FR-072, FR-075 | done |
 | 9 | GUI: Settings dialogs — column order/visibility, indent, contrast minimum (size format is already a menu toggle; colour dialog done in M8) | FR-024, FR-044, FR-074, FR-076 | done |
 | 10 | Persistence wiring (save on change/quit), window state, error handling, performance check | FR-061, FR-065, NFR-001, NFR-002 | done (before M9, at the user's request) |
-| 11 | Final crosscheck Spec ↔ Plan ↔ code, manual test pass | all | todo |
+| 11 | Final crosscheck Spec ↔ Plan ↔ code, manual test pass | all | crosscheck done; manual pass by the user pending (`ManualTests.md`, `make testdir`) |
 
 **Crosscheck points:** after milestones 5 (core done), 8 (main GUI done) and 11.
 
@@ -52,5 +52,6 @@ Record each Spec ↔ Plan ↔ code crosscheck here.
 
 | Date | Result | Follow-ups |
 |------|--------|------------|
+| 2026-10-29 | **#3, final (M11).** 50 requirement IDs, 133 test cases, 119 tests: all cross-references consistent, every requirement has a test case, all automated tests pass (also with `-race`). Read-through found NFR-002 still broken in two places — every navigation checked its target (`stat` + open) on the UI thread, and a double-click did a `stat` there — so a hung network mount could still freeze the window; fixed (navigator split into Target/Commit, checks in the background, newer navigation wins). Also: the recent drop-down (FR-015) had no test (added); FR-001 named the size toggle differently from the menu; 2 test case IDs used in tests had no row. Manual checklist generated (`ManualTests.md`, 42 checks) with `make testdir` to set up a test folder. | Manual pass by the user; known, documented limits: startup (config load, start directory) and the final save on quit are synchronous (NFR-002) |
 | 2026-10-29 | **#2, after M8 (main GUI done).** Checked 49 requirement IDs, 116 test cases and 104 tests; ID and test-name cross-references all consistent. Found and fixed: (1) dragging a header border could not resize columns (FR-020) — header cells swallowed the mouse press; now forwarded; (2) bookmark missing-checks ran `stat` on the UI thread on every redraw — a hung NFS mount would freeze the window (NFR-002); now cached and checked in the background; (3) 7 test comments with wrong/missing case IDs and one nonexistent ID (TC-023f); (4) spec layout sketch showed an old status-bar format; FR-002 now says F5 needs the path field unfocused; README gained a Usage section. | Settings, bookmarks, sort and toggles are not saved yet, so the startup "last directory" (FR-017) only works after M10; column resizing and all visual checks need a manual run |
 | 2026-10-29 | **#1, after M5 (core done).** Checked all 46 requirement IDs, 94 test cases and 69 tests. Code: every core requirement is implemented and tested; no ID in the code is missing from the spec; core packages have no GUI dependency. Fixed: 8 test comments with outdated case IDs and 19 with none; 3 tests not listed in TestCases; 4 requirements with no test case (FR-001, FR-010, FR-072, NFR-003); NFR-003 now enforced by a test; spec text out of date for FR-001 (missing settings), FR-022 (size/time), FR-029 (`?` fields), FR-050 (what is counted); accepted assumptions moved from open questions into FR-002, FR-022, FR-040. | Q-1 startup directory, Q-2 recent-list size (Spec §7); tooltip widget needed (M8) |

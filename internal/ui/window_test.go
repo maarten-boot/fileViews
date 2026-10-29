@@ -288,3 +288,56 @@ func TestF5Refresh(t *testing.T) {
 		t.Errorf("shown = %v", shownNames(m))
 	}
 }
+
+// TC-N02c: the target check runs in the background; when two navigations
+// overlap and the older check finishes last, the newer one wins.
+func TestNavigationCheckedInBackground(t *testing.T) {
+	root := fixture(t)
+	sub, other := filepath.Join(root, "sub"), filepath.Join(root, "other")
+	os.Mkdir(other, 0o755)
+	m := newTestWindow(t, root)
+	wait(t, m, func() { m.goPath(root) })
+
+	var queue []func()
+	inline := background
+	background = func(work func()) { queue = append(queue, work) }
+	defer func() { background = inline }()
+
+	m.goPath(sub)
+	m.goPath(other)
+	if m.nav.Current() != root || len(queue) != 2 {
+		t.Fatalf("moved before the check: current %q, queued %d", m.nav.Current(), len(queue))
+	}
+	queue[1]() // newer check (other) finishes first: commits and queues its load
+	queue[0]() // older check (sub) finishes last: dropped
+	for _, work := range queue[2:] {
+		work()
+	}
+	if m.nav.Current() != other || m.path.Text != other {
+		t.Errorf("current %q, path bar %q; want %q", m.nav.Current(), m.path.Text, other)
+	}
+	if m.nav.CanForward() || !slices.Equal(m.nav.Recent()[:2], []string{other, root}) {
+		t.Errorf("history: forward %v, recent %v", m.nav.CanForward(), m.nav.Recent())
+	}
+}
+
+// TC-015d: the recent drop-down lists recent directories and goes there.
+func TestRecentMenu(t *testing.T) {
+	root := fixture(t)
+	sub := filepath.Join(root, "sub")
+	m := newTestWindow(t, root)
+	if len(m.recentMenu().Items) != 0 {
+		t.Error("recent menu not empty at start")
+	}
+	wait(t, m, func() { m.goPath(root) })
+	wait(t, m, func() { m.goPath(sub) })
+	menu := m.recentMenu()
+	if got := menuLabels(menu); !slices.Equal(got, []string{sub, root}) {
+		t.Fatalf("menu = %v", got)
+	}
+	wait(t, m, func() { menu.Items[1].Action() })
+	if m.nav.Current() != root {
+		t.Errorf("current = %q", m.nav.Current())
+	}
+	test.Tap(m.recentBtn) // shows the pop-up without panicking
+}

@@ -271,3 +271,42 @@ func TestUpAndHome(t *testing.T) {
 		t.Errorf("current = %q", n.Current())
 	}
 }
+
+// TC-012e: Target does not move; Commit moves; a Back whose target is no
+// longer the previous entry becomes a plain visit.
+func TestTargetCommit(t *testing.T) {
+	root := tree(t)
+	a, b := filepath.Join(root, "a"), filepath.Join(root, "a", "b")
+	n := NewNavigator(nil, root)
+	mustGo(t, n, a)
+	mustGo(t, n, b)
+
+	dir, err := n.Target(MoveBack, "")
+	if err != nil || dir != a || n.Current() != b {
+		t.Fatalf("Target(Back) = %q, %v; current %q", dir, err, n.Current())
+	}
+	for mv, want := range map[Move]string{MoveUp: a, MoveHome: root, MoveGo: filepath.Join(b, "x")} {
+		if got, err := n.Target(mv, "x"); err != nil || got != want {
+			t.Errorf("Target(%v) = %q, %v; want %q", mv, got, err, want)
+		}
+	}
+	if _, err := n.Target(MoveForward, ""); !errors.Is(err, ErrNoForward) {
+		t.Errorf("Target(Forward) err = %v", err)
+	}
+	n.Commit(MoveBack, a)
+	if n.Current() != a || !n.CanForward() {
+		t.Errorf("after Commit(Back): %q forward %v", n.Current(), n.CanForward())
+	}
+	if n.Recent()[0] != a {
+		t.Errorf("recent %v", n.Recent())
+	}
+	// Stale Back: history moved on before the commit.
+	n.Commit(MoveGo, root)
+	n.Commit(MoveBack, b) // b is not the previous entry (a is): plain visit
+	if n.Current() != b || n.CanForward() {
+		t.Errorf("stale back: current %q forward %v", n.Current(), n.CanForward())
+	}
+	if back, _ := n.Target(MoveBack, ""); back != root {
+		t.Errorf("previous entry %q, want %q", back, root)
+	}
+}

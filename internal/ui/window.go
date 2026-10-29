@@ -46,6 +46,7 @@ type mainWindow struct {
 	free    uint64
 	freeOK  bool
 	loadSeq int
+	navSeq  int
 
 	saver        *saver // nil: nothing is saved (tests without a store)
 	saveErrShown bool
@@ -149,25 +150,47 @@ func (m *mainWindow) buildStatusBar() fyne.CanvasObject {
 // Navigation. Each action asks the Navigator, which checks the target
 // first; on error the current directory stays as it is (FR-011, FR-012).
 
-func (m *mainWindow) goPath(p string) { m.navigate(func() (string, error) { return m.nav.Go(p) }) }
-func (m *mainWindow) goBack()         { m.navigate(m.nav.Back) }
-func (m *mainWindow) goForward()      { m.navigate(m.nav.Forward) }
-func (m *mainWindow) goUp()           { m.navigate(m.nav.Up) }
-func (m *mainWindow) goHome()         { m.navigate(m.nav.Home) }
+func (m *mainWindow) goPath(p string) { m.navigate(history.MoveGo, p) }
+func (m *mainWindow) goBack()         { m.navigate(history.MoveBack, "") }
+func (m *mainWindow) goForward()      { m.navigate(history.MoveForward, "") }
+func (m *mainWindow) goUp()           { m.navigate(history.MoveUp, "") }
+func (m *mainWindow) goHome()         { m.navigate(history.MoveHome, "") }
 
-func (m *mainWindow) navigate(move func() (string, error)) {
-	prev := m.nav.Current()
-	dir, err := move()
+// navigate works out the target, checks it off the UI goroutine (a hung
+// network mount must not freeze the window, NFR-002) and then moves. If a
+// newer navigation starts meanwhile, this one is dropped.
+func (m *mainWindow) navigate(mv history.Move, path string) {
+	dir, err := m.nav.Target(mv, path)
 	if err != nil {
-		m.path.SetText(prev) // undo whatever was typed
-		m.showError(err)
+		m.navFailed(err)
 		return
 	}
-	if dir != prev {
-		m.sel.clear()
-	}
-	m.load(dir)
-	m.changed() // recent list and last directory
+	m.navSeq++
+	seq := m.navSeq
+	background(func() {
+		err := history.CheckDir(dir)
+		fyne.Do(func() {
+			if seq != m.navSeq {
+				return
+			}
+			if err != nil {
+				m.navFailed(err)
+				return
+			}
+			if dir != m.nav.Current() {
+				m.sel.clear()
+			}
+			m.nav.Commit(mv, dir)
+			m.load(dir)
+			m.changed() // recent list and last directory
+		})
+	})
+}
+
+// navFailed reports a failed navigation; the current directory stays.
+func (m *mainWindow) navFailed(err error) {
+	m.path.SetText(m.nav.Current()) // undo whatever was typed
+	m.showError(err)
 }
 
 func (m *mainWindow) showError(err error) {
@@ -268,17 +291,23 @@ func (m *mainWindow) updateStatus() {
 	m.status.SetText(info.String())
 }
 
-func (m *mainWindow) showRecent() {
+// recentMenu lists the recent directories; choosing one goes there (FR-015).
+func (m *mainWindow) recentMenu() *fyne.Menu {
 	var items []*fyne.MenuItem
 	for _, dir := range m.nav.Recent() {
 		items = append(items, fyne.NewMenuItem(dir, func() { m.goPath(dir) }))
 	}
-	if len(items) == 0 {
+	return fyne.NewMenu("", items...)
+}
+
+func (m *mainWindow) showRecent() {
+	menu := m.recentMenu()
+	if len(menu.Items) == 0 {
 		return
 	}
 	pos := fyne.CurrentApp().Driver().AbsolutePositionForObject(m.recentBtn)
 	pos.Y += m.recentBtn.Size().Height
-	widget.ShowPopUpMenuAtPosition(fyne.NewMenu("", items...), m.win.Canvas(), pos)
+	widget.ShowPopUpMenuAtPosition(menu, m.win.Canvas(), pos)
 }
 
 func (m *mainWindow) toggleHidden() {

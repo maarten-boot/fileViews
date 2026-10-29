@@ -184,3 +184,13 @@ All core packages are now done: the planned point for the first Spec ↔ Plan �
 **Assistant:** Milestone 10 done (`internal/ui/persist.go`): the config is saved in the background after every change (toggles, sort, bookmark edits, navigation) and synchronously on quit/close together with window size and split; a newer snapshot is never overwritten by an older one; save errors are shown once; after an unreadable config nothing is saved. New FR-065. 7 new tests; 111 pass, also with `-race`. 10,000-entry directory shown in ≈ 42 ms through the window (headless). One test expectation of mine was wrong (size-descending order of `a.txt` vs `.hidden`); the code was right.
 
 **Assistant (milestone 9 result):** Settings dialogs done (`internal/ui/settings.go`): Columns… (checkbox and up/down per column, Name locked), Side pane indent… (slider 1–64 px), Contrast minimum… (slider 3–7, step 0.5; also swaps the theme gray and re-checks bookmark colours). All apply on "Apply" and are saved. Added `ColumnLayout.All()` (all columns including hidden, in order). 5 new tests; 116 pass, also with `-race`. All milestones except the final crosscheck (M11) are now done.
+
+### 20. Milestone 11: final crosscheck and manual test checklist
+**User:** yes, start milestone 11
+
+**Assistant:** Final crosscheck (#3), logged in `Plan.md`. Scripted checks clean after adding 2 missing test case rows. Read-through findings and fixes:
+- NFR-002 was still broken: every navigation checked its target on the UI thread, and a double-click did a `stat` there; on a hung NFS mount the window would freeze. The navigator now has `Target` (no file system access) and `Commit`; the GUI checks in the background and the newest navigation wins (TC-012e, TC-N02c)
+- the recent drop-down (FR-015) had no test; made the menu testable (TC-015d)
+- FR-001 and NFR-002 wording aligned with the code; NFR-002 lists the deliberate synchronous exceptions (startup, final save on quit)
+- `ManualTests.md`: 42 manual checks generated from `TestCases.md`; `make testdir` creates a folder with every entry type and starts the app in it
+- 119 tests pass, also with `-race`. Remaining: the user's manual test pass.

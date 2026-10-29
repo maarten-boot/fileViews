@@ -3,7 +3,7 @@
 _Last updated: 2026-10-29_
 
 Each test case links to the requirement it verifies. **Auto** = Go unit test; **Manual** = GUI check.
-A ✔ with a test name means the automated test exists and passes.
+A ✔ with a test name means the automated test exists and passes. The manual checks are collected as a checklist in `ManualTests.md`.
 
 ## Menu bar
 | ID | Req | Description | Steps / input | Expected result | Type |
@@ -65,6 +65,7 @@ A ✔ with a test name means the automated test exists and passes.
 | TC-012b | FR-012 | New visit clears forward | Visit A, B; Back; visit C | Forward is empty | Auto ✔ `TestVisitClearsForward` |
 | TC-012c | FR-012 | Revisit current adds nothing | Visit A, A | No Back entry | Auto ✔ `TestHistoryEdges` |
 | TC-012d | FR-012 | Back to removed dir | Visit B, root; remove B; Back | Error; still at root, Back still possible | Auto ✔ `TestBackToRemovedDir` |
+| TC-012e | FR-012 | Target and commit | Target(Back) without moving; Up/Home/Go targets; Commit(Back); stale Back | No move until commit; stale Back becomes a plain visit | Auto ✔ `TestTargetCommit` |
 | TC-013 | FR-013 | Up, and Up at root | `/x/a/b` → Up; at `/` | `/x/a`; at `/` Up disabled, error, no move | Auto ✔ `TestParent`, `TestUpAndHome`, `TestButtonsFollowHistory` |
 | TC-014 | FR-014 | Home | Home | `$HOME` | Auto ✔ `TestUpAndHome`, `TestButtonsFollowHistory` |
 | TC-015a | FR-015 | Recent: no duplicates | Visit A, B, A | Recent = `[A, B]` | Auto ✔ `TestRecentNoDuplicates`, `TestRecentFollowsNavigation` |
@@ -74,6 +75,8 @@ A ✔ with a test name means the automated test exists and passes.
 | TC-017b | FR-017 | Last directory | No argument, last = `/x/sub` | Starts in `/x/sub` | Auto ✔ `TestStartupDir` |
 | TC-017c | FR-017 | Fallbacks | Last gone → home; home gone → `/` | `$HOME`; `/` | Auto ✔ `TestStartupDir` |
 | TC-017d | FR-017 | Bad command-line directory | `fileviews /gone` | Error shown, next choice used | Auto ✔ `TestStartupDir` + Manual |
+| TC-015d | FR-015 | Recent drop-down | Visit root, sub; open ▾; choose root | Menu lists sub, root; goes to root | Auto ✔ `TestRecentMenu` + Manual |
+| TC-017e | FR-017 | Start in last directory after restart | Saved config with last directory | Window starts there | Auto ✔ `TestRestoreFromConfig` + Manual |
 | TC-016 | FR-016 | Recent kept across sessions | Visit A, restart | A in dropdown | Auto ✔ `TestRecentFromConfig`, `TestRoundTrip` + Manual |
 
 ## Left pane / bookmarks (`internal/bookmarks`)
@@ -140,6 +143,7 @@ A ✔ with a test name means the automated test exists and passes.
 | TC-N01 | NFR-001 | Large directory | 10,000 files: read + sort + format | < 1 s (measured ≈ 17 ms) | Bench ✔ `BenchmarkListLargeDir` |
 | TC-N03 | NFR-003 | Core has no GUI dependency | `go list -deps` of listing, history, bookmarks, config, contrast | No `fyne.io/…` or `internal/ui` | Auto ✔ `TestCoreHasNoGUIDeps` |
 | TC-N01b | NFR-001 | Large directory in the window | 10,000 files, navigate | Shown < 1 s (measured ≈ 42 ms, headless) | Auto ✔ `TestLargeDirectoryInWindow` |
+| TC-N02c | NFR-002 | Navigation checked in the background | Two overlapping navigations; older check finishes last | Nothing moves before its check; newer navigation wins | Auto ✔ `TestNavigationCheckedInBackground` |
 | TC-N02 | NFR-002 | Responsive UI | Open a large directory | Window stays responsive | Auto ✔ `TestStaleLoadDropped`, `TestBookmarkMissingCheckedInBackground` + Manual |
 
 ## Build / smoke
@@ -167,4 +171,5 @@ A ✔ with a test name means the automated test exists and passes.
 | TC-075b | FR-075 | Dialog refuses failing colours | Pick yellow text on white; black text on navy | Refused with ratio; black resp. white suggested; nothing stored | Auto ✔ `TestSetColours` + Manual |
 | TC-075c | FR-075 | Colour dialog live check | Defaults; yellow text; black on navy → "Use white text"; invalid `#12345`; save | 21.00:1 OK; below minimum, Save disabled, "Use black text"; white suggested and applied; invalid message; colours stored | Auto ✔ `TestColourDialog` + Manual |
 | TC-076 | FR-076 | Saved colours re-checked | Yellow on white; `#767676` at min 4.5 and 7; invalid colour | Drawn in black where failing; saved colours unchanged | Auto ✔ `TestEffective`, `TestStyleColours` |
+| TC-076b | FR-076 | Fallback after raising the minimum | `#767676` text bookmark; minimum 4.5 → 7 | Drawn gray at 4.5, black at 7; saved colour kept | Auto ✔ `TestContrastSetting` |
 | TC-077 | FR-077 | Theme colours pass | Every theme text/background pair | All ≥ minimum | Auto ✔ `TestThemeContrast`, `TestThemeGrayFollowsMinimum` |

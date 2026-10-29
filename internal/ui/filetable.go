@@ -164,19 +164,23 @@ func (ft *fileTable) openRow(row int) {
 		return
 	}
 	path := filepath.Join(ft.m.nav.Current(), ft.m.shown[row].Name)
-	fi, err := os.Stat(path)
-	switch {
-	case err != nil:
-		ft.m.showError(err)
-	case fi.IsDir():
-		ft.m.goPath(path)
-	case fi.Mode().IsRegular():
-		if err := openFile(path); err != nil {
-			ft.m.showError(fmt.Errorf("cannot open %s: %w", path, err))
-		}
-	default:
-		ft.m.showError(fmt.Errorf("cannot open %s: not a regular file", path))
-	}
+	background(func() { // stat off the UI goroutine (NFR-002)
+		fi, err := os.Stat(path)
+		fyne.Do(func() {
+			switch {
+			case err != nil:
+				ft.m.showError(err)
+			case fi.IsDir():
+				ft.m.goPath(path)
+			case fi.Mode().IsRegular():
+				if err := openFile(path); err != nil {
+					ft.m.showError(fmt.Errorf("cannot open %s: %w", path, err))
+				}
+			default:
+				ft.m.showError(fmt.Errorf("cannot open %s: not a regular file", path))
+			}
+		})
+	})
 }
 
 func (ft *fileTable) refresh() { ft.table.Refresh() }

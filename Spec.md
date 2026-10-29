@@ -1,6 +1,6 @@
 # Specification — fileViews
 
-_Status: draft v0.16 · Last updated: 2026-10-29_
+_Status: draft v0.17 · Last updated: 2026-10-29_
 
 ## 1. Purpose
 A simple hierarchical file and directory viewer with a graphical interface, laid out similar to Thunar.
@@ -41,7 +41,7 @@ The split between left and right pane is user-resizable.
   - File: Quit
   - View: Show hidden files (toggle), Show grid lines (toggle), Refresh
   - Go: Back, Forward, Up, Home
-  - Settings: Columns…, Side pane indent…, Size format (human-readable / exact bytes), Contrast minimum…
+  - Settings: Columns…, Side pane indent…, Exact sizes (bytes) (toggle; off = human-readable), Contrast minimum…
   - Help: About
 - **FR-002** Keyboard shortcuts: Ctrl+H show hidden files, Alt+Left back, Alt+Right forward, Alt+Up up, Alt+Home home, F5 refresh, Ctrl+Q quit. F5 works when the path field does not have keyboard focus (it is not a modifier shortcut, so the focused text field receives it).
 
@@ -130,7 +130,7 @@ The split between left and right pane is user-resizable.
 
 ## 6. Non-functional requirements
 - **NFR-001** A directory with 10,000 entries lists in under 1 second on a typical desktop.
-- **NFR-002** The UI stays responsive while reading the file system: directories are read, and bookmark directories checked, off the UI thread (a hung network mount must not freeze the window).
+- **NFR-002** The UI stays responsive while using the file system: directory listings, navigation targets, double-clicked entries, bookmark directories and config saves after a change are all checked or written off the UI thread (a hung network mount must not freeze the window). Exceptions: loading the config and choosing the startup directory happen before the window appears, and the final save on quit is synchronous so no settings are lost.
 - **NFR-003** Core logic (listing, formatting, history, config, bookmarks, colour contrast) is in packages without GUI dependencies, so it can be unit-tested headless.
 - **NFR-004** Builds with `go build` (`make build`); Go 1.26+, Fyne v2.8+.
 
