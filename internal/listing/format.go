@@ -3,6 +3,7 @@ package listing
 import (
 	"fmt"
 	"io/fs"
+	"slices"
 	"strconv"
 )
 
@@ -46,6 +47,20 @@ func ParseColumn(name string) (Column, bool) {
 type ColumnLayout struct {
 	Order  []Column
 	Hidden map[Column]bool
+}
+
+// All returns every column, visible or not, in the user's order: Order
+// without unknown and duplicate columns, followed by any missing ones.
+func (l ColumnLayout) All() []Column {
+	var seen [numColumns]bool
+	cols := make([]Column, 0, numColumns)
+	for _, c := range append(slices.Clone(l.Order), DefaultColumns...) {
+		if c >= 0 && c < numColumns && !seen[c] {
+			seen[c] = true
+			cols = append(cols, c)
+		}
+	}
+	return cols
 }
 
 // Visible returns the columns to display, in order. Unknown and duplicate

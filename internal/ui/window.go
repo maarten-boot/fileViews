@@ -98,13 +98,9 @@ func (m *mainWindow) buildMenu() *fyne.MainMenu {
 	refresh.Shortcut = nil // F5 is handled by the canvas key handler; shown in the label
 	refresh.Label = "Refresh (F5)"
 
-	// Settings dialogs come in milestone 9.
-	columns := fyne.NewMenuItem("Columns…", nil)
-	indent := fyne.NewMenuItem("Side pane indent…", nil)
-	minimum := fyne.NewMenuItem("Contrast minimum…", nil)
-	for _, it := range []*fyne.MenuItem{columns, indent, minimum} {
-		it.Disabled = true
-	}
+	columns := fyne.NewMenuItem("Columns…", func() { newColumnsDialog(m).show() })
+	indent := fyne.NewMenuItem("Side pane indent…", m.showIndentDialog)
+	minimum := fyne.NewMenuItem("Contrast minimum…", m.showContrastDialog)
 
 	m.mainMenu = fyne.NewMainMenu(
 		fyne.NewMenu("File", quit),

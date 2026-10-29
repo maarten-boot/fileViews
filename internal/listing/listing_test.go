@@ -220,6 +220,18 @@ func TestColumnLayoutNormalises(t *testing.T) {
 	}
 }
 
+// TC-024f
+func TestColumnLayoutAll(t *testing.T) {
+	l := ColumnLayout{Order: []Column{ColSize, ColName, ColSize, Column(42)}, Hidden: map[Column]bool{ColSize: true}}
+	want := []Column{ColSize, ColName, ColPerms, ColLinks, ColOwner, ColGroup, ColModified}
+	if got := l.All(); !slices.Equal(got, want) {
+		t.Errorf("All() = %v, want %v", got, want)
+	}
+	if got := (ColumnLayout{}).All(); !slices.Equal(got, DefaultColumns) {
+		t.Errorf("empty All() = %v", got)
+	}
+}
+
 // TC-024d
 func TestParseColumn(t *testing.T) {
 	for _, c := range DefaultColumns {

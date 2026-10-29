@@ -9,6 +9,7 @@ A ✔ with a test name means the automated test exists and passes.
 | ID | Req | Description | Steps / input | Expected result | Type |
 |----|-----|-------------|---------------|-----------------|------|
 | TC-001 | FR-001 | Menus present | Open each menu | File, View, Go, Settings, Help with the listed items | Auto ✔ `TestMenus` + Manual |
+| TC-001b | FR-001 | Settings menu usable | Choose each Settings item | Each opens its dialog / toggles | Auto ✔ `TestSettingsMenuEnabled` + Manual |
 | TC-002 | FR-002 | Keyboard shortcuts | Press each shortcut | Matching action runs | Auto (menu shortcuts ✔ `TestMenus`, F5 ✔ `TestF5Refresh`) + Manual |
 
 ## Right pane / listing (`internal/listing`)
@@ -31,6 +32,8 @@ A ✔ with a test name means the automated test exists and passes.
 | TC-024a | FR-024 | Column order applied | Order `[Name, Size, Perms]` | Rows formatted in that order | Auto ✔ `TestColumnOrder` |
 | TC-024b | FR-024 | Name cannot be hidden | Config hides Name | Name still shown | Auto ✔ `TestColumnLayoutNormalises` |
 | TC-024e | FR-024 | Table follows layout | Columns `[Name, Size]` | 2 columns, header `Size` second | Auto ✔ `TestTableColumns` |
+| TC-024f | FR-024 | All columns incl. hidden | Order `[Size, Name, Size, 42]`, Size hidden | Size, Name, then the rest | Auto ✔ `TestColumnLayoutAll` |
+| TC-024g | FR-024 | Columns dialog | Move Name up; hide Links; hide+show Group; try to hide Name; apply; reopen | Table and config show the new order without Links; Name locked; Links shown unticked when reopened | Auto ✔ `TestColumnsDialog` + Manual |
 | TC-024c | FR-024 | Stale/bad column config | Duplicates, unknown ids, missing columns | Dropped / appended | Auto ✔ `TestColumnLayoutNormalises` |
 | TC-024d | FR-024 | Column names round trip | Every column name → column → name; `Bogus` | Same column; `Bogus` rejected | Auto ✔ `TestParseColumn` |
 | TC-025a | FR-025 | Default sort | `b`, `A/`, `a`, `B` | `A/`, `a`, `B`, `b` | Auto ✔ `TestDefaultSort` |
@@ -91,6 +94,7 @@ A ✔ with a test name means the automated test exists and passes.
 | TC-046d | FR-046 | Hover text pop-up | Hover home; leave; custom text; leave before delay | Full path shown; hidden; "work" shown; nothing shown | Auto ✔ `TestBookmarkTooltip`, `TestBookmarkTooltipCancelled` + Manual |
 | TC-047c | FR-047 | Missing bookmark drawn and clicked | Bookmark removed dir | `gone (missing)`, italic, `#767676`; click: error, directory unchanged | Auto ✔ `TestBookmarkStyle` + Manual |
 | TC-044a | FR-044 | Depth | `/`, `/home`, `/home/mboot`, `/a/b/c/` | 0, 1, 2, 3 | Auto ✔ `TestDepthAndIndent` |
+| TC-044d | FR-044 | Indent setting | Slider shows 12 px; apply 20; apply 500 | Home indent 20·depth, saved; limited to 64 | Auto ✔ `TestIndentSetting` + Manual |
 | TC-044b | FR-044 | Indent | Depth 2, indent 12 | 24 px | Auto ✔ `TestDepthAndIndent` |
 | TC-045a | FR-045 | Set and reset colours | Navy on white; reset | Stored as `#RRGGBB`; reset to defaults | Auto ✔ `TestSetColours` |
 | TC-045b | FR-045 | Colours kept | Set colours, save config, reload | Same items and colours | Auto ✔ `TestSavedRoundTrip` |
@@ -158,6 +162,7 @@ A ✔ with a test name means the automated test exists and passes.
 | TC-073a | FR-073 | Contrast ratio | black/white, yellow/white, light green/white, `#767676`/white | 21, 1.07, 1.42, 4.54 | Auto ✔ `TestRatio` |
 | TC-074a | FR-074 | Default minimum 4.5 | Yellow, light green, `#777777` on white | Rejected; `#767676` and black accepted | Auto ✔ `TestMeetsDefault` |
 | TC-074b | FR-074 | Minimum limits | Set 1, 7.5, 30 | Clamped to 3, 7, 7 | Auto ✔ `TestClampMin` |
+| TC-074c | FR-074, FR-076 | Contrast minimum setting | Slider 3–7 at 4.5; apply 7; apply 9 | Theme gray `#595959`; `#767676` bookmark drawn black, saved colour kept; saved 7; 9 limited to 7 | Auto ✔ `TestContrastSetting` + Manual |
 | TC-075a | FR-075 | Fallback text colour | Background white, yellow, black, dark blue | black, black, white, white | Auto ✔ `TestBestText` |
 | TC-075b | FR-075 | Dialog refuses failing colours | Pick yellow text on white; black text on navy | Refused with ratio; black resp. white suggested; nothing stored | Auto ✔ `TestSetColours` + Manual |
 | TC-075c | FR-075 | Colour dialog live check | Defaults; yellow text; black on navy → "Use white text"; invalid `#12345`; save | 21.00:1 OK; below minimum, Save disabled, "Use black text"; white suggested and applied; invalid message; colours stored | Auto ✔ `TestColourDialog` + Manual |

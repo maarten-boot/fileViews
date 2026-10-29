@@ -1,6 +1,6 @@
 # Specification — fileViews
 
-_Status: draft v0.15 · Last updated: 2026-10-29_
+_Status: draft v0.16 · Last updated: 2026-10-29_
 
 ## 1. Purpose
 A simple hierarchical file and directory viewer with a graphical interface, laid out similar to Thunar.
@@ -69,7 +69,7 @@ The split between left and right pane is user-resizable.
   | Modified | modification time in local time, `YYYY-MM-DD HH:MM` |
   | Name | name plus type marker |
 - **FR-023** Type markers in the Name column: `/` directory, `*` executable regular file, `@` symlink, `|` named pipe (FIFO), `=` socket. For symlinks the target is shown as `name@ -> target`.
-- **FR-024** Settings → Columns lets the user change the column order and show/hide columns. The Name column cannot be hidden. The configuration is kept across sessions.
+- **FR-024** Settings → Columns lets the user change the column order (up/down buttons per column) and show/hide columns (a checkbox per column, including hidden ones). The Name column cannot be hidden. Changes apply on "Apply"; the configuration is kept across sessions.
 - **FR-025** Clicking a column header sorts by that column; clicking again reverses the order. Directories (and symlinks to directories) always come before other entries, whatever the sort column or direction. Names compare case-insensitively; ties are broken by name. Descending reverses the whole order within each group, including that tie-break. Default sort: by name, ascending.
 - **FR-026** Sizes are shown human-readable by default (e.g. `4.2K`); a setting switches to exact bytes.
 - **FR-027** Double-clicking a directory (or a symlink to a directory) navigates into it.
@@ -85,7 +85,7 @@ The split between left and right pane is user-resizable.
   - `$HOME` — label is the basename of `$HOME` (e.g. `mboot`), target is the full path. If `$HOME` is `/`, there is only one default item.
 - **FR-042** The user can add the current directory (or a selected directory in the right pane) as a bookmark, and remove user-added bookmarks, via a right-click menu. Bookmark right-click menu: Open, Set colours…, Reset colours (only when colours are set), Edit hover text…, Add current directory, Remove bookmark (not for default items). Right-clicking a directory row in the right pane selects it and offers "Add to bookmarks". Adding a path that is already bookmarked is refused. Saved bookmarks with an empty or relative path, or a duplicate path, are ignored when loading (the first one wins); invalid saved colours are cleared.
 - **FR-043** Single-clicking an item opens its directory in the right pane.
-- **FR-044** Each item is indented by `depth × indent`, where depth is the number of path components from `/` (`/` = 0, `/home/mboot` = 2). The indent is configurable in Settings; default 12 px.
+- **FR-044** Each item is indented by `depth × indent`, where depth is the number of path components from `/` (`/` = 0, `/home/mboot` = 2). The indent is configurable in Settings → Side pane indent (slider, 1–64 px); default 12 px.
 - **FR-045** Each item can have a custom background and foreground colour, set via right-click → "Set colours…" (background and text fields as `#RRGGBB`, empty = default, each with a colour picker; live preview), with a "Reset colours" option. Colours are kept across sessions. The combination must meet the contrast minimum (FR-073–FR-075).
 - **FR-046** Each item has a hover text (tooltip), shown in a small pop-up after the mouse rests on the item for about 0.6 s and hidden when it leaves. The default is the full path. The user can change it via right-click → "Edit hover text…"; an empty text goes back to the default. Hover texts are kept across sessions.
 - **FR-047** A bookmark whose target no longer exists is still shown, in italics with the suffix ` (missing)`; clicking it shows an error. On a pure white or pure black background (default or chosen) its text is also gray (FR-071). On any other background it keeps its own text colour (no gray). The text marker is always shown, so the state never depends on colour alone. Whether a bookmark is missing is checked in the background (NFR-002) when bookmarks change and after every navigation or refresh, so the marker can lag a moment behind the file system.
@@ -121,7 +121,7 @@ The split between left and right pane is user-resizable.
 - **FR-073** Contrast is measured as the WCAG 2 contrast ratio, from 1:1 (same colour) to 21:1 (black on white). Every text/background combination in the app must be at or above the minimum ratio.
 - **FR-074** The minimum ratio defaults to **4.5:1** and can be changed in Settings between 3:1 and 7:1 (7:1 is WCAG AAA; above about 7.8:1 coloured backgrounds cannot pass with black or white text). Examples on white: yellow `#FFFF00` ≈ 1.07:1 and light green `#90EE90` ≈ 1.4:1 are rejected; `#767676` ≈ 4.54:1 is allowed.
 - **FR-075** The bookmark colour dialog shows the contrast ratio live and refuses to save a combination below the minimum. It then offers black or white text, whichever gives the higher contrast with the chosen background.
-- **FR-076** Saved bookmark colours are checked at startup and when the minimum changes. A failing combination is drawn with black or white text (whichever contrasts more) until the user changes it; the saved colours are kept.
+- **FR-076** Saved bookmark colours are checked at startup and when the minimum changes (Settings → Contrast minimum: slider 3–7 in steps of 0.5; applying it also changes the theme gray, FR-071). A failing combination is drawn with black or white text (whichever contrasts more) until the user changes it; the saved colours are kept.
 - **FR-077** The app's own theme colours (including disabled buttons, placeholder text and the status bar) also meet the minimum; the custom light theme overrides Fyne defaults that do not:
   - normal text black; window, input fields, menus, pop-ups and disabled buttons pure white (so gray text can only appear on white)
   - disabled and placeholder text: the gray from FR-071 for the current minimum
