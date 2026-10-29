@@ -88,3 +88,12 @@ Milestone 2 done in `internal/listing`: `Read`, `Filter`, `Sort`, `ColumnLayout.
 - Back/Forward to a removed or unreadable directory: error, position unchanged
 - Back/Forward history is per session; only the recent list is saved
 - every successful navigation moves the directory to the top of the recent list
+
+### 11. Milestone 4
+**User:** yes, start milestone 4
+
+**Assistant:** Milestone 4 done in `internal/config`: `Config` (all FR-061 settings plus the contrast minimum and a format version), `Normalize`, conversions to `listing.ColumnLayout`/`SortSpec`, and `Store` with `Load`/`Save` (atomic write via temp file + rename). 9 tests pass. Spec v0.5 records:
+- FR-061: contrast minimum is saved too; file has a `version` field
+- FR-062: split "broken" into invalid JSON (moved to `.bak`) and unreadable (defaults, warning, and no saving that session so the file is never overwritten)
+- FR-063: failed save leaves the old file and no temp file; mode 0644
+- new FR-064: bad or missing values fall back to defaults/limits; indent limited to 1–64 px

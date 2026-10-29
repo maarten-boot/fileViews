@@ -1,6 +1,6 @@
 # Specification — fileViews
 
-_Status: draft v0.4 · Last updated: 2026-10-29_
+_Status: draft v0.5 · Last updated: 2026-10-29_
 
 ## 1. Purpose
 A simple hierarchical file and directory viewer with a graphical interface, laid out similar to Thunar.
@@ -99,9 +99,13 @@ The split between left and right pane is user-resizable.
 
 ### 5.6 Persistence
 - **FR-060** All settings and state are saved in `$XDG_CONFIG_HOME/fileViews/config.json` (default `~/.config/fileViews/config.json`).
-- **FR-061** Saved: bookmarks (with colours and hover texts), column order and visibility, sort column and direction, indent size, show-hidden setting, size format, recent directories, last directory, window size and pane split.
-- **FR-062** A missing config file means defaults are used. A broken (unreadable) config file is renamed to `config.json.bak`, defaults are used, and the user gets a warning.
-- **FR-063** The config is written atomically (write a temporary file, then rename it).
+- **FR-061** Saved: bookmarks (with colours and hover texts), column order and visibility, sort column and direction, indent size, show-hidden setting, size format, contrast minimum, recent directories, last directory, window size and pane split. The file has a format `version` field (currently 1).
+- **FR-062** Loading the config file:
+  - missing file: defaults, no warning
+  - invalid JSON: the file is renamed to `config.json.bak` (replacing an older `.bak`), defaults are used, and the user gets a warning
+  - file exists but cannot be read (e.g. permissions): defaults are used, the user gets a warning, and the app does **not** save during that session, so the file is never overwritten with defaults
+- **FR-063** The config is written atomically (write a temporary file in the same directory, then rename it). A failed save leaves the old file intact and no temporary file behind. The file is created with mode 0644; the directory is created if needed.
+- **FR-064** Missing or out-of-range values are replaced by defaults, unknown fields and column names are ignored: indent 1–64 px (default 12), contrast minimum 3–21 (default 4.5), window 1000×650 if unset, pane split between 0 and 1 (default 0.25), recent list cleaned as in FR-015.
 
 ### 5.7 Appearance
 - **FR-070** Default colours: white background, black text, in all panes and bars. The app uses a light theme regardless of the desktop's dark-mode setting.

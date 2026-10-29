@@ -52,7 +52,7 @@ A ✔ with a test name means the automated test exists and passes.
 | TC-015a | FR-015 | Recent: no duplicates | Visit A, B, A | Recent = `[A, B]` | Auto ✔ `TestRecentNoDuplicates` |
 | TC-015b | FR-015 | Recent: max size | Visit 25 dirs | 20 most recent kept | Auto ✔ `TestRecentMax` |
 | TC-015c | FR-015 | Recent updated by Back | A, B, C; Back | Recent starts with B | Auto ✔ `TestNavigatorBackForward` |
-| TC-016 | FR-016 | Recent kept across sessions | Visit A, restart | A in dropdown | Auto (load cleanup ✔ `TestRecentFromConfig`; save in M4) + Manual |
+| TC-016 | FR-016 | Recent kept across sessions | Visit A, restart | A in dropdown | Auto ✔ `TestRecentFromConfig`, `TestRoundTrip` + Manual |
 
 ## Left pane / bookmarks
 | ID | Req | Description | Steps / input | Expected result | Type |
@@ -77,13 +77,17 @@ A ✔ with a test name means the automated test exists and passes.
 | TC-050d | FR-050 | Free space | Temp dir; missing path | Value; error | Auto ✔ `TestFreeSpace` |
 | TC-051 | FR-051 | Updates on toggle hidden | Ctrl+H | Counts/size update | Manual |
 
-## Persistence
+## Persistence (`internal/config`)
 | ID | Req | Description | Steps / input | Expected result | Type |
 |----|-----|-------------|---------------|-----------------|------|
-| TC-060 | FR-060 | Config path | `XDG_CONFIG_HOME=/x` | `/x/fileViews/config.json` | Auto |
-| TC-062a | FR-062 | Missing config | No file | Defaults | Auto |
-| TC-062b | FR-062 | Broken config | File with `{garbage` | Renamed to `.bak`, defaults, warning | Auto |
-| TC-063 | FR-063 | Atomic write | Save | No partial file; temp file removed | Auto |
+| TC-060 | FR-060 | Config path | `XDG_CONFIG_HOME=/x`; unset with `HOME=/home/u` | `/x/fileViews/config.json`; `/home/u/.config/fileViews/config.json` | Auto ✔ `TestDefaultPath` |
+| TC-061 | FR-061 | All settings round trip | Save every field, reload | Identical config | Auto ✔ `TestRoundTrip` |
+| TC-062a | FR-062 | Missing config | No file | Defaults, no warning | Auto ✔ `TestLoadMissing`, `TestDefaults` |
+| TC-062b | FR-062 | Broken config | File with `{garbage` | Renamed to `.bak`, defaults, warning; saving works afterwards | Auto ✔ `TestLoadBroken` |
+| TC-062c | FR-062 | Unreadable config | File with mode 000 | Defaults, warning; Save refused; file unchanged | Auto ✔ `TestLoadUnreadableBlocksSave` |
+| TC-063a | FR-063 | Atomic write | Save 3 times into a new directory | Only `config.json` (0644) remains, last values | Auto ✔ `TestSaveAtomic` |
+| TC-063b | FR-063 | Failed save | Read-only config directory | Error; old file unchanged; no temp file | Auto ✔ `TestSaveFailureKeepsOld` |
+| TC-064 | FR-064 | Bad values normalised | Negative indent, contrast 1, split 1.5, unknown sort/columns, duplicate recent, unknown field | Defaults/limits applied, unknowns ignored | Auto ✔ `TestNormalize` |
 
 ## Non-functional
 | ID | Req | Description | Steps / input | Expected result | Type |
