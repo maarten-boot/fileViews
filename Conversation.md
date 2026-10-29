@@ -110,3 +110,14 @@ Milestone 2 done in `internal/listing`: `Read`, `Filter`, `Sort`, `ColumnLayout.
 - several X11/Wayland libraries are loaded at startup (dlopen), so `ldd` doesn't list them
 - the minimal build set replaces the old `xorg-dev` / `libgl1-mesa-dev` suggestion
 - Ubuntu package names were checked with `apt-cache` on Ubuntu 26.04; Debian uses the same names; Fedora names are not tested here
+
+### 13. Milestone 5
+**User:** yes, start milestone 5
+
+**Assistant:** Milestone 5 done in `internal/bookmarks`: `List` (defaults `/` and `$HOME`, add/remove, colours with contrast check returning a `LowContrastError` with a black/white suggestion, hover text, conversion to/from config) and `Item` (label, depth, indent, tooltip, missing check, `Style` with fallback colours and the missing-item look). 12 tests pass. Decisions recorded in Spec v0.6:
+- FR-040: items sorted by path component by component, so the indented list reads like a tree; user bookmarks labelled with their base name
+- FR-041: if `$HOME` is `/` there is one default item
+- FR-042: duplicate adds refused; bad saved entries ignored (first duplicate wins), invalid saved colours cleared
+- FR-047: gray for missing items on pure white/black backgrounds, whether default or chosen
+
+All core packages are now done: the planned point for the first Spec ↔ Plan ↔ code crosscheck.

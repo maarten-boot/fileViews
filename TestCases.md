@@ -54,19 +54,25 @@ A ✔ with a test name means the automated test exists and passes.
 | TC-015c | FR-015 | Recent updated by Back | A, B, C; Back | Recent starts with B | Auto ✔ `TestNavigatorBackForward` |
 | TC-016 | FR-016 | Recent kept across sessions | Visit A, restart | A in dropdown | Auto ✔ `TestRecentFromConfig`, `TestRoundTrip` + Manual |
 
-## Left pane / bookmarks
+## Left pane / bookmarks (`internal/bookmarks`)
 | ID | Req | Description | Steps / input | Expected result | Type |
 |----|-----|-------------|---------------|-----------------|------|
-| TC-041a | FR-041 | Default items | Empty config, `HOME=/home/mboot` | Items `/` and `mboot` | Auto |
-| TC-041b | FR-041 | Defaults not removable | Remove `/` | Refused | Auto |
-| TC-042 | FR-042 | Add/remove bookmark | Add `/tmp`, then remove | Present, then gone | Auto |
-| TC-044a | FR-044 | Depth | `/`, `/home/mboot`, `/a/b/c/` | 0, 2, 3 | Auto |
-| TC-044b | FR-044 | Indent | Depth 2, indent 12 | 24 px | Auto |
-| TC-045 | FR-045 | Colours kept | Set bg/fg, save, reload | Same colours | Auto |
-| TC-046a | FR-046 | Default hover text | No custom text | Full path | Auto |
-| TC-046b | FR-046 | Custom hover text kept | Set "work", save, reload | "work" | Auto |
-| TC-046c | FR-046 | Empty text resets | Set "" | Full path | Auto |
-| TC-047 | FR-047 | Missing target | Bookmark to removed dir | Italic label with ` (missing)`, black text | Auto + Manual |
+| TC-041a | FR-041 | Default items | Empty config, `HOME=/home/mboot` | Items `/` and `mboot`, both default | Auto ✔ `TestDefaultItems` |
+| TC-041b | FR-041 | Defaults not removable | Remove `/`, remove home | Refused | Auto ✔ `TestAddRemove` |
+| TC-041c | FR-041 | Home is `/` | `HOME=/` | One item `/` | Auto ✔ `TestHomeIsRoot` |
+| TC-042a | FR-042 | Add/remove bookmark | Add `/tmp`, add `/tmp/` again, add `tmp`, remove twice | Added; duplicate refused; relative refused; removed; then not found | Auto ✔ `TestAddRemove` |
+| TC-042b | FR-042 | Saved data cleaned up | Relative, empty, duplicate paths, bad colour | Ignored / first wins / colour cleared | Auto ✔ `TestNewFromSavedCleansUp` |
+| TC-040 | FR-040 | Tree-like order | `/home/mboot-old`, `/home/mboot/projects`, `/etc`, `/home` | `/`, `/etc`, `/home`, `/home/mboot`, `/home/mboot/projects`, `/home/mboot-old` | Auto ✔ `TestOrder` |
+| TC-043 | FR-043 | Click opens directory | Click `mboot` | Right pane shows `$HOME` | Manual |
+| TC-044a | FR-044 | Depth | `/`, `/home`, `/home/mboot`, `/a/b/c/` | 0, 1, 2, 3 | Auto ✔ `TestDepthAndIndent` |
+| TC-044b | FR-044 | Indent | Depth 2, indent 12 | 24 px | Auto ✔ `TestDepthAndIndent` |
+| TC-045a | FR-045 | Set and reset colours | Navy on white; reset | Stored as `#RRGGBB`; reset to defaults | Auto ✔ `TestSetColours` |
+| TC-045b | FR-045 | Colours kept | Set colours, save config, reload | Same items and colours | Auto ✔ `TestSavedRoundTrip` |
+| TC-046a | FR-046 | Default hover text | No custom text | Full path | Auto ✔ `TestHoverText` |
+| TC-046b | FR-046 | Custom hover text kept | Set "work", save, reload | "work" | Auto ✔ `TestHoverText`, `TestSavedRoundTrip` |
+| TC-046c | FR-046 | Empty text resets | Set "   " | Full path | Auto ✔ `TestHoverText` |
+| TC-047a | FR-047 | Missing detection | Existing dir; removed dir; a file | false; true; true | Auto ✔ `TestMissing` |
+| TC-047b | FR-047 | Missing style | Default white; black bg; light yellow bg with navy text | `gone (missing)`, italic; text `#767676`; `#757575`; navy — all pass 4.5:1 | Auto ✔ `TestStyleMissing` + Manual |
 
 ## Status bar
 | ID | Req | Description | Steps / input | Expected result | Type |
@@ -105,7 +111,7 @@ A ✔ with a test name means the automated test exists and passes.
 ## Appearance
 | ID | Req | Description | Steps / input | Expected result | Type |
 |----|-----|-------------|---------------|-----------------|------|
-| TC-070a | FR-070 | Light theme by default | Start app | White background, black text everywhere | Auto + Manual |
+| TC-070a | FR-070 | Light theme by default | Start app; bookmark without colours | White background, black text everywhere | Auto (bookmark style ✔ `TestStyleColours`; theme in M6) + Manual |
 | TC-070b | FR-070 | Ignores desktop dark mode | Desktop in dark mode, start app | Still white background, black text | Manual |
 | TC-071a | FR-071 | Gray on pure white / black | Min 4.5 | `#767676` on white, `#757575` on black; each passes the minimum | Auto ✔ `TestGray` |
 | TC-071b | FR-071 | No gray on other backgrounds | `#FEFEFE`, `#808080`, `#FFFFE0` | Gray refused | Auto ✔ `TestGray` |
@@ -114,6 +120,6 @@ A ✔ with a test name means the automated test exists and passes.
 | TC-074a | FR-074 | Default minimum 4.5 | Yellow, light green, `#777777` on white | Rejected; `#767676` and black accepted | Auto ✔ `TestMeetsDefault` |
 | TC-074b | FR-074 | Minimum limits | Set 1, 30 | Clamped to 3, 21 | Auto ✔ `TestClampMin` |
 | TC-075a | FR-075 | Fallback text colour | Background white, yellow, black, dark blue | black, black, white, white | Auto ✔ `TestBestText` |
-| TC-075b | FR-075 | Dialog refuses failing colours | Pick yellow text on white | Ratio shown, Save disabled, black text offered | Manual |
-| TC-076 | FR-076 | Saved colours re-checked | Yellow on white; gray at min 7 | Drawn in black; saved colours unchanged | Auto ✔ `TestEffective` (+ config test in M5) |
+| TC-075b | FR-075 | Dialog refuses failing colours | Pick yellow text on white; black text on navy | Refused with ratio; black resp. white suggested; nothing stored | Auto (core ✔ `TestSetColours`) + Manual (dialog, M9) |
+| TC-076 | FR-076 | Saved colours re-checked | Yellow on white; `#767676` at min 4.5 and 7; invalid colour | Drawn in black where failing; saved colours unchanged | Auto ✔ `TestEffective`, `TestStyleColours` |
 | TC-077 | FR-077 | Theme colours pass | Every theme text/background pair | All ≥ minimum | Auto (M6) |
