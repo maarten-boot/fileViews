@@ -1,6 +1,6 @@
 # Specification — fileViews
 
-_Status: draft v0.9 · Last updated: 2026-10-29_
+_Status: draft v0.10 · Last updated: 2026-10-29_
 
 ## 1. Purpose
 A simple hierarchical file and directory viewer with a graphical interface, laid out similar to Thunar.
@@ -107,14 +107,14 @@ The split between left and right pane is user-resizable.
   - invalid JSON: the file is renamed to `config.json.bak` (replacing an older `.bak`), defaults are used, and the user gets a warning
   - file exists but cannot be read (e.g. permissions): defaults are used, the user gets a warning, and the app does **not** save during that session, so the file is never overwritten with defaults
 - **FR-063** The config is written atomically (write a temporary file in the same directory, then rename it). A failed save leaves the old file intact and no temporary file behind. The file is created with mode 0644; the directory is created if needed.
-- **FR-064** Missing or out-of-range values are replaced by defaults, unknown fields and column names are ignored: indent 1–64 px (default 12), contrast minimum 3–21 (default 4.5), window 1000×650 if unset, pane split between 0 and 1 (default 0.25), recent list cleaned as in FR-015.
+- **FR-064** Missing or out-of-range values are replaced by defaults, unknown fields and column names are ignored: indent 1–64 px (default 12), contrast minimum 3–7 (default 4.5), window 1000×650 if unset, pane split between 0 and 1 (default 0.25), recent list cleaned as in FR-015.
 
 ### 5.7 Appearance
 - **FR-070** Default colours: white background, black text, in all panes and bars. The app uses a light theme regardless of the desktop's dark-mode setting.
 - **FR-071** Gray text ("greyed out") is only used on a pure white (`#FFFFFF`) or pure black (`#000000`) background, and must meet the contrast minimum (on white: no lighter than about `#767676`; on black: no darker than about `#757575`). Never gray on gray. On other backgrounds, state is shown with text markers, italics, bold or icons instead.
 - **FR-072** User-chosen bookmark colours (FR-045) override the defaults only for that item.
 - **FR-073** Contrast is measured as the WCAG 2 contrast ratio, from 1:1 (same colour) to 21:1 (black on white). Every text/background combination in the app must be at or above the minimum ratio.
-- **FR-074** The minimum ratio defaults to **4.5:1** and can be changed in Settings; it cannot be set below 3:1. Examples on white: yellow `#FFFF00` ≈ 1.07:1 and light green `#90EE90` ≈ 1.4:1 are rejected; `#767676` ≈ 4.54:1 is allowed.
+- **FR-074** The minimum ratio defaults to **4.5:1** and can be changed in Settings between 3:1 and 7:1 (7:1 is WCAG AAA; above about 7.8:1 coloured backgrounds cannot pass with black or white text). Examples on white: yellow `#FFFF00` ≈ 1.07:1 and light green `#90EE90` ≈ 1.4:1 are rejected; `#767676` ≈ 4.54:1 is allowed.
 - **FR-075** The bookmark colour dialog shows the contrast ratio live and refuses to save a combination below the minimum. It then offers black or white text, whichever gives the higher contrast with the chosen background.
 - **FR-076** Saved bookmark colours are checked at startup and when the minimum changes. A failing combination is drawn with black or white text (whichever contrasts more) until the user changes it; the saved colours are kept.
 - **FR-077** The app's own theme colours (including disabled buttons, placeholder text and the status bar) also meet the minimum; the custom light theme overrides Fyne defaults that do not:
@@ -130,4 +130,4 @@ The split between left and right pane is user-resizable.
 - **NFR-004** Builds with `go build` (`make build`); Go 1.26+, Fyne v2.8+.
 
 ## 7. Open questions
-- **Q-3** FR-074 lets the contrast minimum go up to 21:1. Above about 7.8:1, the coloured backgrounds (blue for highlighted buttons, red for errors, green, orange) cannot meet the minimum with either black or white text, and above about 18:1 no gray is possible, so disabled text becomes black and looks the same as enabled text. *Proposal: limit the minimum to 3–7 (7:1 is the strictest common accessibility level, WCAG AAA).*
+_None._ (Q-1 → FR-017, Q-2 → FR-015, Q-3 → FR-074; all resolved 2026-10-29.)

@@ -45,7 +45,7 @@ var textPairs = []struct {
 // default and a stricter minimum, and gray text only sits on pure white.
 func TestThemeContrast(t *testing.T) {
 	test.NewTempApp(t)
-	for _, min := range []float64{contrast.FloorMin, contrast.DefaultMin, 7} {
+	for _, min := range []float64{contrast.FloorMin, contrast.DefaultMin, contrast.CeilingMin} {
 		th := newLightTheme(min)
 		c := func(n fyne.ThemeColorName) color.Color { return th.Color(n, theme.VariantDark) }
 		for _, p := range textPairs {

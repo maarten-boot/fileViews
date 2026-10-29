@@ -142,3 +142,8 @@ All core packages are now done: the planned point for the first Spec ↔ Plan �
 - my first version resolved a relative command-line directory against `$HOME`; changed to the working directory, like any command-line path (FR-017 updated)
 - new open question Q-3: limit the contrast minimum to 3–7, since above ~7.8 coloured backgrounds cannot pass
 - not yet done (planned): the Settings dialogs (M9) and saving settings (M10), so Show hidden / Exact sizes are not remembered yet
+
+### 16. Q-3 resolved; milestone 7
+**User:** go with your proposal for Q-3, start milestone 7
+
+**Assistant:** Contrast minimum now limited to 3–7 (`contrast.CeilingMin`); FR-064, FR-074 and TC-074b updated; theme test now runs at 3, 4.5 and 7.

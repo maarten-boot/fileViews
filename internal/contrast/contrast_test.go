@@ -55,7 +55,7 @@ func TestMeetsDefault(t *testing.T) {
 
 // TC-074b
 func TestClampMin(t *testing.T) {
-	for in, want := range map[float64]float64{1: 3, 3: 3, 4.5: 4.5, 7: 7, 30: 21} {
+	for in, want := range map[float64]float64{1: 3, 3: 3, 4.5: 4.5, 7: 7, 7.5: 7, 30: 7} {
 		if got := ClampMin(in); got != want {
 			t.Errorf("ClampMin(%v) = %v, want %v", in, got, want)
 		}

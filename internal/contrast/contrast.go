@@ -14,6 +14,9 @@ const (
 	DefaultMin = 4.5
 	// FloorMin is the lowest minimum the user may configure (FR-074).
 	FloorMin = 3.0
+	// CeilingMin is the highest minimum the user may configure (FR-074);
+	// above it coloured backgrounds cannot pass with black or white text.
+	CeilingMin = 7.0
 	// MaxRatio is the contrast of black on white.
 	MaxRatio = 21.0
 )
@@ -23,9 +26,9 @@ var (
 	White = color.RGBA{0xff, 0xff, 0xff, 0xff}
 )
 
-// ClampMin limits a configured minimum ratio to [FloorMin, MaxRatio].
+// ClampMin limits a configured minimum ratio to [FloorMin, CeilingMin].
 func ClampMin(min float64) float64 {
-	return math.Max(FloorMin, math.Min(min, MaxRatio))
+	return math.Max(FloorMin, math.Min(min, CeilingMin))
 }
 
 // Luminance returns the WCAG relative luminance of c, from 0 (black) to 1 (white).

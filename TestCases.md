@@ -134,7 +134,7 @@ A ✔ with a test name means the automated test exists and passes.
 | TC-072 | FR-072 | Colours only affect their item | Colour one bookmark | Other items and panes stay white/black | Auto (core ✔ `TestStyleColours`) + Manual |
 | TC-073a | FR-073 | Contrast ratio | black/white, yellow/white, light green/white, `#767676`/white | 21, 1.07, 1.42, 4.54 | Auto ✔ `TestRatio` |
 | TC-074a | FR-074 | Default minimum 4.5 | Yellow, light green, `#777777` on white | Rejected; `#767676` and black accepted | Auto ✔ `TestMeetsDefault` |
-| TC-074b | FR-074 | Minimum limits | Set 1, 30 | Clamped to 3, 21 | Auto ✔ `TestClampMin` |
+| TC-074b | FR-074 | Minimum limits | Set 1, 7.5, 30 | Clamped to 3, 7, 7 | Auto ✔ `TestClampMin` |
 | TC-075a | FR-075 | Fallback text colour | Background white, yellow, black, dark blue | black, black, white, white | Auto ✔ `TestBestText` |
 | TC-075b | FR-075 | Dialog refuses failing colours | Pick yellow text on white; black text on navy | Refused with ratio; black resp. white suggested; nothing stored | Auto (core ✔ `TestSetColours`) + Manual (dialog, M9) |
 | TC-076 | FR-076 | Saved colours re-checked | Yellow on white; `#767676` at min 4.5 and 7; invalid colour | Drawn in black where failing; saved colours unchanged | Auto ✔ `TestEffective`, `TestStyleColours` |

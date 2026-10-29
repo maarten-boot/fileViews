@@ -247,7 +247,7 @@ func TestNormalize(t *testing.T) {
 
 	big := Config{IndentPx: 500, ContrastMin: 50}
 	big.Normalize()
-	if big.IndentPx != MaxIndentPx || big.ContrastMin != contrast.MaxRatio {
+	if big.IndentPx != MaxIndentPx || big.ContrastMin != contrast.CeilingMin {
 		t.Errorf("upper limits: indent %d contrast %v", big.IndentPx, big.ContrastMin)
 	}
 }
