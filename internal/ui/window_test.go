@@ -221,11 +221,11 @@ func TestStaleLoadDropped(t *testing.T) {
 	wait(t, m, func() { m.goPath(root) })
 	before := shownNames(m)
 	m.loadSeq = 7
-	m.applyLoad(6, []listing.Entry{{Name: "stale"}}, nil, 0, false)
+	m.applyLoad(6, root, []listing.Entry{{Name: "stale"}}, nil, 0, false)
 	if got := shownNames(m); !slices.Equal(got, before) {
 		t.Errorf("stale result applied: %v", got)
 	}
-	m.applyLoad(7, []listing.Entry{{Name: "fresh"}}, nil, 0, false)
+	m.applyLoad(7, root, []listing.Entry{{Name: "fresh"}}, nil, 0, false)
 	if got := shownNames(m); !slices.Equal(got, []string{"fresh"}) {
 		t.Errorf("current result not applied: %v", got)
 	}

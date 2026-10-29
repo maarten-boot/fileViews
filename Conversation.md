@@ -194,3 +194,18 @@ All core packages are now done: the planned point for the first Spec ↔ Plan �
 - FR-001 and NFR-002 wording aligned with the code; NFR-002 lists the deliberate synchronous exceptions (startup, final save on quit)
 - `ManualTests.md`: 42 manual checks generated from `TestCases.md`; `make testdir` creates a folder with every entry type and starts the app in it
 - 119 tests pass, also with `-race`. Remaining: the user's manual test pass.
+
+### 21. Manual test feedback: scrolling (pending confirmation)
+**User:** some starter issues; when a directory has only a few items focus them on the beginning (top), if i have only one item and i scroll with the mouse the item gets lost, do not allow scrolling if there is no new information to display.
+
+**Assistant:** Reproduced headless: with few rows the table cannot scroll vertically, but the columns (~900 px) are wider than the pane (~740 px); Fyne then turns the vertical mouse wheel into a horizontal scroll (one wheel step moved the table 184 px sideways), so the rows slide out of view. Left pane not affected. Proposed fixes (A–D), waiting for confirmation.
+
+**User:** go with A-D, keep Name where it is
+
+**Assistant:** Implemented A–D (new FR-032; FR-020 updated):
+- A: a newly shown directory starts at the top-left; refresh keeps the position
+- B/C: a transparent wheel-catching layer over the table filters the wheel: up/down only when rows overflow, sideways only with Shift or a sideways swipe and only when columns overflow, otherwise nothing
+- D: Name fills the remaining width (min 150 px) unless dragged; column widths are now measured from header and typical values, with arrow room only for the sorted column
+- found on the way: Fyne's Table does not re-lay-out its scroller when the row count changes, so a big directory opened after a small one could not scroll once the columns fit; the scroller is now refreshed after row changes (TC-020l)
+- Fyne v2.8 offers no public access to the Table's scroller or column widths; read via reflection/unsafe in `fyneinternals.go`, guarded by `TestFyneInternals`
+- 126 tests pass, also with `-race`; `ManualTests.md` regenerated with the new scrolling checks

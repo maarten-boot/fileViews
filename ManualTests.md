@@ -1,8 +1,8 @@
 # Manual Test Checklist — fileViews
 
-_Generated from `TestCases.md` on 2026-10-29 (milestone 11). Run on a desktop with `make run`; tick each item and note anything odd next to it._
+_Generated from `TestCases.md` (regenerated 2026-10-29 after the scrolling fixes). Run on a desktop; tick each item and note anything odd next to it._
 
-**Preparation:** `make testdir` creates `/tmp/fileviews-test` with files, a subfolder, a hidden file, an executable, symlinks to a file and a folder, a broken symlink and a FIFO, plus `remove-me/` to bookmark and then delete (missing bookmarks), and starts the app there.
+**Preparation:** `make testdir` creates `/tmp/fileviews-test` with files, a subfolder, a hidden file, an executable, symlinks to a file and a folder, a broken symlink and a FIFO, plus `remove-me/` to bookmark and then delete (missing bookmarks), and starts the app there. For the scrolling checks use a big folder too, e.g. `/usr/bin`.
 
 
 ## Menu bar
@@ -16,6 +16,11 @@ _Generated from `TestCases.md` on 2026-10-29 (milestone 11). Run on a desktop wi
 - [ ] **TC-020b** (FR-020) Whole-row selection — *Click a cell of `a.txt`; sort by name descending; show hidden; refresh; go to `sub`* → Whole row highlighted; selection kept through sort, filter and refresh; cleared on navigation
 - [ ] **TC-020c** (FR-020) Multi-select — *Click b; Ctrl+click d; Ctrl+click b; Shift+click a; Shift+click e; click c; anchor gone* → `b`; `b,d`; `d`; `a,b`; `b..e`; `c`; Shift acts as plain click
 - [ ] **TC-020d** (FR-020) Column resize reaches the table — *Mouse press on a header cell* → Forwarded to the table in table coordinates (drag itself: manual)
+- [ ] **TC-020g** (FR-032) Few rows do not move — *2 entries; wheel; pane too narrow; wheel; Shift+wheel* → Offset stays 0,0; Shift+wheel moves sideways only
+- [ ] **TC-020h** (FR-032) Many rows scroll; refresh keeps position — *200 entries; wheel down; F5* → Moves down only; same position after F5
+- [ ] **TC-020i** (FR-032) New directory starts at the top — *Scroll down in a big directory, open another* → Starts at top-left
+- [ ] **TC-020j** (FR-020) Name fills the width — *Window 1000, 1200, 500 wide; drag Name; resize; change columns* → Fills (wider at 1200); 150 px and sideways scroll at 500; dragged width kept; refilled after column change
+- [ ] **TC-020k** (FR-020) Measured column widths — *Default widths; sort by Size* → Each column at its measured width; Size widened for the arrow; still fits
 - [ ] **TC-022c** (FR-022) Table cells — *`a.txt` mode 0640, 100 bytes* → `-rw-r-----`, `1`, owner, group, `100`, `YYYY-MM-DD HH:MM`, `a.txt`; Size and Links right-aligned
 - [ ] **TC-024g** (FR-024) Columns dialog — *Move Name up; hide Links; hide+show Group; try to hide Name; apply; reopen* → Table and config show the new order without Links; Name locked; Links shown unticked when reopened
 - [ ] **TC-025e** (FR-025) Sort by clicking headers — *Click Size, Size again, Name* → Size ascending (dirs first); descending (whole order reversed, dirs first); back to name; arrow icon on sorted column

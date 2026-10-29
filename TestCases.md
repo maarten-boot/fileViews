@@ -19,6 +19,14 @@ A ✔ with a test name means the automated test exists and passes. The manual ch
 | TC-020b | FR-020 | Whole-row selection | Click a cell of `a.txt`; sort by name descending; show hidden; refresh; go to `sub` | Whole row highlighted; selection kept through sort, filter and refresh; cleared on navigation | Auto ✔ `TestTableSelection` + Manual |
 | TC-020c | FR-020 | Multi-select | Click b; Ctrl+click d; Ctrl+click b; Shift+click a; Shift+click e; click c; anchor gone | `b`; `b,d`; `d`; `a,b`; `b..e`; `c`; Shift acts as plain click | Auto ✔ `TestSelectionClicks`, `TestSelectionShiftWithoutAnchor`, `TestSelectionPrune`, `TestTableMultiSelect` + Manual |
 | TC-020d | FR-020 | Column resize reaches the table | Mouse press on a header cell | Forwarded to the table in table coordinates (drag itself: manual) | Auto ✔ `TestHeaderForwardsMouse` + Manual |
+| TC-020e | FR-020, FR-032 | Fyne internals still reachable | Table scroller and column widths via reflection | Found; fails loudly after a Fyne change | Auto ✔ `TestFyneInternals` |
+| TC-020f | FR-032 | Wheel filter | Fits / only columns overflow / rows overflow / both, with and without Shift | Nothing / Shift or sideways only / up-down only / Shift sideways | Auto ✔ `TestWheelDelta` |
+| TC-020g | FR-032 | Few rows do not move | 2 entries; wheel; pane too narrow; wheel; Shift+wheel | Offset stays 0,0; Shift+wheel moves sideways only | Auto ✔ `TestFewRowsDoNotScroll` + Manual |
+| TC-020h | FR-032 | Many rows scroll; refresh keeps position | 200 entries; wheel down; F5 | Moves down only; same position after F5 | Auto ✔ `TestScrollManyRowsAndReset` + Manual |
+| TC-020i | FR-032 | New directory starts at the top | Scroll down in a big directory, open another | Starts at top-left | Auto ✔ `TestScrollManyRowsAndReset` + Manual |
+| TC-020j | FR-020 | Name fills the width | Window 1000, 1200, 500 wide; drag Name; resize; change columns | Fills (wider at 1200); 150 px and sideways scroll at 500; dragged width kept; refilled after column change | Auto ✔ `TestNameFillsWidth` + Manual |
+| TC-020k | FR-020 | Measured column widths | Default widths; sort by Size | Each column at its measured width; Size widened for the arrow; still fits | Auto ✔ `TestColumnWidthsFromText` + Manual |
+| TC-020l | FR-032 | Big directory after a small one scrolls | Open small, then 200 entries; wheel | Moves down | Auto ✔ `TestScrollAfterSmallDirectory` |
 | TC-021a | FR-021 | Hidden filtered by default | Dir with `.x`, `y` | Only `y` listed | Auto ✔ `TestFilterHidden` |
 | TC-021b | FR-021 | Show hidden | Same dir, show-hidden on | `.x` and `y` listed | Auto ✔ `TestFilterHidden`, `TestToggleHidden` |
 | TC-022 | FR-022 | Permission string | File with mode 0754; also dir, link, pipe, socket, devices, setuid/setgid/sticky | `-rwxr-xr--` etc. | Auto ✔ `TestPermString`, `TestReadPermissions` |

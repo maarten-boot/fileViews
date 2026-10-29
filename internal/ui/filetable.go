@@ -3,9 +3,11 @@ package ui
 import (
 	"fmt"
 	"image/color"
+	"math"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -17,15 +19,34 @@ import (
 	"github.com/maarten-boot/fileViews/internal/listing"
 )
 
-// columnWidths are the initial widths; the user can drag header borders.
-var columnWidths = map[listing.Column]float32{
-	listing.ColPerms:    110,
-	listing.ColLinks:    55,
-	listing.ColOwner:    95,
-	listing.ColGroup:    95,
-	listing.ColSize:     80,
-	listing.ColModified: 145,
-	listing.ColName:     320,
+// columnSamples are typical values used to size the columns; longer values
+// are cut off with "…" until the user drags the column wider.
+var columnSamples = map[listing.Column]string{
+	listing.ColPerms:    "drwxr-xr-x",
+	listing.ColLinks:    "999",
+	listing.ColOwner:    "username",
+	listing.ColGroup:    "username",
+	listing.ColSize:     "999.9M",
+	listing.ColModified: "2026-10-29 11:04",
+}
+
+// neededWidth is the starting width of column c: its sample value or its
+// bold header, whichever is wider, plus room for the sort arrow if c is
+// the sorted column. Name gets at least minNameWidth and then fills the
+// pane (fitName).
+func neededWidth(c listing.Column, sorted bool) float32 {
+	pad := 2 * theme.InnerPadding()
+	size := theme.TextSize()
+	header := fyne.MeasureText(c.String(), size, fyne.TextStyle{Bold: true}).Width + pad
+	if sorted {
+		header += theme.IconInlineSize() + theme.Padding()
+	}
+	sample := fyne.MeasureText(columnSamples[c], size, fyne.TextStyle{}).Width + pad
+	w := float32(math.Ceil(float64(max(header, sample))))
+	if c == listing.ColName {
+		w = max(w, minNameWidth)
+	}
+	return w
 }
 
 // openFile opens a file with the desktop's default application (FR-028).
@@ -42,11 +63,19 @@ var openFile = func(path string) error {
 // fileTable is the right pane: an ls -lF style table (FR-020–FR-028) with
 // whole-row selection and clickable column headers for sorting.
 type fileTable struct {
-	m     *mainWindow
-	table *widget.Table
-	view  fyne.CanvasObject // the table inside its theme override
-	cols  []listing.Column
+	m       *mainWindow
+	table   *widget.Table
+	catcher *wheelCatcher
+	view    fyne.CanvasObject // table and wheel catcher inside the theme override
+	cols    []listing.Column
+
+	// autoName is the Name width last set by fitName; a different current
+	// width means the user dragged it, and fitName then leaves it alone.
+	autoName float32
 }
+
+// minNameWidth is the narrowest the Name column gets when filling the pane.
+const minNameWidth = 150
 
 func newFileTable(m *mainWindow) *fileTable {
 	ft := &fileTable{m: m, cols: m.cfg.ColumnLayout().Visible()}
@@ -68,8 +97,106 @@ func newFileTable(m *mainWindow) *fileTable {
 	ft.table.UpdateHeader = ft.updateHeader
 	ft.table.HideSeparators = m.cfg.HideGrid
 	ft.setColumnWidths()
-	ft.view = container.NewThemeOverride(ft.table, tableTheme{})
+	ft.catcher = newWheelCatcher(ft)
+	ft.view = container.NewThemeOverride(container.New(&tableLayout{ft}, ft.table, ft.catcher), tableTheme{})
 	return ft
+}
+
+// tableLayout gives the table and the wheel catcher the full area and lets
+// the Name column fill the width that is left (FR-020).
+type tableLayout struct{ ft *fileTable }
+
+func (l *tableLayout) MinSize(objs []fyne.CanvasObject) fyne.Size { return objs[0].MinSize() }
+
+func (l *tableLayout) Layout(objs []fyne.CanvasObject, size fyne.Size) {
+	for _, o := range objs {
+		o.Move(fyne.NewPos(0, 0))
+		o.Resize(size)
+	}
+	l.ft.fitName()
+}
+
+// fitName stretches the Name column so the columns fill the pane, unless
+// the user has dragged it to another width. Below minNameWidth the columns
+// no longer fit and the table scrolls sideways.
+func (ft *fileTable) fitName() {
+	i := slices.Index(ft.cols, listing.ColName)
+	_, view, content, ok := tableScroller(ft.table)
+	if i < 0 || !ok || view.Size().Width <= 0 {
+		return
+	}
+	cur, known := tableColumnWidth(ft.table, i)
+	if !known {
+		cur = neededWidth(listing.ColName, false)
+	}
+	if ft.autoName != 0 && cur != ft.autoName {
+		return // dragged by the user
+	}
+	others := content.MinSize().Width - cur
+	want := max(minNameWidth, view.Size().Width-others-1)
+	if want != cur {
+		ft.table.SetColumnWidth(i, want)
+	}
+	ft.autoName = want
+}
+
+// wheelDelta filters a mouse-wheel movement (FR-020): up/down only when
+// the rows do not fit, sideways only when the columns do not fit and the
+// movement is sideways or Shift is held. Fyne itself would turn an up/down
+// movement into a sideways scroll when only the columns overflow.
+func wheelDelta(d fyne.Delta, shift bool, content, view fyne.Size) fyne.Delta {
+	if shift && d.DX == 0 {
+		d.DX, d.DY = d.DY, 0
+	}
+	if content.Height <= view.Height {
+		d.DY = 0
+	}
+	if content.Width <= view.Width {
+		d.DX = 0
+	}
+	return d
+}
+
+// wheel passes a filtered wheel movement on to the table's scroller.
+func (ft *fileTable) wheel(ev *fyne.ScrollEvent, shift bool) {
+	scroll, view, content, ok := tableScroller(ft.table)
+	if !ok {
+		return
+	}
+	d := wheelDelta(ev.Scrolled, shift, content.MinSize(), view.Size())
+	if d == (fyne.Delta{}) {
+		return
+	}
+	scroll.Scrolled(&fyne.ScrollEvent{PointEvent: ev.PointEvent, Scrolled: d})
+}
+
+// scrollToStart shows the first rows and columns, e.g. for a new directory.
+func (ft *fileTable) scrollToStart() {
+	ft.table.ScrollToTop()
+	ft.table.ScrollToLeading()
+}
+
+// wheelCatcher lies on top of the table and only takes mouse-wheel events
+// (it is not tappable or hoverable, so clicks and hovering reach the table).
+// It covers the empty area below the rows too, which belongs to Fyne's
+// scroller and would otherwise get the wheel directly.
+type wheelCatcher struct {
+	widget.BaseWidget
+	ft *fileTable
+}
+
+func newWheelCatcher(ft *fileTable) *wheelCatcher {
+	c := &wheelCatcher{ft: ft}
+	c.ExtendBaseWidget(c)
+	return c
+}
+
+func (c *wheelCatcher) CreateRenderer() fyne.WidgetRenderer {
+	return widget.NewSimpleRenderer(container.NewWithoutLayout())
+}
+
+func (c *wheelCatcher) Scrolled(ev *fyne.ScrollEvent) {
+	c.ft.wheel(ev, currentModifiers()&fyne.KeyModifierShift != 0)
 }
 
 // setGridLines shows or hides the lines between cells.
@@ -101,12 +228,31 @@ func (t tableTheme) Size(n fyne.ThemeSizeName) float32       { return t.current(
 func (ft *fileTable) setColumns(cols []listing.Column) {
 	ft.cols = cols
 	ft.setColumnWidths()
+	ft.autoName = 0
+	ft.fitName()
 	ft.table.Refresh()
 }
 
 func (ft *fileTable) setColumnWidths() {
+	sorted := ft.m.cfg.SortSpec().Column
 	for i, c := range ft.cols {
-		ft.table.SetColumnWidth(i, columnWidths[c])
+		ft.table.SetColumnWidth(i, neededWidth(c, c == sorted))
+	}
+}
+
+// makeRoomForArrow widens the newly sorted column if its arrow would not fit.
+func (ft *fileTable) makeRoomForArrow(c listing.Column) {
+	i := slices.Index(ft.cols, c)
+	if i < 0 {
+		return
+	}
+	need := neededWidth(c, true)
+	if cur, ok := tableColumnWidth(ft.table, i); ok && cur < need {
+		ft.table.SetColumnWidth(i, need)
+		if c == listing.ColName {
+			ft.autoName = need
+		}
+		ft.fitName()
 	}
 }
 
@@ -153,6 +299,7 @@ func (ft *fileTable) sortBy(col int) {
 		s = listing.SortSpec{Column: c}
 	}
 	ft.m.cfg.SetSortSpec(s)
+	ft.makeRoomForArrow(c)
 	ft.m.applyView()
 	ft.m.changed()
 }
@@ -183,7 +330,15 @@ func (ft *fileTable) openRow(row int) {
 	})
 }
 
-func (ft *fileTable) refresh() { ft.table.Refresh() }
+// refresh redraws the table after the rows changed. The table does not
+// re-lay-out its scroller, which then keeps scrolling limits from the old
+// row count; refreshing the scroller updates them.
+func (ft *fileTable) refresh() {
+	ft.table.Refresh()
+	if _, scroller, _, ok := tableScroller(ft.table); ok {
+		scroller.Refresh()
+	}
+}
 
 // rowMenu is the right-click menu of a row: directories can be bookmarked
 // (FR-042). It returns nil when there is nothing to offer.

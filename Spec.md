@@ -1,6 +1,6 @@
 # Specification — fileViews
 
-_Status: draft v0.17 · Last updated: 2026-10-29_
+_Status: draft v0.18 · Last updated: 2026-10-29_
 
 ## 1. Purpose
 A simple hierarchical file and directory viewer with a graphical interface, laid out similar to Thunar.
@@ -56,7 +56,8 @@ The split between left and right pane is user-resizable.
 - **FR-017** Startup directory: a directory given on the command line (`fileviews /some/dir`; a relative path is taken from the working directory, `~` means `$HOME`; more than one argument prints a usage message) if it can be read; otherwise the last directory (FR-061) if it can still be read; otherwise `$HOME`; otherwise `/`. If the command-line directory cannot be read, the user gets an error and the next choice is used.
 
 ### 5.3 Right pane (directory listing)
-- **FR-020** The right pane lists the entries of the current directory: files and directories, as a table with one row per entry. Clicking a row selects the whole row; Ctrl+click adds or removes a row, Shift+click selects the range from the last clicked row. The selection stays on the same entries when sorting, filtering or refreshing (entries no longer shown drop out of it), and is cleared when going to another directory. Columns start at fixed widths and can be resized by dragging the header borders; Size and Links are right-aligned.
+- **FR-020** The right pane lists the entries of the current directory: files and directories, as a table with one row per entry. Clicking a row selects the whole row; Ctrl+click adds or removes a row, Shift+click selects the range from the last clicked row. The selection stays on the same entries when sorting, filtering or refreshing (entries no longer shown drop out of it), and is cleared when going to another directory. Columns start at a width measured from their header and a typical value (room for the sort arrow only on the sorted column; sorting by another column widens it if needed) and can be resized by dragging the header borders; Size and Links are right-aligned. The Name column stretches to fill the remaining width (at least 150 px), unless the user has dragged it to another width; so normally there is no sideways scrolling.
+- **FR-032** Scrolling the right pane: a newly opened directory always starts at the top-left (a refresh keeps the position). The mouse wheel scrolls up and down only when there are more rows than fit; otherwise it does nothing. Sideways scrolling happens only with Shift+wheel or a sideways touchpad movement, and only when the columns are wider than the pane.
 - **FR-021** Hidden entries (names starting with `.`) are hidden by default. View → Show hidden files (Ctrl+H) toggles them; the setting is kept across sessions.
 - **FR-022** Columns, comparable to `ls -lF`:
   | Column | Content |

@@ -40,13 +40,14 @@ type mainWindow struct {
 	mainMenu                           *fyne.MainMenu
 
 	// State of the current directory; only touched on the UI goroutine.
-	all     []listing.Entry
-	shown   []listing.Entry
-	sel     selection
-	free    uint64
-	freeOK  bool
-	loadSeq int
-	navSeq  int
+	all      []listing.Entry
+	shown    []listing.Entry
+	sel      selection
+	free     uint64
+	freeOK   bool
+	loadSeq  int
+	navSeq   int
+	shownDir string // directory whose listing is shown
 
 	saver        *saver // nil: nothing is saved (tests without a store)
 	saveErrShown bool
@@ -217,15 +218,19 @@ func (m *mainWindow) load(dir string) {
 	background(func() {
 		entries, err := listing.Read(dir)
 		free, ferr := listing.FreeSpace(dir)
-		fyne.Do(func() { m.applyLoad(seq, entries, err, free, ferr == nil) })
+		fyne.Do(func() { m.applyLoad(seq, dir, entries, err, free, ferr == nil) })
 	})
 }
 
 // applyLoad shows the result of load number seq, unless a newer load has
 // started since.
-func (m *mainWindow) applyLoad(seq int, entries []listing.Entry, err error, free uint64, freeOK bool) {
+func (m *mainWindow) applyLoad(seq int, dir string, entries []listing.Entry, err error, free uint64, freeOK bool) {
 	if seq != m.loadSeq {
 		return
+	}
+	if dir != m.shownDir { // a new directory starts at the top (FR-020)
+		m.shownDir = dir
+		m.files.scrollToStart()
 	}
 	if err != nil {
 		m.showError(err)
