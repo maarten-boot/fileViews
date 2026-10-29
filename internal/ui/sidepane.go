@@ -2,6 +2,7 @@ package ui
 
 import (
 	"errors"
+	"image/color"
 	"sync/atomic"
 	"time"
 
@@ -192,8 +193,8 @@ func newMarkItem(sp *sidePane) *markItem {
 	mi := &markItem{
 		id:     -1, // until the list assigns a row; measuring templates never get one
 		sp:     sp,
-		bg:     canvas.NewRectangle(nil),
-		indent: canvas.NewRectangle(nil),
+		bg:     canvas.NewRectangle(color.Transparent),
+		indent: canvas.NewRectangle(color.Transparent),
 		text:   canvas.NewText("", nil),
 	}
 	mi.ExtendBaseWidget(mi)

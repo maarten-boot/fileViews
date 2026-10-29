@@ -62,6 +62,7 @@ A ✔ with a test name means the automated test exists and passes. The manual ch
 | TC-033b | FR-033 | Compact spacing | Compact view at 4, 2, 10, 7 px; back to normal | Gap between rows exactly as set; header unchanged; 1 px grid lines; normal gap restored; app-wide padding untouched | Auto ✔ `TestCompactRowSpacing` + Manual |
 | TC-033c | FR-033 | Text not squeezed | Cell lower than the label | Label keeps its height, centred | Auto ✔ `TestCompactCellLayout` + Manual |
 | TC-033d | FR-033 | Spacing dialog, saving | Dialog 2–10 at 4; type 1, 11, x; apply 6; compact on; new window | Invalid input disables Apply; saved; restored with 6 px; left pane rows unchanged | Auto ✔ `TestCompactSettingsSaved` + Manual |
+| TC-033e | FR-033 | Header not cut in compact view | Switch to compact; refresh; start a window in compact view | Header keeps its full height; rows start below it | Auto ✔ `TestCompactHeaderNotCut` + Manual |
 | TC-030 | FR-030 | Read-only | Browse around | No file is modified | Manual |
 
 ## Path bar / history (`internal/history`)

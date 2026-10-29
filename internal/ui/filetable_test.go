@@ -2,6 +2,7 @@ package ui
 
 import (
 	"errors"
+	"image/color"
 	"os"
 	"path/filepath"
 	"slices"
@@ -156,7 +157,7 @@ func TestTableSelection(t *testing.T) {
 		}
 	}
 	m.files.updateCell(widget.TableCellID{Row: 0, Col: 0}, c)
-	if c.bg.FillColor != nil {
+	if c.bg.FillColor != color.Transparent {
 		t.Error("unselected row highlighted")
 	}
 

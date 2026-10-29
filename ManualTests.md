@@ -1,6 +1,6 @@
 # Manual Test Checklist — fileViews
 
-_Generated from `TestCases.md` (regenerated 2026-10-29 after the compact view). Run on a desktop; tick each item and note anything odd next to it._
+_Generated from `TestCases.md` (regenerated 2026-10-29 after the compact header fix). Run on a desktop; tick each item and note anything odd next to it._
 
 **Preparation:** `make testdir` creates `/tmp/fileviews-test` with files, a subfolder, a hidden file, an executable, symlinks to a file and a folder, a broken symlink and a FIFO, plus `remove-me/` to bookmark and then delete (missing bookmarks), and starts the app there. For the scrolling checks use a big folder too, e.g. `/usr/bin`.
 
@@ -31,6 +31,7 @@ _Generated from `TestCases.md` (regenerated 2026-10-29 after the compact view). 
 - [ ] **TC-033b** (FR-033) Compact spacing — *Compact view at 4, 2, 10, 7 px; back to normal* → Gap between rows exactly as set; header unchanged; 1 px grid lines; normal gap restored; app-wide padding untouched
 - [ ] **TC-033c** (FR-033) Text not squeezed — *Cell lower than the label* → Label keeps its height, centred
 - [ ] **TC-033d** (FR-033) Spacing dialog, saving — *Dialog 2–10 at 4; type 1, 11, x; apply 6; compact on; new window* → Invalid input disables Apply; saved; restored with 6 px; left pane rows unchanged
+- [ ] **TC-033e** (FR-033) Header not cut in compact view — *Switch to compact; refresh; start a window in compact view* → Header keeps its full height; rows start below it
 - [ ] **TC-030** (FR-030) Read-only — *Browse around* → No file is modified
 
 ## Path bar / history (`internal/history`)

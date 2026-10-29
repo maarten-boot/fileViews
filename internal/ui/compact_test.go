@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"image/color"
 	"reflect"
 	"testing"
 
@@ -17,8 +18,7 @@ import (
 // header height, as the table lays them out (test only: reads internals).
 func rowGap(t *testing.T, m *mainWindow) (gap, header float32) {
 	t.Helper()
-	m.files.table.Refresh()
-	v := reflect.ValueOf(m.files.table).Elem()
+	v := reflect.ValueOf(m.files.table).Elem() // as laid out, no extra refresh
 	cell := float32(v.FieldByName("cellSize").FieldByName("Height").Float())
 	header = float32(v.FieldByName("headerSize").FieldByName("Height").Float())
 	sep := m.files.table.Theme().Size(theme.SizeNamePadding)
@@ -59,7 +59,7 @@ func TestCompactRowSpacing(t *testing.T) {
 // not squeezed sideways.
 func TestCompactCellLayout(t *testing.T) {
 	test.NewTempApp(t)
-	bg, label := canvas.NewRectangle(nil), widget.NewLabel("Ag")
+	bg, label := canvas.NewRectangle(color.Transparent), widget.NewLabel("Ag")
 	lh := label.MinSize().Height
 	centreLayout{}.Layout([]fyne.CanvasObject{bg, label}, fyne.NewSize(200, lh-10))
 	if bg.Size() != fyne.NewSize(200, lh-10) || label.Size().Height != lh || label.Position().Y != -5 {
@@ -114,4 +114,32 @@ func shownWindow2(t *testing.T, cfg config.Config, dir string) *mainWindow {
 	m.win.Resize(fyne.NewSize(1000, 650))
 	wait(t, m, func() { m.goPath(dir) })
 	return m
+}
+
+// TC-033e: the header keeps its full height in the compact view, also
+// straight after switching and when starting in the compact view, and also
+// after later refreshes (it was cut in half).
+func TestCompactHeaderNotCut(t *testing.T) {
+	m := shownWindow(t, fixture(t), fyne.NewSize(900, 260))
+	header := func() float32 {
+		return float32(reflect.ValueOf(m.files.table).Elem().FieldByName("headerSize").FieldByName("Height").Float())
+	}
+	m.toggleCompact()
+	if header() != headerHeight() {
+		t.Errorf("after switching: header %v, want %v", header(), headerHeight())
+	}
+	m.files.table.Refresh()
+	wait(t, m, m.refresh)
+	if header() != headerHeight() {
+		t.Errorf("after refresh: header %v", header())
+	}
+	_, view, _, _ := tableScroller(m.files.table)
+	if view.Position().Y < headerHeight() {
+		t.Errorf("rows start at %v, inside the header (%v)", view.Position().Y, headerHeight())
+	}
+	cfg := m.cfg
+	m2 := shownWindow2(t, cfg, t.TempDir()) // starts in the compact view
+	if h := float32(reflect.ValueOf(m2.files.table).Elem().FieldByName("headerSize").FieldByName("Height").Float()); h != headerHeight() {
+		t.Errorf("starting compact: header %v", h)
+	}
 }

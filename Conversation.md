@@ -259,3 +259,8 @@ All core packages are now done: the planned point for the first Spec ↔ Plan �
 **User:** go with your proposals for 1-3, keep the left pane unchanged
 
 **Assistant:** Compact view built (new FR-033): View → Compact view, Settings → Compact row spacing… (slider + number field, 2–10 px, default 4). In compact view the gap between the text of two rows is exactly the setting (grid line 1 px included); labels keep their own height and are centred, so text is not squeezed sideways; the header row and the left pane keep their normal size; both settings are saved. The indent dialog was generalised into one pixel dialog used by both settings. 137 tests pass, also with `-race`; `ManualTests.md` regenerated (58 checks).
+
+### 27. Compact view: header cut
+**User:** ok the compact works but the first row with the names should not be affected as now we see only half the names
+
+**Assistant:** Reproduced by rendering the table headless with Fyne's software renderer: in compact view the header shrank to the data row height (22 px instead of 35 px), cutting the column names. Cause: Fyne's `SetRowHeight(-1, h)` silently ignores `h` when the header already has that height, so pinning it in the normal view did nothing. Fix: pin after the table re-measured itself in compact view. My earlier test missed it because it forced an extra refresh; the new test (TC-033e) fails with the old order and passes now. Also: rectangles use `color.Transparent` instead of nil (needed by the software renderer). 138 tests pass, also with `-race`.

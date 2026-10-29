@@ -259,9 +259,13 @@ func headerHeight() float32 {
 }
 
 // applyCompact switches the table between the normal and compact view.
+// The header is pinned at its normal height after the table re-measured
+// itself: Fyne's SetRowHeight(-1, h) does not record h when the header
+// already has that height, so pinning first (in the normal view) would be
+// lost when the compact header template makes the header shrink.
 func (ft *fileTable) applyCompact() {
+	ft.view.Refresh() // re-reads the theme; the table re-measures rows and header
 	ft.table.SetRowHeight(-1, headerHeight())
-	ft.view.Refresh() // re-reads the theme; the table re-measures its rows
 	ft.refresh()
 }
 
@@ -434,7 +438,7 @@ type fileCell struct {
 
 func newFileCell(onTap, onDouble func(int)) *fileCell {
 	c := &fileCell{
-		bg:       canvas.NewRectangle(nil),
+		bg:       canvas.NewRectangle(color.Transparent),
 		label:    widget.NewLabel(""),
 		onTap:    onTap,
 		onDouble: onDouble,
@@ -451,7 +455,7 @@ func (c *fileCell) set(row int, text string, align fyne.TextAlign, selected bool
 	if selected {
 		c.bg.FillColor = theme.Color(theme.ColorNameSelection)
 	} else {
-		c.bg.FillColor = nil
+		c.bg.FillColor = color.Transparent
 	}
 	c.bg.Refresh()
 }
