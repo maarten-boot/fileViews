@@ -12,7 +12,6 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/test"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/maarten-boot/fileViews/internal/bookmarks"
 	"github.com/maarten-boot/fileViews/internal/contrast"
@@ -164,6 +163,21 @@ func contrastRGBA(hex string) color.Color {
 	return c
 }
 
+// waitTip waits for a hover text to be shown, or fails after timeout.
+func waitTip(t *testing.T, shown chan struct{}, timeout time.Duration) bool {
+	t.Helper()
+	select {
+	case <-shown:
+		return true
+	case <-time.After(timeout):
+		return false
+	}
+}
+
+func hover(p fyne.Position) *desktop.MouseEvent {
+	return &desktop.MouseEvent{PointEvent: fyne.PointEvent{AbsolutePosition: p}}
+}
+
 // TC-046d: the hover text shows after a pause and hides when the mouse leaves.
 func TestBookmarkTooltip(t *testing.T) {
 	root := fixture(t)
@@ -173,28 +187,23 @@ func TestBookmarkTooltip(t *testing.T) {
 	m.side.onTip = func() { shown <- struct{}{} }
 
 	mi := markAt(m, 1)
-	mi.MouseIn(&desktop.MouseEvent{PointEvent: fyne.PointEvent{AbsolutePosition: fyne.NewPos(5, 5)}})
-	select {
-	case <-shown:
-	case <-time.After(5 * time.Second):
-		t.Fatal("tooltip not shown")
+	mi.MouseIn(hover(fyne.NewPos(5, 5)))
+	if !waitTip(t, shown, 5*time.Second) {
+		t.Fatal("hover text not shown")
 	}
-	if mi.tip == nil || !mi.tip.Visible() {
-		t.Fatal("tooltip not visible")
-	}
-	if got := mi.tip.Content.(*widget.Label).Text; got != root {
-		t.Errorf("default tooltip = %q", got)
+	if !m.tip.visible() || m.tip.text() != root {
+		t.Fatalf("visible %v text %q", m.tip.visible(), m.tip.text())
 	}
 	mi.MouseOut()
-	if mi.tip != nil {
-		t.Error("tooltip still shown after MouseOut")
+	if m.tip.visible() {
+		t.Error("hover text still shown after MouseOut")
 	}
 
 	m.side.setHoverText(root, "work")
 	mi = markAt(m, 1)
 	mi.showTip()
-	if got := mi.tip.Content.(*widget.Label).Text; got != "work" {
-		t.Errorf("custom tooltip = %q", got)
+	if m.tip.text() != "work" {
+		t.Errorf("custom hover text = %q", m.tip.text())
 	}
 }
 
@@ -206,8 +215,67 @@ func TestBookmarkTooltipCancelled(t *testing.T) {
 	mi.MouseIn(&desktop.MouseEvent{})
 	mi.MouseOut()
 	time.Sleep(150 * time.Millisecond)
-	if mi.tip != nil {
-		t.Error("tooltip shown after the mouse left")
+	if m.tip.visible() {
+		t.Error("hover text shown after the mouse left")
+	}
+}
+
+// TC-046e: the hover text waits for the mouse to be still; every movement
+// before it shows starts the wait again. The default wait is 1 second.
+func TestBookmarkTooltipWaitsForStillness(t *testing.T) {
+	if tooltipDelay != time.Second {
+		t.Errorf("tooltipDelay = %v, want 1s", tooltipDelay)
+	}
+	m := newTestWindow(t, t.TempDir())
+	m.side.tipDelay = 200 * time.Millisecond
+	shown := make(chan struct{}, 1)
+	m.side.onTip = func() { shown <- struct{}{} }
+	mi := markAt(m, 0)
+	start := time.Now()
+	mi.MouseIn(hover(fyne.NewPos(5, 5)))
+	for i := range 4 { // keep moving for ~480 ms
+		time.Sleep(120 * time.Millisecond)
+		mi.MouseMoved(hover(fyne.NewPos(float32(6+i), 5)))
+	}
+	if waitTip(t, shown, 0) { // only the signal: the timer goroutine may be drawing
+		t.Fatal("hover text shown while the mouse was moving")
+	}
+	if !waitTip(t, shown, 2*time.Second) {
+		t.Fatal("hover text not shown after the mouse stopped")
+	}
+	if d := time.Since(start); d < 600*time.Millisecond {
+		t.Errorf("shown after %v; movement did not restart the wait", d)
+	}
+	// Once shown, small movements keep it.
+	mi.MouseMoved(hover(fyne.NewPos(20, 5)))
+	if !m.tip.visible() {
+		t.Error("hover text hidden by a small movement")
+	}
+}
+
+// TC-046f: a click on a bookmark whose hover text is showing reaches the
+// bookmark (the hover text used to be a pop-up that swallowed the click).
+func TestClickWhileHoverTextShown(t *testing.T) {
+	root := fixture(t)
+	sub := filepath.Join(root, "sub")
+	m := shownWindow(t, root, fyne.NewSize(1000, 650)) // home = root
+	wait(t, m, func() { m.goPath(sub) })
+	mi := itemWidget(t, m, 1) // the home bookmark
+	pos := fyne.CurrentApp().Driver().AbsolutePositionForObject(mi).Add(fyne.NewPos(20, mi.Size().Height/2))
+	mi.hoverPos = pos
+	mi.showTip()
+	if !m.tip.visible() {
+		t.Fatal("hover text not shown")
+	}
+	if m.win.Canvas().Overlays().Top() != nil {
+		t.Fatal("hover text is an overlay: it would take all mouse events")
+	}
+	wait(t, m, func() { test.TapCanvas(m.win.Canvas(), pos) })
+	if m.nav.Current() != root {
+		t.Errorf("click did not reach the bookmark: current %q", m.nav.Current())
+	}
+	if m.tip.visible() {
+		t.Error("hover text still shown after the click")
 	}
 }
 

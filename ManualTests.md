@@ -1,6 +1,6 @@
 # Manual Test Checklist — fileViews
 
-_Generated from `TestCases.md` (regenerated 2026-10-29 after the compact header fix). Run on a desktop; tick each item and note anything odd next to it._
+_Generated from `TestCases.md` (regenerated 2026-10-29 after remembered column widths and the hover text fix). Run on a desktop; tick each item and note anything odd next to it._
 
 **Preparation:** `make testdir` creates `/tmp/fileviews-test` with files, a subfolder, a hidden file, an executable, symlinks to a file and a folder, a broken symlink and a FIFO, plus `remove-me/` to bookmark and then delete (missing bookmarks), and starts the app there. For the scrolling checks use a big folder too, e.g. `/usr/bin`.
 
@@ -19,7 +19,7 @@ _Generated from `TestCases.md` (regenerated 2026-10-29 after the compact header 
 - [ ] **TC-020g** (FR-032) Few rows do not move — *2 entries; wheel; pane too narrow; wheel; Shift+wheel* → Offset stays 0,0; Shift+wheel moves sideways only
 - [ ] **TC-020h** (FR-032) Many rows scroll; refresh keeps position — *200 entries; wheel down; F5* → Moves down only; same position after F5
 - [ ] **TC-020i** (FR-032) New directory starts at the top — *Scroll down in a big directory, open another* → Starts at top-left
-- [ ] **TC-020j** (FR-020) Name fills the width — *Window 1000, 1200, 500 wide; drag Name; resize; change columns* → Fills (wider at 1200); 150 px and sideways scroll at 500; dragged width kept; refilled after column change
+- [ ] **TC-020j** (FR-020) Name fills the width — *Window 1000, 1200, 500 wide; drag Name; resize; change columns; reset widths* → Fills (wider at 1200); 150 px and sideways scroll at 500; dragged width kept on resize and column change; refilled after reset
 - [ ] **TC-020k** (FR-020) Measured column widths — *Default widths; sort by Size* → Each column at its measured width; Size widened for the arrow; still fits
 - [ ] **TC-022c** (FR-022) Table cells — *`a.txt` mode 0640, 100 bytes* → `-rw-r-----`, `1`, owner, group, `100`, `YYYY-MM-DD HH:MM`, `a.txt`; Size and Links right-aligned
 - [ ] **TC-024g** (FR-024) Columns dialog — *Move Name up; hide Links; hide+show Group; try to hide Name; apply; reopen* → Table and config show the new order without Links; Name locked; Links shown unticked when reopened
@@ -32,6 +32,8 @@ _Generated from `TestCases.md` (regenerated 2026-10-29 after the compact header 
 - [ ] **TC-033c** (FR-033) Text not squeezed — *Cell lower than the label* → Label keeps its height, centred
 - [ ] **TC-033d** (FR-033) Spacing dialog, saving — *Dialog 2–10 at 4; type 1, 11, x; apply 6; compact on; new window* → Invalid input disables Apply; saved; restored with 6 px; left pane rows unchanged
 - [ ] **TC-033e** (FR-033) Header not cut in compact view — *Switch to compact; refresh; start a window in compact view* → Header keeps its full height; rows start below it
+- [ ] **TC-034b** (FR-034) Dragged widths remembered — *Drag Name to 300 and Size to 120, quit, start again, widen window* → Only Name and Size saved; restored; Name not refitted
+- [ ] **TC-034c** (FR-034) Reset column widths — *Saved widths; Settings → Columns → Reset column widths* → Measured widths back, Name fills; nothing saved
 - [ ] **TC-030** (FR-030) Read-only — *Browse around* → No file is modified
 
 ## Path bar / history (`internal/history`)
@@ -62,6 +64,8 @@ _Generated from `TestCases.md` (regenerated 2026-10-29 after the compact header 
 - [ ] **TC-049b** (FR-049) Already bookmarked: refused while dragging — *Drag `sub/` which is a bookmark* → Label "sub: already a bookmark", no drop line; drop changes nothing, no error
 - [ ] **TC-049c** (FR-049) Drag a selection — *Select `other/`, `sub/` (bookmarked), `a.txt`; drag* → Label "Add 1 bookmark (1 already bookmarked)"; only `other` added
 - [ ] **TC-049d** (FR-049) Ignored drags — *Drag a file; drop a directory outside the pane* → Nothing happens, no drop line
+- [ ] **TC-046e** (FR-046) Hover text waits for stillness — *Keep moving over a bookmark, then stop; move a little after it shows* → Not shown while moving; shown 1 s after stopping; stays on small moves
+- [ ] **TC-046f** (FR-046) Click while the hover text shows — *Hover until the text shows, click the bookmark* → The click opens the bookmark; hover text hidden; no overlay
 - [ ] **TC-047b** (FR-047) Missing style — *Default white; black bg; light yellow bg with navy text* → `gone (missing)`, italic; text `#767676`; `#757575`; navy — all pass 4.5:1
 
 ## Status bar

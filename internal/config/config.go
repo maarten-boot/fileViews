@@ -50,9 +50,16 @@ type Bookmark struct {
 
 // Columns stores the column layout by column name (listing.Column.String).
 type Columns struct {
-	Order  []string `json:"order,omitempty"`
-	Hidden []string `json:"hidden,omitempty"`
+	Order  []string           `json:"order,omitempty"`
+	Hidden []string           `json:"hidden,omitempty"`
+	Widths map[string]float32 `json:"widths,omitempty"` // columns the user resized (FR-034)
 }
+
+// Limits for saved column widths.
+const (
+	MinColumnWidth = 20
+	MaxColumnWidth = 2000
+)
 
 // Sort stores the sort column by name and the direction.
 type Sort struct {
@@ -100,6 +107,16 @@ func (c *Config) Normalize() {
 		c.Sort = Sort{Column: listing.ColName.String()}
 	}
 	c.Recent = history.NewRecent(history.DefaultRecentMax, c.Recent).Items()
+	for name, px := range c.Columns.Widths {
+		if _, ok := listing.ParseColumn(name); !ok {
+			delete(c.Columns.Widths, name)
+			continue
+		}
+		c.Columns.Widths[name] = max(MinColumnWidth, min(px, MaxColumnWidth))
+	}
+	if len(c.Columns.Widths) == 0 {
+		c.Columns.Widths = nil
+	}
 }
 
 // ColumnLayout converts the stored columns; unknown names are ignored.
@@ -120,7 +137,7 @@ func (c Config) ColumnLayout() listing.ColumnLayout {
 
 // SetColumnLayout stores l by column name.
 func (c *Config) SetColumnLayout(l listing.ColumnLayout) {
-	c.Columns = Columns{}
+	c.Columns = Columns{Widths: c.Columns.Widths}
 	for _, col := range l.Order {
 		c.Columns.Order = append(c.Columns.Order, col.String())
 	}
@@ -128,6 +145,28 @@ func (c *Config) SetColumnLayout(l listing.ColumnLayout) {
 		if l.Hidden[col] {
 			c.Columns.Hidden = append(c.Columns.Hidden, col.String())
 		}
+	}
+}
+
+// ColumnWidths returns the saved widths of the columns the user resized.
+func (c Config) ColumnWidths() map[listing.Column]float32 {
+	w := map[listing.Column]float32{}
+	for name, px := range c.Columns.Widths {
+		if col, ok := listing.ParseColumn(name); ok {
+			w[col] = px
+		}
+	}
+	return w
+}
+
+// SetColumnWidths stores the widths of the columns the user resized.
+func (c *Config) SetColumnWidths(w map[listing.Column]float32) {
+	c.Columns.Widths = nil
+	for col, px := range w {
+		if c.Columns.Widths == nil {
+			c.Columns.Widths = map[string]float32{}
+		}
+		c.Columns.Widths[col.String()] = px
 	}
 }
 

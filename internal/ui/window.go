@@ -40,15 +40,18 @@ type mainWindow struct {
 	mainMenu                           *fyne.MainMenu
 
 	// State of the current directory; only touched on the UI goroutine.
-	all      []listing.Entry
-	shown    []listing.Entry
-	sel      selection
-	drag     dragState
-	free     uint64
-	freeOK   bool
-	loadSeq  int
-	navSeq   int
-	shownDir string // directory whose listing is shown
+	all   []listing.Entry
+	shown []listing.Entry
+	sel   selection
+	drag  dragState
+
+	// tip (hover texts) and dragLabel are hints in a layer above the content.
+	tip, dragLabel *hint
+	free           uint64
+	freeOK         bool
+	loadSeq        int
+	navSeq         int
+	shownDir       string // directory whose listing is shown
 
 	saver        *saver // nil: nothing is saved (tests without a store)
 	saveErrShown bool
@@ -68,7 +71,10 @@ func newMainWindow(a fyne.App, cfg config.Config, home string) *mainWindow {
 		marks: bookmarks.New(home, cfg.Bookmarks),
 	}
 	m.win.SetMainMenu(m.buildMenu())
-	m.win.SetContent(container.NewBorder(m.buildPathBar(), m.buildStatusBar(), nil, nil, m.buildPanes()))
+	hints := container.NewWithoutLayout()
+	m.tip, m.dragLabel = newHint(hints), newHint(hints)
+	main := container.NewBorder(m.buildPathBar(), m.buildStatusBar(), nil, nil, m.buildPanes())
+	m.win.SetContent(container.NewStack(main, hints))
 	m.win.Resize(fyne.NewSize(cfg.Window.Width, cfg.Window.Height))
 	m.win.SetCloseIntercept(m.quit)
 	m.win.Canvas().SetOnTypedKey(func(ev *fyne.KeyEvent) {

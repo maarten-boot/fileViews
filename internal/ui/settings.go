@@ -24,6 +24,7 @@ type columnsDialog struct {
 	order  []listing.Column
 	hidden map[listing.Column]bool
 	rows   *fyne.Container
+	reset  *widget.Button // Reset column widths (FR-034); acts at once
 	dlg    *dialog.ConfirmDialog
 }
 
@@ -36,7 +37,12 @@ func newColumnsDialog(m *mainWindow) *columnsDialog {
 		}
 	}
 	d.build()
-	content := container.NewVBox(widget.NewLabel("Tick the columns to show; use the arrows to change the order."), d.rows)
+	d.reset = widget.NewButton("Reset column widths", func() {
+		m.files.resetWidths()
+		m.changed()
+	})
+	content := container.NewVBox(widget.NewLabel("Tick the columns to show; use the arrows to change the order."), d.rows,
+		container.NewHBox(d.reset))
 	d.dlg = dialog.NewCustomConfirm("Columns", "Apply", "Cancel", content, func(ok bool) {
 		if ok {
 			d.apply()

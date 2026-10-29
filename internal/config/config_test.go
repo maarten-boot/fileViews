@@ -125,6 +125,7 @@ func TestRoundTrip(t *testing.T) {
 		Hidden: map[listing.Column]bool{listing.ColLinks: true, listing.ColGroup: true},
 	})
 	want.SetSortSpec(listing.SortSpec{Column: listing.ColSize, Descending: true})
+	want.SetColumnWidths(map[listing.Column]float32{listing.ColName: 300, listing.ColSize: 120})
 	want.IndentPx = 20
 	want.ShowHidden = true
 	want.HideGrid = true
@@ -221,7 +222,7 @@ func TestNormalize(t *testing.T) {
 		"contrastMin": 1,
 		"window": {"width": 0, "height": 500, "split": 1.5},
 		"sort": {"column": "Bogus", "descending": true},
-		"columns": {"order": ["Size", "Bogus", "Name"], "hidden": ["Name", "Owner", "Nope"]},
+		"columns": {"order": ["Size", "Bogus", "Name"], "hidden": ["Name", "Owner", "Nope"], "widths": {"Name": 5000, "Size": 3, "Bogus": 100, "Owner": 77}},
 		"recent": ["/a", "", "/a", "/b"],
 		"unknownField": 1
 	}`
@@ -241,6 +242,9 @@ func TestNormalize(t *testing.T) {
 	if c.SortSpec() != listing.DefaultSort {
 		t.Errorf("sort %+v", c.SortSpec())
 	}
+	if w := c.ColumnWidths(); len(w) != 3 || w[listing.ColName] != MaxColumnWidth || w[listing.ColSize] != MinColumnWidth || w[listing.ColOwner] != 77 {
+		t.Errorf("widths %v", w)
+	}
 	if !slices.Equal(c.Recent, []string{"/a", "/b"}) {
 		t.Errorf("recent %v", c.Recent)
 	}
@@ -253,5 +257,19 @@ func TestNormalize(t *testing.T) {
 	big.Normalize()
 	if big.IndentPx != MaxIndentPx || big.ContrastMin != contrast.CeilingMin || big.CompactGapPx != MaxCompactGapPx {
 		t.Errorf("upper limits: indent %d contrast %v", big.IndentPx, big.ContrastMin)
+	}
+}
+
+// TC-034a: saving the column layout keeps the saved widths.
+func TestColumnLayoutKeepsWidths(t *testing.T) {
+	c := Default()
+	c.SetColumnWidths(map[listing.Column]float32{listing.ColName: 300})
+	c.SetColumnLayout(listing.ColumnLayout{Order: []listing.Column{listing.ColName}})
+	if w := c.ColumnWidths(); w[listing.ColName] != 300 {
+		t.Errorf("widths lost: %v", w)
+	}
+	c.SetColumnWidths(nil)
+	if c.Columns.Widths != nil {
+		t.Errorf("empty widths stored as %v", c.Columns.Widths)
 	}
 }

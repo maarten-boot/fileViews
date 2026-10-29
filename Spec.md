@@ -1,6 +1,6 @@
 # Specification — fileViews
 
-_Status: draft v0.24 · Last updated: 2026-10-29_
+_Status: draft v0.25 · Last updated: 2026-10-29_
 
 ## 1. Purpose
 A simple hierarchical file and directory viewer with a graphical interface, laid out similar to Thunar.
@@ -59,6 +59,7 @@ The split between left and right pane is user-resizable.
 ### 5.3 Right pane (directory listing)
 - **FR-020** The right pane lists the entries of the current directory: files and directories, as a table with one row per entry. Clicking a row selects the whole row; Ctrl+click adds or removes a row, Shift+click selects the range from the last clicked row. The selection stays on the same entries when sorting, filtering or refreshing (entries no longer shown drop out of it), and is cleared when going to another directory. Columns start at a width measured from their header and a typical value (room for the sort arrow only on the sorted column; sorting by another column widens it if needed) and can be resized by dragging the header borders; Size and Links are right-aligned. The Name column stretches to fill the remaining width (at least 150 px), unless the user has dragged it to another width; so normally there is no sideways scrolling.
 - **FR-033** Compact view of the right pane: View → Compact view (default off) reduces the space between the text of two table rows to the compact row spacing, grid line included; Settings → Compact row spacing… sets it with a slider and a number field (whole numbers 2–10 px, default 4 px). The lines between cells are 1 px thin in the compact view. The space left and right of the text, the header row and the left pane keep their normal size. Both settings are kept across sessions. The normal view (about 20 px between rows) is unchanged.
+- **FR-034** Column widths the user sets by dragging header borders are kept across sessions, per column (also when the column order or visibility changes). The Name column fills the remaining width only as long as the user has not given it a width. Settings → Columns has a "Reset column widths" button that goes back to the measured widths, with Name filling the pane again.
 - **FR-032** Scrolling the right pane: a newly opened directory always starts at the top-left (a refresh keeps the position). The mouse wheel scrolls up and down only when there are more rows than fit; otherwise it does nothing. Sideways scrolling happens only with Shift+wheel or a sideways touchpad movement, and only when the columns are wider than the pane.
 - **FR-021** Hidden entries (names starting with `.`) are hidden by default. View → Show hidden files (Ctrl+H) toggles them; the setting is kept across sessions.
 - **FR-022** Columns, comparable to `ls -lF`:
@@ -91,7 +92,7 @@ The split between left and right pane is user-resizable.
 - **FR-043** Single-clicking an item opens its directory in the right pane.
 - **FR-044** Each item is indented by `depth × indent`, where depth is the number of path components from `/` (`/` = 0, `/home/mboot` = 2). The indent is configurable in Settings → Side pane indent: a slider and a number field that follow each other (whole numbers 1–25 px; anything else disables Apply); default 12 px.
 - **FR-045** Each item can have a custom background and foreground colour, set via right-click → "Set colours…" (background and text fields as `#RRGGBB`, empty = default, each with a colour picker; live preview), with a "Reset colours" option. Colours are kept across sessions. The combination must meet the contrast minimum (FR-073–FR-075).
-- **FR-046** Each item has a hover text (tooltip), shown in a small pop-up after the mouse rests on the item for about 0.6 s and hidden when it leaves. The default is the full path. The user can change it via right-click → "Edit hover text…"; an empty text goes back to the default. Hover texts are kept across sessions.
+- **FR-046** Each item has a hover text (tooltip), shown in a small box once the mouse has rested on the item without moving for 1 s (any movement before that starts the wait again); it stays until the mouse leaves the item or clicks. The hover text (and the drag label, FR-048/FR-049) never takes mouse events: a click on the item always reaches it. The default is the full path. The user can change it via right-click → "Edit hover text…"; an empty text goes back to the default. Hover texts are kept across sessions.
 - **FR-047** A bookmark whose target no longer exists is still shown, in italics with the suffix ` (missing)`; clicking it shows an error. On a pure white or pure black background (default or chosen) its text is also gray (FR-071). On any other background it keeps its own text colour (no gray). The text marker is always shown, so the state never depends on colour alone. Whether a bookmark is missing is checked in the background (NFR-002) when bookmarks change and after every navigation or refresh, so the marker can lag a moment behind the file system.
 - **FR-048** Bookmarks can be reordered, all of them including the default items: right-click → Move up / Move down (disabled at the ends), or drag a bookmark to another place in the pane; a line shows where it will land. The order is kept across sessions.
 - **FR-049** Directories (and links to directories) can be dragged from the right pane onto the bookmark pane; a line shows where they will be added. Dragging a selected row drags all selected directories (files in the selection are ignored); dragging a file does nothing. A directory that is already a bookmark is never placed a second time: while dragging, the floating label says so ("already a bookmark", or how many are already bookmarked), no drop line is shown when nothing new would be added, and on drop only the new ones are added. Dropping outside the bookmark pane does nothing. Only bookmarks are created; the directory itself is never moved (FR-030).
@@ -108,7 +109,7 @@ The split between left and right pane is user-resizable.
 
 ### 5.6 Persistence
 - **FR-060** All settings and state are saved in `$XDG_CONFIG_HOME/fileViews/config.json` (default `~/.config/fileViews/config.json`).
-- **FR-061** Saved: bookmarks (with colours and hover texts), column order and visibility, sort column and direction, indent size, show-hidden setting, grid lines setting, compact view and its row spacing, size format, contrast minimum, recent directories, last directory, window size and pane split. The file has a format `version` field (currently 1).
+- **FR-061** Saved: bookmarks (with colours and hover texts), column order, visibility and user-set widths (FR-034), sort column and direction, indent size, show-hidden setting, grid lines setting, compact view and its row spacing, size format, contrast minimum, recent directories, last directory, window size and pane split. The file has a format `version` field (currently 1).
 - **FR-062** Loading the config file:
   - missing file: defaults, no warning
   - invalid JSON: the file is renamed to `config.json.bak` (replacing an older `.bak`), defaults are used, and the user gets a warning
@@ -118,7 +119,7 @@ The split between left and right pane is user-resizable.
   - right after every change to something in FR-061 (toggles, sorting, bookmark edits, and every navigation for the recent list and last directory), written in the background so a slow disk cannot freeze the window (NFR-002); a snapshot is never overwritten by an older one
   - on quit (File → Quit, Ctrl+Q or closing the window), together with the window size and pane split
   - a save error is shown once per session; after an unreadable config (FR-062) nothing is saved and no further error is shown
-- **FR-064** Missing or out-of-range values are replaced by defaults, unknown fields and column names are ignored: indent 1–25 px (default 12), compact row spacing 2–10 px (default 4), contrast minimum 3–7 (default 4.5), window 1000×650 if unset, pane split between 0 and 1 (default 0.25), recent list cleaned as in FR-015.
+- **FR-064** Missing or out-of-range values are replaced by defaults, unknown fields and column names are ignored: indent 1–25 px (default 12), compact row spacing 2–10 px (default 4), contrast minimum 3–7 (default 4.5), window 1000×650 if unset, pane split between 0 and 1 (default 0.25), recent list cleaned as in FR-015, saved column widths of unknown columns dropped and limited to 20–2000 px.
 
 ### 5.7 Appearance
 - **FR-070** Default colours: white background, black text, in all panes and bars. The app uses a light theme regardless of the desktop's dark-mode setting.

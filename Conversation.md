@@ -269,3 +269,17 @@ All core packages are now done: the planned point for the first Spec ↔ Plan �
 **User:** do a crosscheck now;
 
 **Assistant:** Scripted checks all clean: 56 requirement IDs, 155 test cases, 138 tests (all pass, none skipped), test comments and `ManualTests.md` in sync, `govulncheck` reports no vulnerabilities, gofmt/vet clean, no unused production code. Read-through of the changes since #4 found no code defects; Spec §3 now names Fyne v2.8 and the Go 1.26.10 toolchain. Logged in `Plan.md`. Remaining: the user's manual pass (59 checks).
+
+### 29. Column width not remembered; sluggish bookmark moves (pending confirmation)
+**User:** issues: i moved the name to the first position , that is rememebered across sessions, but resizing the name width is not remembered also switching positions in the bookmarks columnt on the left is sluggish as if the mouns click never arrives, is the whole rectangle slot of the bookmark recieving mourse events ?
+
+**Assistant:** Corrections: rememebered → remembered, columnt → column, mouns/mourse → mouse, recieving → receiving. Findings: (1) column widths are not part of the saved settings (FR-061) — a gap; (2) the whole bookmark row does receive mouse events, but the hover text is a Fyne pop-up, and while any pop-up is open Fyne sends mouse events only to the pop-up (glfw window.go: lookup uses `Overlays().Top()` only), so the first click or drag on a bookmark whose hover text is showing just closes the hover text. Proposals sent; not implemented until confirmed.
+
+**User:** ok postpone the hover test until no movement in the slot for 1 second
+
+**Assistant:** Read "hover test" as "hover text"; the "ok" as approval of both proposals. Implemented:
+- hover texts and the drag label are now *hints*: boxes in a layer inside the window that take no mouse events (not Fyne pop-ups, which capture every mouse event while open); a click on a bookmark whose hover text shows now reaches it (TC-046f)
+- the hover text shows only after the mouse has been still on the bookmark for 1 s; movement before that restarts the wait; once shown it stays until the mouse leaves or clicks (TC-046e)
+- column widths the user drags are saved per column and restored (new FR-034); Name only fills the pane until the user gives it a width; Settings → Columns has "Reset column widths" (TC-034a–c). Since Fyne reports no resize event, the table compares current widths with the ones it set itself
+- found while testing: one of my new tests read the hover state racily under Fyne's test driver; fixed in the test
+- 143 tests pass, also with `-race` (3 runs); `ManualTests.md` regenerated (63 checks)

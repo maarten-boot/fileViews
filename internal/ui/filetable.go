@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"image/color"
+	"maps"
 	"math"
 	"os"
 	"os/exec"
@@ -69,6 +70,11 @@ type fileTable struct {
 	view    fyne.CanvasObject // table and wheel catcher inside the theme override
 	cols    []listing.Column
 
+	// userW holds the widths of columns the user resized, kept across
+	// sessions (FR-034); setW the widths this code set itself, so a
+	// different current width means the user dragged that column.
+	userW, setW map[listing.Column]float32
+
 	// autoName is the Name width last set by fitName; a different current
 	// width means the user dragged it, and fitName then leaves it alone.
 	autoName float32
@@ -78,7 +84,7 @@ type fileTable struct {
 const minNameWidth = 150
 
 func newFileTable(m *mainWindow) *fileTable {
-	ft := &fileTable{m: m, cols: m.cfg.ColumnLayout().Visible()}
+	ft := &fileTable{m: m, cols: m.cfg.ColumnLayout().Visible(), userW: m.cfg.ColumnWidths(), setW: map[listing.Column]float32{}}
 	ft.table = widget.NewTable(
 		func() (int, int) { return len(m.shown), len(ft.cols) },
 		func() fyne.CanvasObject {
@@ -125,6 +131,9 @@ func (l *tableLayout) Layout(objs []fyne.CanvasObject, size fyne.Size) {
 // the user has dragged it to another width. Below minNameWidth the columns
 // no longer fit and the table scrolls sideways.
 func (ft *fileTable) fitName() {
+	if _, user := ft.userW[listing.ColName]; user {
+		return
+	}
 	i := slices.Index(ft.cols, listing.ColName)
 	_, view, content, ok := tableScroller(ft.table)
 	if i < 0 || !ok || view.Size().Width <= 0 {
@@ -271,6 +280,7 @@ func (ft *fileTable) applyCompact() {
 
 // setColumns changes the visible columns, e.g. after the Columns settings.
 func (ft *fileTable) setColumns(cols []listing.Column) {
+	ft.captureWidths() // widths the user dragged stay with their column
 	ft.cols = cols
 	ft.setColumnWidths()
 	ft.autoName = 0
@@ -278,11 +288,53 @@ func (ft *fileTable) setColumns(cols []listing.Column) {
 	ft.table.Refresh()
 }
 
+// setColumnWidths gives every column the width the user chose, or else
+// its measured width.
 func (ft *fileTable) setColumnWidths() {
 	sorted := ft.m.cfg.SortSpec().Column
 	for i, c := range ft.cols {
-		ft.table.SetColumnWidth(i, neededWidth(c, c == sorted))
+		w, user := ft.userW[c]
+		if !user {
+			w = neededWidth(c, c == sorted)
+		}
+		ft.table.SetColumnWidth(i, w)
+		ft.setW[c] = w
 	}
+}
+
+// captureWidths records the columns whose width differs from what this
+// code set: the user dragged them (FR-034).
+func (ft *fileTable) captureWidths() {
+	for i, c := range ft.cols {
+		cur, ok := tableColumnWidth(ft.table, i)
+		if !ok {
+			continue
+		}
+		_, user := ft.userW[c]
+		dragged := cur != ft.setW[c]
+		if c == listing.ColName {
+			dragged = ft.autoName != 0 && cur != ft.autoName
+		}
+		if user || dragged {
+			ft.userW[c] = cur
+		}
+	}
+}
+
+// userWidths returns the widths to save: the columns the user resized.
+func (ft *fileTable) userWidths() map[listing.Column]float32 {
+	ft.captureWidths()
+	return maps.Clone(ft.userW)
+}
+
+// resetWidths forgets the user's widths and goes back to the measured
+// widths, with Name filling the pane (FR-034).
+func (ft *fileTable) resetWidths() {
+	ft.userW = map[listing.Column]float32{}
+	ft.autoName = 0
+	ft.setColumnWidths()
+	ft.fitName()
+	ft.table.Refresh()
 }
 
 // makeRoomForArrow widens the newly sorted column if its arrow would not fit.
@@ -294,6 +346,10 @@ func (ft *fileTable) makeRoomForArrow(c listing.Column) {
 	need := neededWidth(c, true)
 	if cur, ok := tableColumnWidth(ft.table, i); ok && cur < need {
 		ft.table.SetColumnWidth(i, need)
+		ft.setW[c] = need
+		if _, user := ft.userW[c]; user {
+			ft.userW[c] = need
+		}
 		if c == listing.ColName {
 			ft.autoName = need
 		}

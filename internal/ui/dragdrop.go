@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/widget"
 )
 
 // dragState is a drag in progress: a bookmark being moved within the left
@@ -19,7 +18,6 @@ type dragState struct {
 	paths    []string // the bookmark being moved, or the dragged directories
 	newPaths []string // dragged directories that are not bookmarks yet
 	slot     int      // insertion position in the bookmark list, or -1
-	label    *widget.PopUp
 }
 
 // beginSideDrag starts moving the bookmark for path.
@@ -44,13 +42,8 @@ func (m *mainWindow) dragMove(abs fyne.Position) {
 	if !m.drag.active {
 		return
 	}
-	text := m.dragText()
-	if m.drag.label == nil {
-		m.drag.label = widget.NewPopUp(widget.NewLabel(text), m.win.Canvas())
-	} else {
-		m.drag.label.Content.(*widget.Label).SetText(text)
-	}
-	m.drag.label.ShowAtPosition(abs.Add(fyne.NewPos(16, 12)))
+	m.tip.hide()
+	m.dragLabel.show(m.dragText(), abs.Add(fyne.NewPos(16, 12)))
 
 	m.drag.slot = -1
 	if m.drag.fromSide || len(m.drag.newPaths) > 0 {
@@ -88,9 +81,7 @@ func (m *mainWindow) dragText() string {
 func (m *mainWindow) endDrag() {
 	d := m.drag
 	m.drag = dragState{}
-	if d.label != nil {
-		d.label.Hide()
-	}
+	m.dragLabel.hide()
 	m.side.hideMarker()
 	if !d.active || d.slot < 0 {
 		return

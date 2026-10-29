@@ -105,8 +105,8 @@ func TestDragDirectoryToPane(t *testing.T) {
 	row := slices.Index(shownNames(m), "other/")
 	c := tableCell(m, row)
 	c.Dragged(dragEv(rowPos(t, m, 2, true))) // above /a1
-	if !strings.HasPrefix(m.drag.label.Content.(*widget.Label).Text, "Add bookmark: other") || !m.side.marker.Visible() {
-		t.Fatalf("label %q marker %v", m.drag.label.Content.(*widget.Label).Text, m.side.marker.Visible())
+	if !strings.HasPrefix(m.dragLabel.text(), "Add bookmark: other") || !m.side.marker.Visible() {
+		t.Fatalf("label %q marker %v", m.dragLabel.text(), m.side.marker.Visible())
 	}
 	c.DragEnd()
 	if got, want := markPaths(m), []string{"/", root, filepath.Join(root, "other"), "/a1", "/a2"}; !slices.Equal(got, want) {
@@ -126,7 +126,7 @@ func TestDragBookmarkedDirectoryRefused(t *testing.T) {
 
 	c := tableCell(m, slices.Index(shownNames(m), "sub/"))
 	c.Dragged(dragEv(rowPos(t, m, 0, true)))
-	if got := m.drag.label.Content.(*widget.Label).Text; got != "sub: already a bookmark" {
+	if got := m.dragLabel.text(); got != "sub: already a bookmark" {
 		t.Errorf("label %q", got)
 	}
 	if m.side.marker.Visible() || m.drag.slot != -1 {
@@ -149,7 +149,7 @@ func TestDragSelection(t *testing.T) {
 	m.clickRow(slices.Index(names, "a.txt"), fyne.KeyModifierControl) // files are not dragged
 	c := tableCell(m, slices.Index(names, "sub/"))
 	c.Dragged(dragEv(rowPos(t, m, 0, true)))
-	if got := m.drag.label.Content.(*widget.Label).Text; got != "Add 1 bookmark (1 already bookmarked)" {
+	if got := m.dragLabel.text(); got != "Add 1 bookmark (1 already bookmarked)" {
 		t.Errorf("label %q", got)
 	}
 	c.DragEnd()

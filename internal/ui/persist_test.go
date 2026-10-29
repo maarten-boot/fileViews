@@ -190,3 +190,54 @@ func TestLargeDirectoryInWindow(t *testing.T) {
 		t.Errorf("shown %d", len(m.shown))
 	}
 }
+
+// TC-034b: dragged column widths are saved and restored; columns that were
+// not dragged are not saved, and Name keeps a dragged width on resize.
+func TestColumnWidthsRemembered(t *testing.T) {
+	root := fixture(t)
+	m, store := savingWindow(t, config.Default(), root)
+	m.win.Resize(fyne.NewSize(1000, 650))
+	wait(t, m, func() { m.goPath(root) })
+	col := func(m *mainWindow, c listing.Column) int { return slices.Index(m.files.cols, c) }
+	m.files.table.SetColumnWidth(col(m, listing.ColName), 300) // dragged by the user
+	m.files.table.SetColumnWidth(col(m, listing.ColSize), 120)
+	m.quit()
+
+	c := loadCfg(t, store)
+	w := c.ColumnWidths()
+	if len(w) != 2 || w[listing.ColName] != 300 || w[listing.ColSize] != 120 {
+		t.Fatalf("saved widths %v", w)
+	}
+
+	m2 := newMainWindow(test.NewTempApp(t), c, root)
+	m2.win.Resize(fyne.NewSize(1000, 650))
+	wait(t, m2, func() { m2.goPath(root) })
+	for c, want := range map[listing.Column]float32{listing.ColName: 300, listing.ColSize: 120, listing.ColPerms: neededWidth(listing.ColPerms, false)} {
+		if got, _ := tableColumnWidth(m2.files.table, col(m2, c)); got != want {
+			t.Errorf("restored %s = %v, want %v", c, got, want)
+		}
+	}
+	m2.win.Resize(fyne.NewSize(1200, 650))
+	if got, _ := tableColumnWidth(m2.files.table, col(m2, listing.ColName)); got != 300 {
+		t.Errorf("Name refitted to %v after resize", got)
+	}
+}
+
+// TC-034c: Reset column widths forgets them, also in the saved settings.
+func TestResetColumnWidths(t *testing.T) {
+	root := fixture(t)
+	cfg := config.Default()
+	cfg.SetColumnWidths(map[listing.Column]float32{listing.ColName: 300, listing.ColSize: 120})
+	m, store := savingWindow(t, cfg, root)
+	m.win.Resize(fyne.NewSize(1000, 650))
+	wait(t, m, func() { m.goPath(root) })
+	d := newColumnsDialog(m)
+	test.Tap(d.reset)
+	if w := loadCfg(t, store).ColumnWidths(); len(w) != 0 {
+		t.Errorf("saved widths after reset: %v", w)
+	}
+	sizeCol := slices.Index(m.files.cols, listing.ColSize)
+	if got, _ := tableColumnWidth(m.files.table, sizeCol); got != neededWidth(listing.ColSize, false) {
+		t.Errorf("Size width %v after reset", got)
+	}
+}

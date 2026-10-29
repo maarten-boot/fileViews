@@ -24,7 +24,7 @@ A ✔ with a test name means the automated test exists and passes. The manual ch
 | TC-020g | FR-032 | Few rows do not move | 2 entries; wheel; pane too narrow; wheel; Shift+wheel | Offset stays 0,0; Shift+wheel moves sideways only | Auto ✔ `TestFewRowsDoNotScroll` + Manual |
 | TC-020h | FR-032 | Many rows scroll; refresh keeps position | 200 entries; wheel down; F5 | Moves down only; same position after F5 | Auto ✔ `TestScrollManyRowsAndReset` + Manual |
 | TC-020i | FR-032 | New directory starts at the top | Scroll down in a big directory, open another | Starts at top-left | Auto ✔ `TestScrollManyRowsAndReset` + Manual |
-| TC-020j | FR-020 | Name fills the width | Window 1000, 1200, 500 wide; drag Name; resize; change columns | Fills (wider at 1200); 150 px and sideways scroll at 500; dragged width kept; refilled after column change | Auto ✔ `TestNameFillsWidth` + Manual |
+| TC-020j | FR-020 | Name fills the width | Window 1000, 1200, 500 wide; drag Name; resize; change columns; reset widths | Fills (wider at 1200); 150 px and sideways scroll at 500; dragged width kept on resize and column change; refilled after reset | Auto ✔ `TestNameFillsWidth` + Manual |
 | TC-020k | FR-020 | Measured column widths | Default widths; sort by Size | Each column at its measured width; Size widened for the arrow; still fits | Auto ✔ `TestColumnWidthsFromText` + Manual |
 | TC-020l | FR-032 | Big directory after a small one scrolls | Open small, then 200 entries; wheel | Moves down | Auto ✔ `TestScrollAfterSmallDirectory` |
 | TC-021a | FR-021 | Hidden filtered by default | Dir with `.x`, `y` | Only `y` listed | Auto ✔ `TestFilterHidden` |
@@ -63,6 +63,9 @@ A ✔ with a test name means the automated test exists and passes. The manual ch
 | TC-033c | FR-033 | Text not squeezed | Cell lower than the label | Label keeps its height, centred | Auto ✔ `TestCompactCellLayout` + Manual |
 | TC-033d | FR-033 | Spacing dialog, saving | Dialog 2–10 at 4; type 1, 11, x; apply 6; compact on; new window | Invalid input disables Apply; saved; restored with 6 px; left pane rows unchanged | Auto ✔ `TestCompactSettingsSaved` + Manual |
 | TC-033e | FR-033 | Header not cut in compact view | Switch to compact; refresh; start a window in compact view | Header keeps its full height; rows start below it | Auto ✔ `TestCompactHeaderNotCut` + Manual |
+| TC-034a | FR-034 | Widths kept with the layout (config) | Save widths, then save a new column layout; empty widths | Widths kept; empty map not stored | Auto ✔ `TestColumnLayoutKeepsWidths` |
+| TC-034b | FR-034 | Dragged widths remembered | Drag Name to 300 and Size to 120, quit, start again, widen window | Only Name and Size saved; restored; Name not refitted | Auto ✔ `TestColumnWidthsRemembered` + Manual |
+| TC-034c | FR-034 | Reset column widths | Saved widths; Settings → Columns → Reset column widths | Measured widths back, Name fills; nothing saved | Auto ✔ `TestResetColumnWidths` + Manual |
 | TC-030 | FR-030 | Read-only | Browse around | No file is modified | Manual |
 
 ## Path bar / history (`internal/history`)
@@ -126,6 +129,8 @@ A ✔ with a test name means the automated test exists and passes. The manual ch
 | TC-049b | FR-049 | Already bookmarked: refused while dragging | Drag `sub/` which is a bookmark | Label "sub: already a bookmark", no drop line; drop changes nothing, no error | Auto ✔ `TestDragBookmarkedDirectoryRefused` + Manual |
 | TC-049c | FR-049 | Drag a selection | Select `other/`, `sub/` (bookmarked), `a.txt`; drag | Label "Add 1 bookmark (1 already bookmarked)"; only `other` added | Auto ✔ `TestDragSelection` + Manual |
 | TC-049d | FR-049 | Ignored drags | Drag a file; drop a directory outside the pane | Nothing happens, no drop line | Auto ✔ `TestDragIgnoredCases` + Manual |
+| TC-046e | FR-046 | Hover text waits for stillness | Keep moving over a bookmark, then stop; move a little after it shows | Not shown while moving; shown 1 s after stopping; stays on small moves | Auto ✔ `TestBookmarkTooltipWaitsForStillness` + Manual |
+| TC-046f | FR-046 | Click while the hover text shows | Hover until the text shows, click the bookmark | The click opens the bookmark; hover text hidden; no overlay | Auto ✔ `TestClickWhileHoverTextShown` + Manual |
 | TC-047a | FR-047 | Missing detection | Existing dir; removed dir; a file | false; true; true | Auto ✔ `TestMissing` |
 | TC-047b | FR-047 | Missing style | Default white; black bg; light yellow bg with navy text | `gone (missing)`, italic; text `#767676`; `#757575`; navy — all pass 4.5:1 | Auto ✔ `TestStyleMissing` + Manual |
 
@@ -156,7 +161,7 @@ A ✔ with a test name means the automated test exists and passes. The manual ch
 | TC-062d | FR-065 | No save after unreadable config | Config mode 000, change something, quit | File unchanged, no error dialog | Auto ✔ `TestNoSaveAfterUnreadableConfig` |
 | TC-063c | FR-065 | Save error once | Config path under a file; two changes and quit | One error shown | Auto ✔ `TestSaveErrorReportedOnce` |
 | TC-063d | FR-065 | Newest snapshot wins | Older save finishes after newer | Newer values kept | Auto ✔ `TestSaverOrder` |
-| TC-064 | FR-064 | Bad values normalised | Negative indent (and > 25 → 25), compact spacing 1 (→ 2) and 50 (→ 10), contrast 1, split 1.5, unknown sort/columns, duplicate recent, unknown field | Defaults/limits applied, unknowns ignored | Auto ✔ `TestNormalize` |
+| TC-064 | FR-064 | Bad values normalised | Widths for unknown column, 5000 and 3 px; negative indent (and > 25 → 25), compact spacing 1 (→ 2) and 50 (→ 10), contrast 1, split 1.5, unknown sort/columns, duplicate recent, unknown field | Defaults/limits applied, unknowns ignored | Auto ✔ `TestNormalize` |
 
 ## Non-functional
 | ID | Req | Description | Steps / input | Expected result | Type |

@@ -148,10 +148,15 @@ func TestNameFillsWidth(t *testing.T) {
 	if w, _ := tableColumnWidth(m.files.table, nameCol); w != 444 {
 		t.Errorf("dragged width not kept: %v", w)
 	}
-	// Changing the columns fits Name again.
+	// Changing the columns keeps the dragged width (FR-034) ...
 	m.files.setColumns(m.files.cols)
+	if w, _ := tableColumnWidth(m.files.table, nameCol); w != 444 {
+		t.Errorf("after setColumns: name %v, want the dragged 444", w)
+	}
+	// ... and resetting the widths fits Name again.
+	m.files.resetWidths()
 	if w, _ := tableColumnWidth(m.files.table, nameCol); w == 444 || !fits() {
-		t.Errorf("after setColumns: name %v fits %v", w, fits())
+		t.Errorf("after reset: name %v fits %v", w, fits())
 	}
 }
 

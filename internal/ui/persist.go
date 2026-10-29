@@ -41,6 +41,7 @@ func (s *saver) write(seq int64, c config.Config) error {
 func (m *mainWindow) snapshot() config.Config {
 	c := m.cfg
 	c.Bookmarks = m.marks.Saved()
+	c.SetColumnWidths(m.files.userWidths())
 	c.Recent = m.nav.Recent()
 	if dir := m.nav.Current(); dir != "" {
 		c.LastDir = dir

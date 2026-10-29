@@ -17,8 +17,9 @@ import (
 	"github.com/maarten-boot/fileViews/internal/bookmarks"
 )
 
-// tooltipDelay is how long the mouse rests on a bookmark before its hover text shows.
-const tooltipDelay = 600 * time.Millisecond
+// tooltipDelay is how long the mouse must rest, without moving, on a
+// bookmark before its hover text shows (FR-046).
+const tooltipDelay = time.Second
 
 // sidePane is the left pane: the bookmark list (FR-040–FR-047).
 type sidePane struct {
@@ -184,8 +185,8 @@ type markItem struct {
 
 	dragging bool
 
-	tip      *widget.PopUp
-	hoverSeq atomic.Int64 // bumped on every enter/leave; a pending tooltip shows only if unchanged
+	tipShown bool         // this item's hover text is showing
+	hoverSeq atomic.Int64 // bumped on every enter, move and leave; a pending hover text shows only if unchanged
 	hoverPos fyne.Position
 }
 
@@ -250,11 +251,30 @@ func (mi *markItem) TappedSecondary(ev *fyne.PointEvent) {
 	widget.ShowPopUpMenuAtPosition(mi.sp.menuFor(mi.item), mi.sp.m.win.Canvas(), ev.AbsolutePosition)
 }
 
-// Hover text (FR-046): Fyne has no tooltips, so show a pop-up after the
-// mouse rests on the item for a moment.
+// Hover text (FR-046): Fyne has no tooltips. The text shows once the
+// mouse has rested on the item without moving for tipDelay; any movement
+// before that starts the wait again. Once shown it stays until the mouse
+// leaves or clicks. It is drawn as a hint, which takes no mouse events.
 
 func (mi *markItem) MouseIn(ev *desktop.MouseEvent) {
 	mi.hoverPos = ev.AbsolutePosition
+	mi.startTipTimer()
+}
+
+func (mi *markItem) MouseMoved(ev *desktop.MouseEvent) {
+	if mi.tipShown {
+		return
+	}
+	mi.hoverPos = ev.AbsolutePosition
+	mi.startTipTimer()
+}
+
+func (mi *markItem) MouseOut() {
+	mi.hoverSeq.Add(1)
+	mi.hideTip()
+}
+
+func (mi *markItem) startTipTimer() {
 	seq := mi.hoverSeq.Add(1)
 	go func() {
 		time.Sleep(mi.sp.tipDelay)
@@ -266,26 +286,18 @@ func (mi *markItem) MouseIn(ev *desktop.MouseEvent) {
 	}()
 }
 
-func (mi *markItem) MouseMoved(ev *desktop.MouseEvent) { mi.hoverPos = ev.AbsolutePosition }
-
-func (mi *markItem) MouseOut() {
-	mi.hoverSeq.Add(1)
-	mi.hideTip()
-}
-
 func (mi *markItem) showTip() {
-	mi.hideTip()
-	label := widget.NewLabel(mi.item.Tooltip())
-	mi.tip = widget.NewPopUp(label, mi.sp.m.win.Canvas())
-	mi.tip.ShowAtPosition(mi.hoverPos.Add(fyne.NewPos(12, 16)))
+	mi.sp.m.tip.show(mi.item.Tooltip(), mi.hoverPos.Add(fyne.NewPos(12, 16)))
+	mi.tipShown = true
 	if mi.sp.onTip != nil {
 		mi.sp.onTip()
 	}
 }
 
 func (mi *markItem) hideTip() {
-	if mi.tip != nil {
-		mi.tip.Hide()
-		mi.tip = nil
+	if mi.tipShown {
+		mi.hoverSeq.Add(1) // a pending hover text must not show after a click
+		mi.sp.m.tip.hide()
+		mi.tipShown = false
 	}
 }
