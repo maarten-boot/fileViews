@@ -228,3 +228,8 @@ All core packages are now done: the planned point for the first Spec ↔ Plan �
 **User:** do a crosscheck now
 
 **Assistant:** Scripted checks all clean (53 requirement IDs, 148 test cases, 133 tests, test comments and `ManualTests.md` in sync). Read-through of the latest changes found only small things: FR-042 still listed the bookmark menu without Move up/down (fixed); `clearSelection` was no longer used outside tests (removed); M12 was listed above M11 in the plan (fixed). No code defects. Remaining: the user's manual test pass.
+
+### 24. Dependabot alerts
+**User:** dependabot found some issues: golang.org/x/image < 0.41.0 (patched 0.41.0); golang.org/x/net < 0.38.0; golang.org/x/net < 0.36.0 (patched 0.36.0); *(added while working)* golang.org/x/net < 0.55.0 (patched 0.55.0)
+
+**Assistant:** Both are indirect dependencies via Fyne. Upgraded `golang.org/x/image` 0.24.0 → 0.47.0 and `golang.org/x/net` 0.35.0 → 0.62.0 (Go also raised `x/sys` 0.30.0 → 0.49.0 and `x/text` 0.22.0 → 0.43.0); this covers all four alerts. `govulncheck` found two more reachable `x/image` issues (GO-2026-5062, GO-2026-5066, fixed in 0.43.0), also covered by 0.47.0. All 133 tests pass. Added `make vulncheck`. Still reported: 10 reachable vulnerabilities in the Go 1.26.8 standard library (`net/http`, `crypto/tls`, `crypto/x509`, `net/textproto`), fixed in Go 1.26.9/1.26.10 — needs a toolchain decision from the user.
