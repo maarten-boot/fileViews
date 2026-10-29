@@ -283,3 +283,8 @@ All core packages are now done: the planned point for the first Spec ↔ Plan �
 - column widths the user drags are saved per column and restored (new FR-034); Name only fills the pane until the user gives it a width; Settings → Columns has "Reset column widths" (TC-034a–c). Since Fyne reports no resize event, the table compares current widths with the ones it set itself
 - found while testing: one of my new tests read the hover state racily under Fyne's test driver; fixed in the test
 - 143 tests pass, also with `-race` (3 runs); `ManualTests.md` regenerated (63 checks)
+
+### 30. Working agreement addition
+**User:** note that if my requests are unrealistic for the current implementation say so ,
+
+**Assistant:** Agreed and saved as a standing rule: in the confirmation step, say up front when a request is unrealistic, fragile or costly with Go + Fyne, with the reason and a cheaper alternative. Gave an honest look back: the scrolling filter (FR-032) and remembered column widths (FR-034) rely on reading Fyne's Table internals via reflection/unsafe, which can break on a Fyne upgrade (guarded by `TestFyneInternals`); hover texts and drag & drop are hand-made because Fyne has neither.
